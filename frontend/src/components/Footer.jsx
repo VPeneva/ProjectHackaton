@@ -16,8 +16,8 @@ function Copyright() {
   return (
     <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
       {'Copyright © '}
-      <Link color="text.secondary">
-        SoftSolutions
+      <Link color="text.secondary" href="https://junioraccelerator.org/">
+        JuniorAccelerator.org
       </Link>
       &nbsp;
       {new Date().getFullYear()}
@@ -56,10 +56,10 @@ export default function Footer() {
           <Box sx={{ width: { xs: '100%', sm: '60%' } }}>
             <SitemarkIcon />
             <Typography variant="body2" gutterBottom sx={{ fontWeight: 600, mt: 2 }}>
-              Join the newsletter
+              Join the circus
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-              Subscribe for weekly updates. No spams ever!
+              Subscribe for yearly updates. May spam!
             </Typography>
             <InputLabel htmlFor="email-newsletter">Email</InputLabel>
             <Stack direction="row" spacing={1} useFlexGap>
@@ -85,7 +85,7 @@ export default function Footer() {
                 size="small"
                 sx={{ flexShrink: 0 }}
               >
-                Subscribe
+                Aide edno laikche
               </Button>
             </Stack>
           </Box>
@@ -101,19 +101,10 @@ export default function Footer() {
             Product
           </Typography>
           <Link color="text.secondary" variant="body2" href="#">
-            Features
+            Features unknown yet
           </Link>
           <Link color="text.secondary" variant="body2" href="#">
-            Testimonials
-          </Link>
-          <Link color="text.secondary" variant="body2" href="#">
-            Highlights
-          </Link>
-          <Link color="text.secondary" variant="body2" href="/pricing">
-            Pricing
-          </Link>
-          <Link color="text.secondary" variant="body2" href="#">
-            FAQs
+            FAQs may not be answered
           </Link>
         </Box>
         <Box
@@ -126,14 +117,8 @@ export default function Footer() {
           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
             Company
           </Typography>
-          <Link color="text.secondary" variant="body2" href="/about">
-            About us
-          </Link>
           <Link color="text.secondary" variant="body2" href="#">
-            Careers
-          </Link>
-          <Link color="text.secondary" variant="body2" href="/blog">
-            Press
+            About us
           </Link>
         </Box>
         <Box
@@ -146,14 +131,14 @@ export default function Footer() {
           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
             Legal
           </Typography>
-          <Link color="text.secondary" variant="body2" href="/terms">
+          <Link color="text.secondary" variant="body2" href="#">
             Terms
           </Link>
-          <Link color="text.secondary" variant="body2" href="/privacy">
+          <Link color="text.secondary" variant="body2" href="#">
             Privacy
           </Link>
           <Link color="text.secondary" variant="body2" href="#">
-            Contact
+            Contact us
           </Link>
         </Box>
       </Box>
@@ -168,15 +153,15 @@ export default function Footer() {
         }}
       >
         <div>
-          <Link color="text.secondary" variant="body2" href="/privacy">
-            Privacy Policy
-          </Link>
+          <Typography color="text.secondary" variant="body2" href="#">
+            We won't sell your kidneys
+          </Typography>
           <Typography sx={{ display: 'inline', mx: 0.5, opacity: 0.5 }}>
             &nbsp;•&nbsp;
           </Typography>
-          <Link color="text.secondary" variant="body2" href="/terms">
-            Terms of Service
-          </Link>
+          <Typography color="text.secondary" variant="body2" href="#">
+            We promise
+          </Typography>
           <Copyright />
         </div>
         <Stack

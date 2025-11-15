@@ -30,7 +30,8 @@ model Report {
   lat         Float
   lng         Float
   category    String
-  status      String    @default("Pending")   // <--- НОВО
+  status      String    @default("Pending")          // Pending, Sent, InProgress, Resolved
+  institution String?                                // името на институцията
   userId      Int
   user        User      @relation(fields: [userId], references: [id])
   createdAt   DateTime  @default(now())

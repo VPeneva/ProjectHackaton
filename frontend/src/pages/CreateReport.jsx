@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { toast } from "react-hot-toast";
 
 import {
   Box,
@@ -47,7 +48,6 @@ const StyledCard = styled(Card)(({ theme }) => ({
 export default function CreateReport() {
   const [institutions, setInstitutions] = useState([]);
   const [institutionId, setInstitutionId] = useState("");
-
   const [categories, setCategories] = useState([]);
   const [categoryId, setCategoryId] = useState("");
 
@@ -77,8 +77,9 @@ export default function CreateReport() {
 
     if (!institutionId) return alert("Please select an institution.");
     if (!categoryId) return alert("Please select a category.");
-    if (!title || !lat || !lng)
-      return alert("Title and coordinates are required.");
+    if (!title || !lat || !lng) {
+      toast.error("Please fill in all required fields.");
+      return;}
 
     await api.post("/reports", {
       title,
@@ -89,7 +90,7 @@ export default function CreateReport() {
       lng: Number(lng),
     });
 
-    alert("Report created successfully!");
+    toast.success("Report created successfully!");
 
     setTitle("");
     setDescription("");

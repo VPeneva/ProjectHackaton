@@ -30,6 +30,8 @@ function App() {
 
         <Route path="/basepage" element={<BasePage />} />
 
+        <Route path="/about" element={<About />} />
+
         <Route
           path="/create"
           element={

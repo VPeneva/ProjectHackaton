@@ -11,28 +11,34 @@ import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import ManageInstitutions from "./pages/ManageInstitutions";
 import ManageCategories from "./pages/ManageCategories";
+import AppAppBar from "./components/AppAppBar";
+import AppTheme from "./shared-theme/AppTheme";
+import SignIn from "./pages/SignIn";
 
 
-function App() {
+function App(props) {
   return (
-    <BrowserRouter>
-      <Navbar /> 
+    <AppTheme {...props}>
+      <BrowserRouter>
+        <Navbar />
+        <AppAppBar />
 
-      <Routes>
-        <Route path="/" element={<Reports />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/create" element={ <ProtectedRoute> <CreateReport /> </ProtectedRoute> } />
-        <Route path="/admin" element={ <ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute> }/>
-        <Route path="/admin/institutions"element={<ProtectedAdminRoute><ManageInstitutions /></ProtectedAdminRoute>}/>
-        <Route path="/create" element={<ProtectedRoute> <CreateReport /> </ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
-        <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
-        <Route path="/admin/resolved" element={<ProtectedAdminRoute> <ResolvedReports /> </ProtectedAdminRoute>}/>
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/admin/categories" element={<ProtectedAdminRoute> <ManageCategories /> </ProtectedAdminRoute>} />
-      </Routes>
-    </BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Reports />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/create" element={ <ProtectedRoute> <CreateReport /> </ProtectedRoute> } />
+          <Route path="/admin" element={ <ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute> }/>
+          <Route path="/admin/institutions"element={<ProtectedAdminRoute><ManageInstitutions /></ProtectedAdminRoute>}/>
+          <Route path="/create" element={<ProtectedRoute> <CreateReport /> </ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
+          <Route path="/admin/resolved" element={<ProtectedAdminRoute> <ResolvedReports /> </ProtectedAdminRoute>}/>
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/admin/categories" element={<ProtectedAdminRoute> <ManageCategories /> </ProtectedAdminRoute>} />
+        </Routes>
+      </BrowserRouter>
+    </AppTheme>
   );
 }
 

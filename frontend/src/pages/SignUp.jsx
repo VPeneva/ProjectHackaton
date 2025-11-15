@@ -16,6 +16,9 @@ import { styled } from '@mui/material/styles';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import { GoogleIcon, FacebookIcon, SitemarkIcon } from '../components/CustomIcons';
+import { AuthContext } from "../context/AuthContext";
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -60,6 +63,9 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignUp(props) {
+  const navigate = useNavigate();
+  const { register } = useContext(AuthContext);
+
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
@@ -104,19 +110,30 @@ export default function SignUp(props) {
     return isValid;
   };
 
-  const handleSubmit = (event) => {
-    if (nameError || emailError || passwordError) {
-      event.preventDefault();
-      return;
-    }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!validateInputs()) return;
+
     const data = new FormData(event.currentTarget);
-    console.log({
-      name: data.get('name'),
-      lastName: data.get('lastName'),
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+
+    const name = data.get("name");
+    const email = data.get("email");
+    const password = data.get("password");
+
+    try {
+  console.log("Before register()");
+  await register(name, email, password);
+  console.log("After register()");
+  navigate("/login");
+} catch (error) {
+  console.error("Registration failed:", error);
+}
+
+    
   };
+
+  
 
   return (
     <AppTheme {...props}>
@@ -132,6 +149,7 @@ export default function SignUp(props) {
           >
             Sign up
           </Typography>
+
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -151,6 +169,7 @@ export default function SignUp(props) {
                 color={nameError ? 'error' : 'primary'}
               />
             </FormControl>
+
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <TextField
@@ -163,9 +182,10 @@ export default function SignUp(props) {
                 variant="outlined"
                 error={emailError}
                 helperText={emailErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
+                color={emailError ? 'error' : 'primary'}
               />
             </FormControl>
+
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
@@ -182,22 +202,21 @@ export default function SignUp(props) {
                 color={passwordError ? 'error' : 'primary'}
               />
             </FormControl>
+
             <FormControlLabel
               control={<Checkbox value="allowExtraEmails" color="primary" />}
               label="I want to receive updates via email."
             />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick={validateInputs}
-            >
+
+            <Button type="submit" fullWidth variant="contained">
               Sign up
             </Button>
           </Box>
+
           <Divider>
             <Typography sx={{ color: 'text.secondary' }}>or</Typography>
           </Divider>
+
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Button
               fullWidth
@@ -207,6 +226,7 @@ export default function SignUp(props) {
             >
               Sign up with Google
             </Button>
+
             <Button
               fullWidth
               variant="outlined"
@@ -215,13 +235,10 @@ export default function SignUp(props) {
             >
               Sign up with Facebook
             </Button>
+
             <Typography sx={{ textAlign: 'center' }}>
               Already have an account?{' '}
-              <Link
-                href="/material-ui/getting-started/templates/sign-in/"
-                variant="body2"
-                sx={{ alignSelf: 'center' }}
-              >
+              <Link href="/login" variant="body2" sx={{ alignSelf: 'center' }}>
                 Sign in
               </Link>
             </Typography>

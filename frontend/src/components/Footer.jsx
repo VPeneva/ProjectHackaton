@@ -170,15 +170,7 @@ export default function Footer() {
           useFlexGap
           sx={{ justifyContent: 'left', color: 'text.secondary' }}
         >
-          <IconButton
-            color="inherit"
-            size="small"
-            href="https://github.com/VPeneva/ProjectHackaton"
-            aria-label="GitHub"
-            sx={{ alignSelf: 'center' }}
-          >
-            <GitHubIcon />
-          </IconButton>
+
           <IconButton
             color="inherit"
             size="small"
@@ -187,6 +179,16 @@ export default function Footer() {
             sx={{ alignSelf: 'center' }}
           >
             <LinkedInIcon />
+          </IconButton>
+
+          <IconButton
+            color="inherit"
+            size="small"
+            href="https://github.com/VPeneva/ProjectHackaton"
+            aria-label="GitHub"
+            sx={{ alignSelf: 'center' }}
+          >
+            <GitHubIcon />
           </IconButton>
           
           <IconButton

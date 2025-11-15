@@ -6,11 +6,11 @@ import Reports from "./pages/Reports";
 import ProtectedRoute from "./components/ProtectedRoute"; 
 import CreateReport from "./pages/CreateReport";
 import SignUp from "./pages/SignUp";
-
+import ResolvedReports from "./pages/ResolvedReports";
 import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import ManageInstitutions from "./pages/ManageInstitutions";
-import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+
 
 
 function App() {

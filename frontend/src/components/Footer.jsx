@@ -56,10 +56,10 @@ export default function Footer() {
           <Box sx={{ width: { xs: '100%', sm: '60%' } }}>
             <SitemarkIcon />
             <Typography variant="body2" gutterBottom sx={{ fontWeight: 600, mt: 2 }}>
-              Join the newsletter
+              Join the circus
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-              Subscribe for weekly updates. No spams ever!
+              Subscribe for yearly updates. May spam!
             </Typography>
             <InputLabel htmlFor="email-newsletter">Email</InputLabel>
             <Stack direction="row" spacing={1} useFlexGap>
@@ -85,7 +85,7 @@ export default function Footer() {
                 size="small"
                 sx={{ flexShrink: 0 }}
               >
-                Subscribe
+                Aide edno laikche
               </Button>
             </Stack>
           </Box>
@@ -101,19 +101,10 @@ export default function Footer() {
             Product
           </Typography>
           <Link color="text.secondary" variant="body2" href="#">
-            Features
+            Features unknown yet
           </Link>
           <Link color="text.secondary" variant="body2" href="#">
-            Testimonials
-          </Link>
-          <Link color="text.secondary" variant="body2" href="#">
-            Highlights
-          </Link>
-          <Link color="text.secondary" variant="body2" href="#">
-            Pricing
-          </Link>
-          <Link color="text.secondary" variant="body2" href="#">
-            FAQs
+            FAQs may not be answered
           </Link>
         </Box>
         <Box
@@ -128,12 +119,6 @@ export default function Footer() {
           </Typography>
           <Link color="text.secondary" variant="body2" href="#">
             About us
-          </Link>
-          <Link color="text.secondary" variant="body2" href="#">
-            Careers
-          </Link>
-          <Link color="text.secondary" variant="body2" href="#">
-            Press
           </Link>
         </Box>
         <Box
@@ -153,7 +138,7 @@ export default function Footer() {
             Privacy
           </Link>
           <Link color="text.secondary" variant="body2" href="#">
-            Contact
+            Contact us
           </Link>
         </Box>
       </Box>
@@ -169,13 +154,13 @@ export default function Footer() {
       >
         <div>
           <Link color="text.secondary" variant="body2" href="#">
-            Privacy Policy
+            We won't sell your kidneys
           </Link>
           <Typography sx={{ display: 'inline', mx: 0.5, opacity: 0.5 }}>
             &nbsp;•&nbsp;
           </Typography>
           <Link color="text.secondary" variant="body2" href="#">
-            Terms of Service
+            We promise
           </Link>
           <Copyright />
         </div>
@@ -188,7 +173,7 @@ export default function Footer() {
           <IconButton
             color="inherit"
             size="small"
-            href="https://github.com/mui"
+            href="https://github.com/VPeneva/ProjectHackaton"
             aria-label="GitHub"
             sx={{ alignSelf: 'center' }}
           >

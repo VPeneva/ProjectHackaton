@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import {
-  Box,
   Card,
   CardContent,
   Typography,
@@ -43,10 +42,13 @@ export default function Reports() {
                   <Typography sx={{ mt: 1 }}>{r.description}</Typography>
                 )}
 
+                {/* CATEGORY FIX */}
                 <Typography sx={{ mt: 1 }}>
-                  <strong>Category:</strong> {r.category || "N/A"}
+                  <strong>Category:</strong>{" "}
+                  {r.category ? r.category.name : "N/A"}
                 </Typography>
 
+                {/* INSTITUTION FIX */}
                 {r.institution && (
                   <Typography>
                     <strong>Institution:</strong> {r.institution.name}

@@ -12,12 +12,12 @@ import ManageInstitutions from "./pages/ManageInstitutions";
 import ManageCategories from "./pages/ManageCategories";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
-import CrudDashboard from "./pages/CrudDashboard";
-import DashboardLayout from "./components/DashboardLayout";
-import EmployeeList from "./components/EmployeeList";
-import EmployeeShow from "./components/EmployeeShow";
-import EmployeeCreate from "./components/EmployeeCreate";
-import EmployeeEdit from "./components/EmployeeEdit";
+//import CrudDashboard from "./pages/CrudDashboard";
+// import DashboardLayout from "./components/DashboardLayout";
+// import EmployeeList from "./components/EmployeeList";
+// import EmployeeShow from "./components/EmployeeShow";
+// import EmployeeCreate from "./components/EmployeeCreate";
+// import EmployeeEdit from "./components/EmployeeEdit";
 import Footer from "./components/Footer";
 import AppTheme from "./shared-theme/AppTheme";
 import AppAppBar from "./components/AppAppBar";
@@ -27,7 +27,7 @@ function App(props) {
     <AppTheme {...props}>
       <BrowserRouter>
         <AppAppBar />
-        <Navbar />
+        {/* <Navbar /> */}
 
         <Routes>
           {/* PUBLIC ROUTES */}

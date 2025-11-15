@@ -10,6 +10,9 @@ import ResolvedReports from "./pages/ResolvedReports";
 import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import ManageInstitutions from "./pages/ManageInstitutions";
+import ManageCategories from "./pages/ManageCategories";
+import AppAppBar from "./components/AppAppBar";
+import AppTheme from "./shared-theme/AppTheme";
 import SignIn from "./pages/SignIn";
 import CrudDashboard from "./pages/CrudDashboard";
 import DashboardLayout from "./components/DashboardLayout";
@@ -17,13 +20,15 @@ import EmployeeList from "./components/EmployeeList";
 import EmployeeShow from "./components/EmployeeShow";
 import EmployeeCreate from "./components/EmployeeCreate";
 import EmployeeEdit from "./components/EmployeeEdit";
+import Footer from "./components/Footer";
 
 
-
-function App() {
+function App(props) {
   return (
-    <BrowserRouter>
-      <Navbar /> 
+    <AppTheme {...props}>
+      <BrowserRouter>
+        <Navbar />
+        <AppAppBar />
 
       <Routes>
         <Route path="/" element={<Reports />} />
@@ -48,9 +53,11 @@ function App() {
             <Route path="*" element={<EmployeeList />} />
           </Route>
         </Route>
-
       </Routes>
-    </BrowserRouter>
+
+        <Footer />
+      </BrowserRouter>
+    </AppTheme>
   );
 }
 

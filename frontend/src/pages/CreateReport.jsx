@@ -5,146 +5,139 @@ export default function CreateReport() {
   const [institutions, setInstitutions] = useState([]);
   const [institutionId, setInstitutionId] = useState("");
 
-  // Липсващите state променливи
+  const [categories, setCategories] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
 
+  // Зареждане на институции
   useEffect(() => {
     api.get("/institutions").then((res) => {
       setInstitutions(res.data);
     });
   }, []);
 
+  // Зареждане на категории според избраната институция
+  useEffect(() => {
+    if (institutionId) {
+      api
+        .get(`/categories?institutionId=${institutionId}`)
+        .then((res) => setCategories(res.data));
+    } else {
+      setCategories([]);
+    }
+  }, [institutionId]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!institutionId) {
-      return alert("Please select an institution.");
-    }
-    if (!category) {
-      return alert("Please select a category.");
-    }
+    if (!institutionId) return alert("Please select an institution.");
+    if (!categoryId) return alert("Please select a category.");
 
     if (!title || !description || !lat || !lng) {
-      return alert("Please fill all fields.");
+      return alert("All fields are required.");
     }
 
     await api.post("/reports", {
       title,
       description,
-      category,
+      categoryId: Number(categoryId),
       lat: parseFloat(lat),
       lng: parseFloat(lng),
       institutionId: Number(institutionId),
     });
 
-    alert("Report created!");
+    alert("Report created successfully!");
 
-    // Reset form
+    // Reset
     setTitle("");
     setDescription("");
-    setCategory("");
     setLat("");
     setLng("");
-    setInstitutionId(null);
+    setInstitutionId("");
+    setCategoryId("");
+    setCategories([]);
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "12px", maxWidth: "400px" }}>
+    <div style={{ padding: "20px" }}>
       <h2>Create Report</h2>
 
-      <input
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-
-      <input
-        placeholder="Category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      />
-
-      <input
-        placeholder="Latitude"
-        value={lat}
-        onChange={(e) => setLat(e.target.value)}
-      />
-
-      <input
-        placeholder="Longitude"
-        value={lng}
-        onChange={(e) => setLng(e.target.value)}
-      />
-
-      <label>Select Institution:</label>
-      <select
-        value={institutionId || ""}
-        onChange={(e) =>
-          setInstitutionId(e.target.value ? parseInt(e.target.value) : null)
-        }
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          maxWidth: "400px",
+          gap: "12px",
+        }}
       >
-        <option value="">-- Select Institution --</option>
-        {institutions.map((i) => (
-          <option key={i.id} value={i.id}>
-            {i.name}
-          </option>
-        ))}
-      </select>
+        {/* Institution */}
+        <label><strong>Select Institution:</strong></label>
+        <select
+          value={institutionId}
+          onChange={(e) => {
+            setInstitutionId(e.target.value);
+            setCategoryId("");
+          }}
+        >
+          <option value="">-- Select Institution --</option>
+          {institutions.map((i) => (
+            <option key={i.id} value={i.id}>
+              {i.name}
+            </option>
+          ))}
+        </select>
 
-      {/* Category appears ONLY AFTER institution is selected */}
-      {institutionId && (
-        <>
-          <label><strong>Select Category:</strong></label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">-- Select Category --</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </>
-      )}
+        {/* Categories (only visible after selecting institution) */}
+        {institutionId && (
+          <>
+            <label><strong>Select Category:</strong></label>
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              <option value="">-- Select Category --</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
 
-      {/* These fields appear ALWAYS */}
-      <input
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+        {/* Title */}
+        <input
+          placeholder="Report Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
 
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
+        {/* Description */}
+        <textarea
+          placeholder="Describe the issue..."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
 
-      <input
-        placeholder="Latitude"
-        value={lat}
-        onChange={(e) => setLat(e.target.value)}
-      />
+        {/* Coordinates */}
+        <input
+          placeholder="Latitude"
+          value={lat}
+          onChange={(e) => setLat(e.target.value)}
+        />
+        <input
+          placeholder="Longitude"
+          value={lng}
+          onChange={(e) => setLng(e.target.value)}
+        />
 
-      <input
-        placeholder="Longitude"
-        value={lng}
-        onChange={(e) => setLng(e.target.value)}
-      />
-
-      <button type="submit">Create</button>
-    </form>
+        <button type="submit">Submit Report</button>
+      </form>
+    </div>
   );
 }

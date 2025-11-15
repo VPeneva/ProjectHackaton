@@ -63,9 +63,9 @@ export default function AppAppBar() {
                   Register
                 </Button>
               </Link>
-              <Link to="/signup" style={{ marginLeft: "10px" }}>
+              <Link to="/dashboard" style={{ marginLeft: "10px" }}>
                 <Button variant="text" color="info" size="small">
-                  Sign Up
+                  Dashboard
                 </Button>
               </Link>
             </Box>

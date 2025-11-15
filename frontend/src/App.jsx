@@ -3,7 +3,8 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Reports from "./pages/Reports";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/ProtectedRoute"; 
+import CreateReport from "./pages/CreateReport";
 
 function App() {
   return (
@@ -15,17 +16,14 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Example protected route */}
-        {/* 
-        <Route 
-          path="/create" 
+        <Route
+          path="/create"
           element={
             <ProtectedRoute>
               <CreateReport />
             </ProtectedRoute>
-          } 
+          }
         />
-        */}
       </Routes>
     </BrowserRouter>
   );

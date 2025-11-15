@@ -4,10 +4,7 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Protected
 router.post("/", authMiddleware, createReport);
-
-// Public
 router.get("/", getReports);
 
 export default router;

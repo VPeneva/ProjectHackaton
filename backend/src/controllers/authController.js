@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { hashPassword, comparePassword } from "../utils/hash.js";
 
 export const register = async (req, res) => {
+
   const { email, password, name, adminKey } = req.body;
 
   try {

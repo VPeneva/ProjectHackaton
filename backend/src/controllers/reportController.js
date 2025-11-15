@@ -6,7 +6,7 @@ export const createReport = async (req, res) => {
 
   try {
     const report = await prisma.report.create({
-      data: { title, description, lat, lng, category, userId }
+      data: { title, description, lat: parseFloat(lat), lng: parseFloat(lng), category, userId }
     });
 
     res.json(report);
@@ -14,7 +14,6 @@ export const createReport = async (req, res) => {
     res.status(500).json({ error: "Failed to create report" });
   }
 };
-
 export const getReports = async (req, res) => {
   try {
     const reports = await prisma.report.findMany({

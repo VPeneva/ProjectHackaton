@@ -9,6 +9,12 @@ export default function Navbar() {
     <nav style={{ padding: "10px", background: "#ececec" }}>
       <Link to="/">Reports</Link>
 
+      {user && (
+        <Link to="/create" style={{ marginLeft: "10px" }}>
+          Create Report
+        </Link>
+      )}
+
       {user ? (
         <>
           <span style={{ marginLeft: "10px" }}>Hello, {user.name}</span>

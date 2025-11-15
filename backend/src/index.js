@@ -5,7 +5,7 @@ import authRoutes from "./routes/auth.js";
 import reportRoutes from "./routes/reports.js";
 import adminRoutes from "./routes/admin.js";
 
-app.use("/api/admin", adminRoutes);
+
 
 dotenv.config();
 
@@ -16,6 +16,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 

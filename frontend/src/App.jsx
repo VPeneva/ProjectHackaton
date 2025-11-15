@@ -5,16 +5,18 @@ import Register from "./pages/Register";
 import Reports from "./pages/Reports";
 import ProtectedRoute from "./components/ProtectedRoute"; 
 import CreateReport from "./pages/CreateReport";
+import SignUp from "./pages/SignUp";
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
+      {/* <Navbar /> */}
 
       <Routes>
         <Route path="/" element={<Reports />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/signup" element={<SignUp />} />
 
         <Route
           path="/create"

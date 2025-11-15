@@ -123,16 +123,20 @@ export default function AppAppBar() {
                 <MenuItem>FAQ</MenuItem>
                 <MenuItem>Blog</MenuItem>
                 <Divider sx={{ my: 3 }} />
-                <MenuItem>
-                  <Button color="primary" variant="contained" fullWidth>
-                    Sign up
-                  </Button>
-                </MenuItem>
-                <MenuItem>
-                  <Button color="primary" variant="outlined" fullWidth>
-                    Sign in
-                  </Button>
-                </MenuItem>
+                <Link to="/signup">
+                  <MenuItem>
+                      <Button color="primary" variant="contained" fullWidth>
+                        Sign up
+                      </Button>
+                  </MenuItem>
+                </Link>
+                <Link to="/signin">
+                  <MenuItem>
+                    <Button color="primary" variant="outlined" fullWidth>
+                      Sign in
+                    </Button>
+                  </MenuItem>
+                </Link>
               </Box>
             </Drawer>
           </Box>

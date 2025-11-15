@@ -3,116 +3,101 @@ import api from "../services/api";
 
 export default function Admin() {
   const [reports, setReports] = useState([]);
-  const [institution, setInstitution] = useState("");
+  const [institutions, setInstitutions] = useState([]);
+  const [selectedInstitution, setSelectedInstitution] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Зареждане на институции
   useEffect(() => {
-    api
-      .get("/admin/reports")
-      .then((res) => {
-        console.log("ADMIN REPORTS:", res.data);
-        setReports(res.data);
-      })
-      .catch((err) => {
-        console.error("Error loading admin reports:", err);
-      })
-      .finally(() => setLoading(false));
+    api.get("/institutions").then((res) => {
+      setInstitutions(res.data);
+    });
   }, []);
 
+  // Зареждане на репорти
+  const loadReports = () => {
+    setLoading(true);
+
+    const url = selectedInstitution
+      ? `/admin/reports?institutionId=${selectedInstitution}`
+      : `/admin/reports`;
+
+    api
+      .get(url)
+      .then((res) => setReports(res.data))
+      .catch((err) => console.error("Error loading admin reports:", err))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadReports();
+  }, [selectedInstitution]);
+
   const sendToInstitution = async (id) => {
-    if (!institution) {
-      alert("Please select an institution first!");
+    if (!selectedInstitution) {
+      alert("Select an institution first.");
       return;
     }
 
-    try {
-      const res = await api.patch(`/admin/reports/${id}/send`, {
-        institution,
-      });
+    await api.patch(`/admin/reports/${id}/send`, {
+      institutionId: Number(selectedInstitution)
+    });
 
-      // Понеже след изпращане не искаме да го виждаме тук (Sent),
-      // го махаме от списъка:
-      setReports((prev) => prev.filter((r) => r.id !== id));
-    } catch (err) {
-      console.error("Error sending report:", err);
-      alert("Error sending report");
-    }
+    loadReports();
   };
 
   const markResolved = async (id) => {
-    try {
-      const res = await api.patch(`/admin/reports/${id}/resolve`);
-
-      // Resolved репортите също не се показват в този списък:
-      setReports((prev) => prev.filter((r) => r.id !== id));
-    } catch (err) {
-      console.error("Error resolving report:", err);
-      alert("Error resolving report");
-    }
+    await api.patch(`/admin/reports/${id}/resolve`);
+    loadReports();
   };
 
-  if (loading) {
-    return <div style={{ padding: "20px" }}>Loading...</div>;
-  }
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div style={{ padding: "20px" }}>
       <h2>Admin Panel</h2>
 
-      <h4>Select Institution</h4>
+      <h4>Filter / Send by institution</h4>
       <select
-        value={institution}
-        onChange={(e) => setInstitution(e.target.value)}
+        value={selectedInstitution}
+        onChange={(e) => setSelectedInstitution(e.target.value)}
         style={{ marginBottom: "20px", padding: "5px" }}
       >
-        <option value="">-- Select Institution --</option>
-        <option value="Municipality">Municipality</option>
-        <option value="Road Department">Road Department</option>
-        <option value="Waste Management">Waste Management</option>
-        <option value="Traffic Control">Traffic Control</option>
+        <option value="">-- All institutions --</option>
+        {institutions.map((inst) => (
+          <option key={inst.id} value={inst.id}>
+            {inst.name}
+          </option>
+        ))}
       </select>
 
-      {reports.length === 0 && (
-        <p>No pending reports. 🎉</p>
-      )}
-
-      {reports.map((r) => (
-        <div
-          key={r.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        >
-          <h3>{r.title}</h3>
-          <p>{r.description}</p>
-          <p>
-            <strong>Category:</strong> {r.category}
-          </p>
-          <p>
-            <strong>User:</strong> {r.user?.name} ({r.user?.email})
-          </p>
-          <p>
-            <strong>Status:</strong> {r.status || "Pending"}
-          </p>
-          {r.institution && (
-            <p>
-              <strong>Institution:</strong> {r.institution}
-            </p>
-          )}
-
-          <button
-            onClick={() => sendToInstitution(r.id)}
-            style={{ marginRight: "10px" }}
+      {reports.length === 0 ? (
+        <p>No reports for this institution.</p>
+      ) : (
+        reports.map((r) => (
+          <div
+            key={r.id}
+            style={{
+              border: "1px solid #ccc",
+              padding: "10px",
+              marginBottom: "10px"
+            }}
           >
-            Send to Institution
-          </button>
-          <button onClick={() => markResolved(r.id)}>Mark Resolved</button>
-        </div>
-      ))}
+            <h3>{r.title}</h3>
+            <p>{r.description}</p>
+            <p><b>Category:</b> {r.category}</p>
+            <p><b>User:</b> {r.user?.name}</p>
+            <p><b>Status:</b> {r.status || "Pending"}</p>
+            <p><b>Institution:</b> {r.institutionRecord?.name || "None"}</p>
 
-      <a href="/admin/resolved">See Resolved Reports →</a>
+            <button onClick={() => sendToInstitution(r.id)} style={{ marginRight: "10px" }}>
+              Send
+            </button>
+
+            <button onClick={() => markResolved(r.id)}>Resolve</button>
+          </div>
+        ))
+      )}
     </div>
   );
 }

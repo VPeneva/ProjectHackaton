@@ -7,19 +7,24 @@ const router = express.Router();
 
 /**
  * Всички репорти, които НЕ са изпратени и НЕ са оправени
- * Тоест статусът им не е "Sent" и не е "Resolved"
+ * + ФИЛТЪР по institutionId (ако е подаден)
  */
 router.get("/reports", authMiddleware, isAdmin, async (req, res) => {
+  const { institutionId } = req.query;
+
   try {
     const reports = await prisma.report.findMany({
       where: {
-        OR: [
-          { status: null },
-          { status: { notIn: ["Sent", "Resolved"] } }, // Pending и др.
-        ],
+        AND: [
+          { status: { notIn: ["Sent", "Resolved"] } },
+          institutionId ? { institutionId: Number(institutionId) } : {}
+        ]
       },
-      include: { user: true },
-      orderBy: { createdAt: "desc" },
+      include: {
+        user: true,
+        institutionRecord: true  // <- институцията
+      },
+      orderBy: { createdAt: "desc" }
     });
 
     res.json(reports);
@@ -30,78 +35,48 @@ router.get("/reports", authMiddleware, isAdmin, async (req, res) => {
 });
 
 /**
- * Всички ОПРАВЕНИ репорти
+ * Изпратени към институция
  */
-router.get("/reports/resolved", authMiddleware, isAdmin, async (req, res) => {
+router.patch("/reports/:id/send", authMiddleware, isAdmin, async (req, res) => {
+  const { institutionId } = req.body;
+
+  if (!institutionId) {
+    return res.status(400).json({ error: "institutionId is required" });
+  }
+
   try {
-    const reports = await prisma.report.findMany({
-      where: { status: "Resolved" },
-      include: { user: true },
-      orderBy: { createdAt: "desc" },
+    const updated = await prisma.report.update({
+      where: { id: Number(req.params.id) },
+      data: {
+        status: "Sent",
+        institutionId: Number(institutionId)
+      },
+      include: { user: true, institutionRecord: true }
     });
 
-    res.json(reports);
+    res.json(updated);
   } catch (err) {
-    console.error("Error fetching resolved reports:", err);
-    res.status(500).json({ error: "Failed to fetch resolved reports" });
+    console.error("Error sending report:", err);
+    res.status(500).json({ error: "Failed to send report" });
   }
 });
 
 /**
- * Изпращане към институция → статус става "Sent"
+ * Маркиране като оправен
  */
-router.patch(
-  "/reports/:id/send",
-  authMiddleware,
-  isAdmin,
-  async (req, res) => {
-    const { institution } = req.body;
+router.patch("/reports/:id/resolve", authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const updated = await prisma.report.update({
+      where: { id: Number(req.params.id) },
+      data: { status: "Resolved" },
+      include: { user: true, institutionRecord: true }
+    });
 
-    if (!institution) {
-      return res.status(400).json({ error: "Institution is required" });
-    }
-
-    try {
-      const updated = await prisma.report.update({
-        where: { id: parseInt(req.params.id, 10) },
-        data: {
-          status: "Sent",
-          institution,
-        },
-        include: { user: true },
-      });
-
-      res.json(updated);
-    } catch (err) {
-      console.error("Error sending report:", err);
-      res.status(500).json({ error: "Failed to send report" });
-    }
+    res.json(updated);
+  } catch (err) {
+    console.error("Error resolving report:", err);
+    res.status(500).json({ error: "Failed to resolve report" });
   }
-);
-
-/**
- * Маркиране като оправен → статус "Resolved"
- */
-router.patch(
-  "/reports/:id/resolve",
-  authMiddleware,
-  isAdmin,
-  async (req, res) => {
-    try {
-      const updated = await prisma.report.update({
-        where: { id: parseInt(req.params.id, 10) },
-        data: {
-          status: "Resolved",
-        },
-        include: { user: true },
-      });
-
-      res.json(updated);
-    } catch (err) {
-      console.error("Error resolving report:", err);
-      res.status(500).json({ error: "Failed to resolve report" });
-    }
-  }
-);
+});
 
 export default router;

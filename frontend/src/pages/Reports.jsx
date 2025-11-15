@@ -1,75 +1,66 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  CssBaseline,
+  Stack,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+
+const PageContainer = styled(Stack)(({ theme }) => ({
+  minHeight: "100vh",
+  padding: theme.spacing(3),
+  backgroundColor: theme.vars.palette.background.default,
+  color: theme.vars.palette.text.primary,
+}));
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
 
   useEffect(() => {
-    api.get("/reports").then((res) => {
-      console.log("REPORTS:", res.data);
-      setReports(res.data);
-    }).catch(err => {
-      console.error("Error loading reports:", err);
-    });
+    api.get("/reports").then((res) => setReports(res.data));
   }, []);
 
-  const renderStatus = (report) => {
-    if (report.status === "Sent") {
-      return (
-        <span>
-          Изпратено към{" "}
-          <strong>{report.institution?.name || "няма институция"}</strong>{" "}
-          (в процес на отстраняване)
-        </span>
-      );
-    }
-
-    if (report.status === "Resolved") {
-      return <span>Проблемът е <strong>отстранен</strong>.</span>;
-    }
-
-    return <span>Очаква обработка</span>;
-  };
-
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Reports</h2>
+    <>
+      <CssBaseline enableColorScheme />
 
-      {reports.length === 0 && <p>Няма репорти.</p>}
+      <PageContainer>
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          Reports
+        </Typography>
 
-      {reports.map((r) => (
-        <div
-          key={r.id}
-          style={{
-            padding: "10px",
-            margin: "10px 0",
-            border: "1px solid #ccc",
-          }}
-        >
-          <h3>{r.title}</h3>
+        <Stack spacing={2}>
+          {reports.map((r) => (
+            <Card key={r.id} variant="outlined">
+              <CardContent>
+                <Typography variant="h6">{r.title}</Typography>
 
-          {r.description && <p>{r.description}</p>}
+                {r.description && (
+                  <Typography sx={{ mt: 1 }}>{r.description}</Typography>
+                )}
 
-          <p>
-            <strong>Category:</strong>{" "}
-            {r.category?.name || "Няма категория"}
-          </p>
+                <Typography sx={{ mt: 1 }}>
+                  <strong>Category:</strong> {r.category || "N/A"}
+                </Typography>
 
-          <p>
-            <strong>Institution:</strong>{" "}
-            {r.institution?.name || "Няма институция"}
-          </p>
+                {r.institution && (
+                  <Typography>
+                    <strong>Institution:</strong> {r.institution.name}
+                  </Typography>
+                )}
 
-          <p>
-            <strong>Reported by:</strong>{" "}
-            {r.user?.name || "Unknown"}
-          </p>
-
-          <p>
-            <strong>Status:</strong> {renderStatus(r)}
-          </p>
-        </div>
-      ))}
-    </div>
+                <Typography sx={{ mt: 1, fontSize: "0.9rem", opacity: 0.7 }}>
+                  Created by: {r.user?.name || "Unknown"}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      </PageContainer>
+    </>
   );
 }

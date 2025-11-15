@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useContext } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
@@ -9,14 +10,16 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
+import CheckIcon from "@mui/icons-material/Check";
 
 import { AuthContext } from "../context/AuthContext";
 import { ColorModeContext } from "../theme/ThemeProvider";
 
 // --- Styled Components ---
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: theme.vars.palette.background.paper,
-  borderBottom: `1px solid ${theme.vars.palette.divider}`,
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
+  borderBottom: `1px solid ${theme.palette.divider}`,
   boxShadow: "none",
 }));
 
@@ -31,12 +34,25 @@ const AppBarInner = styled(Box)(({ theme }) => ({
 }));
 
 export default function AppAppBar() {
-  const { user, logout } = React.useContext(AuthContext);
-  const { mode, setMode } = React.useContext(ColorModeContext);
+  const auth = useContext(AuthContext);
+  const colorMode = useContext(ColorModeContext);
+
+  // ако по някаква причина няма AuthProvider – не крашваме
+  if (!auth) return null;
+  if (!colorMode) return null;
+
+  const { user, logout } = auth;
+  const { mode, setMode } = colorMode;
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const handleOpen = (e) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
+
+  const modeLabel = {
+    light: "Light mode",
+    dark: "Dark mode",
+    system: "System default",
+  }[mode];
 
   return (
     <StyledAppBar position="static">
@@ -68,21 +84,63 @@ export default function AppAppBar() {
           )}
 
           {/* Right Side */}
-          <Box sx={{ marginLeft: "auto", display: "flex", gap: 2, alignItems: "center" }}>
+          <Box
+            sx={{
+              marginLeft: "auto",
+              display: "flex",
+              gap: 2,
+              alignItems: "center",
+            }}
+          >
+            {/* Текущ режим (малък текст) */}
+            <Box sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
+              {modeLabel}
+            </Box>
+
             {/* THEME SWITCHER */}
-            <IconButton onClick={handleOpen} color="inherit">
+            <IconButton onClick={handleOpen} color="inherit" size="small">
               <Brightness4Icon />
             </IconButton>
 
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-              <MenuItem onClick={() => { setMode("light"); handleClose(); }}>
-                Light Mode
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem
+                onClick={() => {
+                  setMode("light");
+                  handleClose();
+                }}
+              >
+                {mode === "light" && (
+                  <CheckIcon fontSize="small" style={{ marginRight: 8 }} />
+                )}
+                Light
               </MenuItem>
-              <MenuItem onClick={() => { setMode("dark"); handleClose(); }}>
-                Dark Mode
+
+              <MenuItem
+                onClick={() => {
+                  setMode("dark");
+                  handleClose();
+                }}
+              >
+                {mode === "dark" && (
+                  <CheckIcon fontSize="small" style={{ marginRight: 8 }} />
+                )}
+                Dark
               </MenuItem>
-              <MenuItem onClick={() => { setMode("system"); handleClose(); }}>
-                System Default
+
+              <MenuItem
+                onClick={() => {
+                  setMode("system");
+                  handleClose();
+                }}
+              >
+                {mode === "system" && (
+                  <CheckIcon fontSize="small" style={{ marginRight: 8 }} />
+                )}
+                System
               </MenuItem>
             </Menu>
 

@@ -1,45 +1,48 @@
-import * as React from "react";
-import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
-import { useState, useMemo } from "react";
+import React, { createContext, useMemo, useState, useEffect } from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 
-export const ColorModeContext = React.createContext({
-  mode: "system",
-  setMode: () => {},
+export const ColorModeContext = createContext({
+  mode: "system",         // "light" | "dark" | "system"
+  setMode: () => {},      // setter
 });
 
 export default function AppThemeProvider({ children }) {
   const [mode, setMode] = useState(
-    localStorage.getItem("themeMode") || "system"
+    localStorage.getItem("theme") || "system"
   );
 
-  const colorMode = useMemo(
+  useEffect(() => {
+    localStorage.setItem("theme", mode);
+  }, [mode]);
+
+  const prefersDark = typeof window !== "undefined"
+    ? window.matchMedia("(prefers-color-scheme: dark)").matches
+    : false;
+
+  const effectiveMode =
+    mode === "system" ? (prefersDark ? "dark" : "light") : mode;
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: effectiveMode,
+        },
+      }),
+    [effectiveMode]
+  );
+
+  const colorModeValue = useMemo(
     () => ({
       mode,
-      setMode: (newMode) => {
-        localStorage.setItem("themeMode", newMode);
-        setMode(newMode);
-      },
+      setMode,
     }),
     [mode]
   );
 
-  const theme = useMemo(() => {
-    let finalMode = mode;
-
-    if (mode === "system") {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      finalMode = prefersDark ? "dark" : "light";
-    }
-
-    return createTheme({
-      palette: {
-        mode: finalMode,
-      },
-    });
-  }, [mode]);
-
   return (
-    <ColorModeContext.Provider value={colorMode}>
+    <ColorModeContext.Provider value={colorModeValue}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}

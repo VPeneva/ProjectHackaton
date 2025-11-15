@@ -1,17 +1,60 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  CssBaseline,
+  Divider,
+  FormControl,
+  FormLabel,
+  MenuItem,
+  Select,
+  Stack,
+  Typography,
+} from "@mui/material";
+
+import { styled } from "@mui/material/styles";
+
+const PageContainer = styled(Stack)(({ theme }) => ({
+  minHeight: "100vh",
+  padding: theme.spacing(4),
+  backgroundColor: theme.palette.background.default,
+  backgroundImage:
+    theme.palette.mode === "dark"
+      ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.4), hsl(220, 30%, 5%))"
+      : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
+  backgroundRepeat: "no-repeat",
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  width: "100%",
+  maxWidth: "900px",
+  margin: "0 auto",
+  padding: theme.spacing(3),
+  borderRadius: "14px",
+  ...theme.applyStyles?.("dark", {
+    boxShadow:
+      "hsla(220, 30%, 5%, 0.4) 0px 5px 15px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
+  }),
+}));
+
+const ReportCard = styled(Card)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: "10px",
+}));
+
 export default function Admin() {
   const [reports, setReports] = useState([]);
   const [institutions, setInstitutions] = useState([]);
   const [selectedInstitution, setSelectedInstitution] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Зареждане на институции
   useEffect(() => {
-    api.get("/institutions").then((res) => {
-      setInstitutions(res.data);
-    });
+    api.get("/institutions").then((res) => setInstitutions(res.data));
   }, []);
 
   const loadReports = () => {
@@ -23,13 +66,8 @@ export default function Admin() {
 
     api
       .get(url)
-      .then((res) => {
-        console.log("ADMIN REPORTS:", res.data);
-        setReports(res.data);
-      })
-      .catch((err) => {
-        console.error("Error loading admin reports:", err);
-      })
+      .then((res) => setReports(res.data))
+      .catch((err) => console.error("Error loading admin reports:", err))
       .finally(() => setLoading(false));
   };
 
@@ -55,71 +93,98 @@ export default function Admin() {
     loadReports();
   };
 
-  if (loading) {
-    return <div style={{ padding: "20px" }}>Loading...</div>;
-  }
-
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Admin Panel</h2>
+    <>
+      <CssBaseline />
 
-      <h4>Filter / Send by institution</h4>
-      <select
-        value={selectedInstitution}
-        onChange={(e) => setSelectedInstitution(e.target.value)}
-        style={{ marginBottom: "20px", padding: "5px" }}
-      >
-        <option value="">-- All institutions --</option>
-        {institutions.map((inst) => (
-          <option key={inst.id} value={inst.id}>
-            {inst.name}
-          </option>
-        ))}
-      </select>
+      <PageContainer spacing={3}>
+        <StyledCard variant="outlined">
+          <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
+            Admin Panel
+          </Typography>
 
-      {reports.length === 0 ? (
-        <p>No reports for this institution.</p>
-      ) : (
-        reports.map((r) => (
-          <div
-            key={r.id}
-            style={{
-              border: "1px solid #ccc",
-              padding: "10px",
-              marginBottom: "10px",
-            }}
-          >
-            <h3>{r.title}</h3>
-            {r.description && <p>{r.description}</p>}
+          <Divider sx={{ mb: 3 }} />
 
-            <p>
-              <strong>Category:</strong>{" "}
-              {r.category?.name || "Няма категория"}
-            </p>
-
-            <p>
-              <strong>Institution:</strong>{" "}
-              {r.institution?.name || "Няма институция"}
-            </p>
-
-            <p>
-              <strong>User:</strong> {r.user?.name} ({r.user?.email})
-            </p>
-
-            <p>
-              <strong>Status:</strong> {r.status || "Pending"}
-            </p>
-
-            <button
-              onClick={() => sendToInstitution(r.id)}
-              style={{ marginRight: "10px" }}
+          {/* Institution Filter */}
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <FormLabel>Select Institution</FormLabel>
+            <Select
+              value={selectedInstitution}
+              onChange={(e) => setSelectedInstitution(e.target.value)}
             >
-              Send
-            </button>
-            <button onClick={() => markResolved(r.id)}>Resolve</button>
-          </div>
-        ))
-      )}
-    </div>
+              <MenuItem value="">All institutions</MenuItem>
+              {institutions.map((inst) => (
+                <MenuItem key={inst.id} value={inst.id}>
+                  {inst.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Loading state */}
+          {loading && (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <CircularProgress />
+            </Box>
+          )}
+
+          {/* No reports */}
+          {!loading && reports.length === 0 && (
+            <Typography>No reports for this institution.</Typography>
+          )}
+
+          {/* Report list */}
+          <Stack spacing={2}>
+            {reports.map((r) => (
+              <ReportCard variant="outlined" key={r.id}>
+                <CardContent>
+                  <Typography variant="h6">{r.title}</Typography>
+
+                  {r.description && (
+                    <Typography sx={{ mt: 1 }}>{r.description}</Typography>
+                  )}
+
+                  <Typography sx={{ mt: 1 }}>
+                    <strong>Category:</strong>{" "}
+                    {r.category?.name || "No category"}
+                  </Typography>
+
+                  <Typography>
+                    <strong>Institution:</strong>{" "}
+                    {r.institution?.name || "No institution"}
+                  </Typography>
+
+                  <Typography sx={{ mt: 1 }}>
+                    <strong>User:</strong> {r.user?.name} ({r.user?.email})
+                  </Typography>
+
+                  <Typography sx={{ mt: 1 }}>
+                    <strong>Status:</strong> {r.status || "Pending"}
+                  </Typography>
+
+                  <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => sendToInstitution(r.id)}
+                    >
+                      Send
+                    </Button>
+
+                      <Button
+                      variant="contained"
+                      color="success"
+                      onClick={() => markResolved(r.id)}
+                    >
+                      Resolve
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </ReportCard>
+            ))}
+          </Stack>
+        </StyledCard>
+      </PageContainer>
+    </>
   );
 }

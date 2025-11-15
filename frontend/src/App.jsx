@@ -14,6 +14,7 @@ import ManageCategories from "./pages/ManageCategories";
 import AppAppBar from "./components/AppAppBar";
 import AppTheme from "./shared-theme/AppTheme";
 import SignIn from "./pages/SignIn";
+import Footer from "./components/Footer";
 
 
 function App(props) {
@@ -37,6 +38,8 @@ function App(props) {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/admin/categories" element={<ProtectedAdminRoute> <ManageCategories /> </ProtectedAdminRoute>} />
         </Routes>
+
+        <Footer />
       </BrowserRouter>
     </AppTheme>
   );

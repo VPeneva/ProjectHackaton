@@ -7,6 +7,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import CreateReport from "./pages/CreateReport";
 import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import ManageInstitutions from "./pages/ManageInstitutions";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 
 function App() {
@@ -20,6 +22,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/create" element={ <ProtectedRoute> <CreateReport /> </ProtectedRoute> } />
         <Route path="/admin" element={ <ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute> }/>
+        <Route path="/admin/institutions"element={<ProtectedAdminRoute><ManageInstitutions /></ProtectedAdminRoute>}/>
       </Routes>
     </BrowserRouter>
   );

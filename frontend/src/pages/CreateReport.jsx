@@ -1,83 +1,42 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import api from "../services/api";
 
 export default function CreateReport() {
-  const navigate = useNavigate();
+  const [institutions, setInstitutions] = useState([]);
+  const [institutionId, setInstitutionId] = useState(null);
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [lat, setLat] = useState("");
-  const [lng, setLng] = useState("");
+  useEffect(() => {
+    api.get("/institutions").then((res) => {
+      setInstitutions(res.data);
+    });
+  }, []);
 
-  const submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      await api.post("/reports", {
-        title,
-        description,
-        category,
-        lat,
-        lng
-      });
+    await api.post("/reports", {
+      title,
+      description,
+      category,
+      lat,
+      lng,
+      institutionId, // <-- вече изпращаме ID
+    });
 
-      alert("Report created!");
-      navigate("/");
-    } catch (err) {
-      alert("Error creating report");
-      console.error(err);
-    }
+    alert("Report created!");
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Create Report</h2>
-
-      <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", maxWidth: "300px" }}>
-        <input
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          style={{ marginBottom: "10px" }}
-        />
-
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-          style={{ marginBottom: "10px" }}
-        />
-
-        <input
-          placeholder="Category (e.g. Road, Lighting)"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
-          style={{ marginBottom: "10px" }}
-        />
-
-        <input
-          placeholder="Latitude"
-          value={lat}
-          onChange={(e) => setLat(e.target.value)}
-          required
-          style={{ marginBottom: "10px" }}
-        />
-
-        <input
-          placeholder="Longitude"
-          value={lng}
-          onChange={(e) => setLng(e.target.value)}
-          required
-          style={{ marginBottom: "10px" }}
-        />
-
-        <button type="submit">Submit</button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <label>Institution:</label>
+      <select onChange={(e) => setInstitutionId(parseInt(e.target.value))}>
+        <option value="">-- Select Institution --</option>
+        {institutions.map((i) => (
+          <option key={i.id} value={i.id}>{i.name}</option>
+        ))}
+      </select>
+      {/* Останалите полета */}
+      <button type="submit">Create</button>
+    </form>
   );
 }

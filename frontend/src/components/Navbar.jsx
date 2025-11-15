@@ -18,20 +18,28 @@ export default function Navbar() {
       {/* Always visible */}
       <Link to="/">Reports</Link>
 
-      {/* Visible only if logged in */}
+      {/* Logged-in users can create reports */}
       {user && (
         <Link to="/create" style={{ marginLeft: "10px" }}>
           Create Report
         </Link>
       )}
 
-      {/* Visible only for admin */}
+      {/* ADMIN ONLY: Admin Panel */}
       {user && user.role === "ADMIN" && (
-        <Link to="/admin" style={{ marginLeft: "10px", fontWeight: "bold" }}>
+        <Link to="/admin" style={{ marginLeft: "10px" }}>
           Admin Panel
         </Link>
       )}
 
+      {/* ADMIN ONLY: Institutions management */}
+      {user && user.role === "ADMIN" && (
+        <Link to="/admin/institutions" style={{ marginLeft: "10px" }}>
+          Institutions
+        </Link>
+      )}
+
+      {/* Right side (auth section) */}
       <div style={{ marginLeft: "auto" }}>
         {user ? (
           <>

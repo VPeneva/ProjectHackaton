@@ -22,6 +22,11 @@ enum Role {
   ADMIN
 }
 
+model Institution {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  reports Report[]
+}
 
 model Report {
   id          Int       @id @default(autoincrement())
@@ -30,8 +35,10 @@ model Report {
   lat         Float
   lng         Float
   category    String
+  status      String    @default("Pending")
+  institutionId Int?    
+  institution   Institution? @relation(fields: [institutionId], references: [id])
   userId      Int
   user        User      @relation(fields: [userId], references: [id])
   createdAt   DateTime  @default(now())
-  /// where the problem is found cordinates on the map.
 }

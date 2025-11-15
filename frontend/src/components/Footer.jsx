@@ -130,11 +130,11 @@ export default function Footer() {
           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
             Legal
           </Typography>
-          <Link color="text.secondary" variant="body2" href="#">
+          <Link color="text.secondary" variant="body2" href="/terms">
             Terms
           </Link>
-          <Link color="text.secondary" variant="body2" href="#">
-            Privacy
+          <Link color="text.secondary" variant="body2" href="/privacy">
+            Privacy Policy
           </Link>
           <Link color="text.secondary" variant="body2" href="#">
             Contact us

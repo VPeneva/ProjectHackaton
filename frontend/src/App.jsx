@@ -15,7 +15,9 @@ import ManageInstitutions from "./pages/ManageInstitutions";
 import ManageCategories from "./pages/ManageCategories";
 import ResolvedReports from "./pages/ResolvedReports";
 import BasePage from "./pages/BasePage";
-import About from "./pages/About";
+import About from "./pages/AboutUs";
+import Terms from "./pages/TermsOfService"
+import Privacy from "./pages/Legal"
 
 import ReportDetails from "./pages/ReportDetails";
 
@@ -33,9 +35,17 @@ function App() {
 
         <Route path="/basepage" element={<BasePage />} />
 
-        <Route path="/about" element={<About />} />
-
-        <Route path="/create" element={<ProtectedRoute><CreateReport /></ProtectedRoute>}/>
+        <Route path="/aboutus" element={<About />} />
+        <Route path="/terms" element={<Terms/>} />
+        <Route path="/privacy" element={<Privacy/>} />
+        <Route
+          path="/create"
+          element={
+            <ProtectedRoute>
+              <CreateReport />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/admin"

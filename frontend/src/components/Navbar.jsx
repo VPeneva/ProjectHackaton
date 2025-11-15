@@ -9,7 +9,7 @@ export default function Navbar() {
     <nav
       style={{
         padding: "10px",
-        background: "#ececec",
+        background: "#000000ff",
         display: "flex",
         alignItems: "center",
         gap: "15px",

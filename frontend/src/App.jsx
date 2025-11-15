@@ -15,7 +15,7 @@ import ManageInstitutions from "./pages/ManageInstitutions";
 import ManageCategories from "./pages/ManageCategories";
 import ResolvedReports from "./pages/ResolvedReports";
 import BasePage from "./pages/BasePage";
-import About from "./pages/About";
+import About from "./pages/AboutUs";
 import Map from "./pages/Map";
 import Terms from "./pages/TermsOfService"
 import Privacy from "./pages/Legal"

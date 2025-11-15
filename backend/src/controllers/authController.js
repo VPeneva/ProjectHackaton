@@ -39,9 +39,6 @@ export const register = async (req, res) => {
   }
 };
 
-
-
-
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -68,3 +65,28 @@ export const login = async (req, res) => {
     res.status(500).json({ error: "Server error", message: err.message });
   }
 };
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  // SECURITY: Always return success to avoid email enumeration
+  const fakeSuccessMessage = {
+    message: "If this email exists, a reset link has been sent."
+  };
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Prevent attackers from checking which emails are valid
+    if (!user) return res.json(fakeSuccessMessage);
+
+    // TODO: send email here — for now we just simulate
+    console.log("Password reset requested for:", email);
+
+    return res.json(fakeSuccessMessage);
+  } catch (err) {
+    console.error(err);
+    return res.json(fakeSuccessMessage); // still fake-success
+  }
+};
+

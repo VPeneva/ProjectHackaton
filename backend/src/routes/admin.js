@@ -6,8 +6,9 @@ import prisma from "../db/client.js";
 const router = express.Router();
 
 /**
- * Всички репорти, които НЕ са изпратени и НЕ са оправени
- * + ФИЛТЪР по institutionId (ако е подаден)
+ * GET /admin/reports
+ * Всички НЕрешени репорти (Pending или Sent),
+ * с възможност за филтър по institutionId
  */
 router.get("/reports", authMiddleware, isAdmin, async (req, res) => {
   const { institutionId } = req.query;
@@ -16,15 +17,15 @@ router.get("/reports", authMiddleware, isAdmin, async (req, res) => {
     const reports = await prisma.report.findMany({
       where: {
         AND: [
-          { status: { notIn: ["Sent", "Resolved"] } },
+          { status: { not: "FINISHED" } },   // ❗ показва само активни репорти
           institutionId ? { institutionId: Number(institutionId) } : {}
         ]
       },
       include: {
-  user: true,
-  institution: true,
-  category: true,
-},
+        user: true,
+        institution: true,
+        category: true,
+      },
       orderBy: { createdAt: "desc" }
     });
 
@@ -36,7 +37,8 @@ router.get("/reports", authMiddleware, isAdmin, async (req, res) => {
 });
 
 /**
- * Изпратени към институция
+ * PATCH /admin/reports/:id/send
+ * Изпраща репорт към институция + променя статус на "SENT"
  */
 router.patch("/reports/:id/send", authMiddleware, isAdmin, async (req, res) => {
   const { institutionId } = req.body;
@@ -49,10 +51,14 @@ router.patch("/reports/:id/send", authMiddleware, isAdmin, async (req, res) => {
     const updated = await prisma.report.update({
       where: { id: Number(req.params.id) },
       data: {
-        status: "Sent",
-        institutionId: Number(institutionId)
+        status: "SENT",
+        institutionId: Number(institutionId),
       },
-      include: { user: true, institutionRecord: true }
+      include: {
+        user: true,
+        institution: true,
+        category: true,
+      },
     });
 
     res.json(updated);
@@ -63,20 +69,48 @@ router.patch("/reports/:id/send", authMiddleware, isAdmin, async (req, res) => {
 });
 
 /**
- * Маркиране като оправен
+ * PATCH /admin/reports/:id/resolve
+ * Маркира репорт като Finished
  */
 router.patch("/reports/:id/resolve", authMiddleware, isAdmin, async (req, res) => {
   try {
     const updated = await prisma.report.update({
       where: { id: Number(req.params.id) },
-      data: { status: "Resolved" },
-      include: { user: true, institutionRecord: true }
+      data: { status: "FINISHED" },
+      include: {
+        user: true,
+        institution: true,
+        category: true,
+      },
     });
 
     res.json(updated);
   } catch (err) {
     console.error("Error resolving report:", err);
     res.status(500).json({ error: "Failed to resolve report" });
+  }
+});
+
+/**
+ * GET /admin/resolved
+ * Всички репорти със статус FINISHED
+ */
+router.get("/resolved", authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const reports = await prisma.report.findMany({
+      where: { status: "FINISHED" },
+      include: {
+        user: true,
+        institution: true,
+        category: true,
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json(reports);
+  } catch (err) {
+    console.error("Error fetching resolved reports:", err);
+    res.status(500).json({ error: "Failed to fetch resolved reports" });
   }
 });
 

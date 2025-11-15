@@ -98,6 +98,12 @@ export default function Admin() {
     loadReports();
   };
 
+  // 🟦 Dynamic label calculation
+  const selectedInstitutionLabel =
+    selectedInstitution
+      ? institutions.find(i => i.id === Number(selectedInstitution))?.name || "All Institutions"
+      : "All Institutions";
+
   return (
     <>
       <CssBaseline />
@@ -113,11 +119,16 @@ export default function Admin() {
           {/* Institution Filter */}
           <FormControl fullWidth sx={{ mb: 3 }}>
             <FormLabel>Select Institution</FormLabel>
+
             <Select
               value={selectedInstitution}
+              displayEmpty
               onChange={(e) => setSelectedInstitution(e.target.value)}
+              renderValue={() => selectedInstitutionLabel}
             >
-              <MenuItem value="">All institutions</MenuItem>
+              {/* Allows user to reset to "all" */}
+              <MenuItem value="">All Institutions</MenuItem>
+
               {institutions.map((inst) => (
                 <MenuItem key={inst.id} value={inst.id}>
                   {inst.name}
@@ -126,7 +137,7 @@ export default function Admin() {
             </Select>
           </FormControl>
 
-          {/* Loading state */}
+          {/* Loading */}
           {loading && (
             <Box sx={{ textAlign: "center", py: 4 }}>
               <CircularProgress />
@@ -138,7 +149,7 @@ export default function Admin() {
             <Typography>No reports for this institution.</Typography>
           )}
 
-          {/* Report list */}
+          {/* Reports */}
           <Stack spacing={2}>
             {reports.map((r) => (
               <ReportCard variant="outlined" key={r.id}>
@@ -150,13 +161,11 @@ export default function Admin() {
                   )}
 
                   <Typography sx={{ mt: 1 }}>
-                    <strong>Category:</strong>{" "}
-                    {r.category?.name || "No category"}
+                    <strong>Category:</strong> {r.category?.name || "No category"}
                   </Typography>
 
                   <Typography>
-                    <strong>Institution:</strong>{" "}
-                    {r.institution?.name || "No institution"}
+                    <strong>Institution:</strong> {r.institution?.name || "No institution"}
                   </Typography>
 
                   <Typography sx={{ mt: 1 }}>
@@ -176,7 +185,7 @@ export default function Admin() {
                       Send
                     </Button>
 
-                      <Button
+                    <Button
                       variant="contained"
                       color="success"
                       onClick={() => markResolved(r.id)}

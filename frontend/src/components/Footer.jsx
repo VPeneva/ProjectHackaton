@@ -152,19 +152,23 @@ export default function Footer() {
           borderColor: 'divider',
         }}
       >
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Typography color="text.secondary" variant="body2">
-            We won't sell your kidneys
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.5 }}>
-            •
-          </Typography>
-          <Typography color="text.secondary" variant="body2">
-            We promise
-          </Typography>
+        <div>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography color="text.secondary" variant="body2">
+              We won't sell your kidneys
+            </Typography>
+
+            <Typography variant="body2" sx={{ opacity: 0.5 }}>
+              •
+            </Typography>
+
+            <Typography color="text.secondary" variant="body2">
+              We promise
+            </Typography>
+          </Stack>
 
           <Copyright />
-        </Stack>
+        </div>
 
         <Stack
           direction="row"

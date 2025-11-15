@@ -21,10 +21,12 @@ import SignIn from "./pages/SignIn";
 import Footer from "./components/Footer";
 import AppTheme from "./shared-theme/AppTheme";
 import AppAppBar from "./components/AppAppBar";
+import { CssBaseline } from "@mui/material";
 
 function App(props) {
   return (
     <AppTheme {...props}>
+      <CssBaseline enableColorScheme />
       <BrowserRouter>
         <AppAppBar />
         {/* <Navbar /> */}

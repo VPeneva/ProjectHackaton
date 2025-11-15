@@ -62,8 +62,8 @@ export default function Reports() {
                 {/* VIEW MORE BUTTON */}
                 <Button
                   variant="contained"
-                  size="small"
-                  sx={{ mt: 10, float: "right" }}
+                  size="medium"
+                  sx={{ mt: 1,mr: 2, mb: 3, float: "right" }}
                   component={Link}
                   to={`/report/${r.id}`}
                 >

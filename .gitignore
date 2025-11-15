@@ -14,6 +14,7 @@ dist/
 .env
 .env.local
 .env.*.local
+smartcity-project/frontend/src/services/api.js
 
 # Logs
 logs

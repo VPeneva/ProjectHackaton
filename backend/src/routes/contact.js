@@ -5,12 +5,15 @@ import { isAdmin } from "../middleware/isAdmin.js";
 
 const router = express.Router();
 
-// --- USER SENDS MESSAGE ---
+/**
+ * Submit contact message (PUBLIC)
+ */
 router.post("/", async (req, res) => {
   const { name, email, message } = req.body;
 
-  if (!name || !email || !message)
+  if (!name || !email || !message) {
     return res.status(400).json({ error: "All fields are required" });
+  }
 
   try {
     const saved = await prisma.contactMessage.create({
@@ -19,12 +22,14 @@ router.post("/", async (req, res) => {
 
     res.json({ success: true, saved });
   } catch (err) {
-    console.error("Contact message error:", err);
+    console.error("Error saving contact message:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// --- ADMIN GET ALL MESSAGES ---
+/**
+ * Admin: get all messages
+ */
 router.get("/", authMiddleware, isAdmin, async (req, res) => {
   try {
     const messages = await prisma.contactMessage.findMany({
@@ -33,7 +38,7 @@ router.get("/", authMiddleware, isAdmin, async (req, res) => {
 
     res.json(messages);
   } catch (err) {
-    console.error("Admin contact fetch error:", err);
+    console.error("Error fetching contact messages:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

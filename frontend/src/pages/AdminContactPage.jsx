@@ -11,9 +11,9 @@ import {
 export default function AdminContactMessages() {
   const [messages, setMessages] = useState([]);
 
-  useEffect(() => {
-    api.get("/contact").then((res) => setMessages(res.data));
-  }, []);
+    useEffect(() => {
+        api.get("/contact").then((res) => setMessages(res.data));
+    }, []);
 
   return (
     <div style={{ padding: 20 }}>

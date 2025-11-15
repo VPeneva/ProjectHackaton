@@ -83,6 +83,9 @@ export default function NavBar() {
               <Button color="inherit" component={Link} to="/admin/resolved">
                 Resolved Reports
               </Button>
+              <Button color="inherit" component={Link} to="/admin/contact-messages">
+                Contact Messages
+              </Button>
             </>
           )}
 

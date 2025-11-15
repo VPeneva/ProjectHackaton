@@ -11,6 +11,12 @@ import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import ManageInstitutions from "./pages/ManageInstitutions";
 import SignIn from "./pages/SignIn";
+import CrudDashboard from "./pages/CrudDashboard";
+import DashboardLayout from "./components/DashboardLayout";
+import EmployeeList from "./components/EmployeeList";
+import EmployeeShow from "./components/EmployeeShow";
+import EmployeeCreate from "./components/EmployeeCreate";
+import EmployeeEdit from "./components/EmployeeEdit";
 
 
 
@@ -31,7 +37,17 @@ function App() {
         <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
         <Route path="/admin/resolved" element={<ProtectedAdminRoute> <ResolvedReports /> </ProtectedAdminRoute>}/>
         <Route path="/signup" element={<SignUp />} />
-                <Route path="/signin" element={<SignIn />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/dashboard" element={<CrudDashboard />}>
+          <Route path="" element={<DashboardLayout />}>
+            <Route index element={<EmployeeList />} />
+            <Route path="employees" element={<EmployeeList />} />
+            <Route path="employees/new" element={<EmployeeCreate />} />
+            <Route path="employees/:employeeId" element={<EmployeeShow />} />
+            <Route path="employees/:employeeId/edit" element={<EmployeeEdit />} />
+            <Route path="*" element={<EmployeeList />} />
+          </Route>
+        </Route>
 
       </Routes>
     </BrowserRouter>

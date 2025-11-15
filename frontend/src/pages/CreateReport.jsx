@@ -5,26 +5,13 @@ export default function CreateReport() {
   const [institutions, setInstitutions] = useState([]);
   const [institutionId, setInstitutionId] = useState("");
 
-  // Categories – Може да ги направим по институция ако желаеш
-  const categories = [
-    "Road Damage",
-    "Trash Issue",
-    "Street Lighting",
-    "Water Issue",
-    "Electricity Issue",
-    "Dangerous Area",
-    "Environmental Issue",
-    "Other",
-  ];
-
-  const [category, setCategory] = useState("");
-
+  // Липсващите state променливи
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
 
-  // Load institutions from database
   useEffect(() => {
     api.get("/institutions").then((res) => {
       setInstitutions(res.data);
@@ -56,41 +43,60 @@ export default function CreateReport() {
 
     alert("Report created!");
 
-    // Reset
+    // Reset form
     setTitle("");
     setDescription("");
+    setCategory("");
     setLat("");
     setLng("");
-    setCategory("");
-    setInstitutionId("");
+    setInstitutionId(null);
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        maxWidth: "400px",
-      }}
-    >
+    <form onSubmit={handleSubmit} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "12px", maxWidth: "400px" }}>
       <h2>Create Report</h2>
 
-      {/* Select institution */}
-      <label><strong>Select Institution:</strong></label>
+      <input
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+
+      <textarea
+        placeholder="Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+
+      <input
+        placeholder="Category"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+      />
+
+      <input
+        placeholder="Latitude"
+        value={lat}
+        onChange={(e) => setLat(e.target.value)}
+      />
+
+      <input
+        placeholder="Longitude"
+        value={lng}
+        onChange={(e) => setLng(e.target.value)}
+      />
+
+      <label>Select Institution:</label>
       <select
-        value={institutionId}
-        onChange={(e) => {
-          setInstitutionId(e.target.value);
-          setCategory(""); // Clear category if institution changes
-        }}
+        value={institutionId || ""}
+        onChange={(e) =>
+          setInstitutionId(e.target.value ? parseInt(e.target.value) : null)
+        }
       >
         <option value="">-- Select Institution --</option>
-        {institutions.map((inst) => (
-          <option key={inst.id} value={inst.id}>
-            {inst.name}
+        {institutions.map((i) => (
+          <option key={i.id} value={i.id}>
+            {i.name}
           </option>
         ))}
       </select>

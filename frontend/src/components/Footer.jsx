@@ -182,16 +182,17 @@ export default function Footer() {
           <IconButton
             color="inherit"
             size="small"
-            href="https://x.com/MaterialUI"
-            aria-label="X"
+            href="https://www.linkedin.com/in/bozhidar-kamenski-862817253/"
+            aria-label="LinkedIn"
             sx={{ alignSelf: 'center' }}
           >
-            <TwitterIcon />
+            <LinkedInIcon />
           </IconButton>
+          
           <IconButton
             color="inherit"
             size="small"
-            href="https://www.linkedin.com/company/mui/"
+            href="https://www.linkedin.com/in/ivo-radkov/"
             aria-label="LinkedIn"
             sx={{ alignSelf: 'center' }}
           >

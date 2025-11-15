@@ -1,8 +1,11 @@
 import axios from "axios";
 
+// Vite exposes env variables on `import.meta.env` — use VITE_API_BASE_URL
+// Create a `.env.local` (ignored) with `VITE_API_BASE_URL=http://host:port/api` to override locally.
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
 const api = axios.create({
-  //baseURL: "http://localhost:5000/api" // - за локално тестване
-  baseURL: "http://172.20.10.3:5000/api" //- само за хотспот-а
+  baseURL
 });
 
 // автоматично добавяне на token към заявките

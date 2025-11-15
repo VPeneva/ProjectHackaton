@@ -16,6 +16,7 @@ import ManageCategories from "./pages/ManageCategories";
 import ResolvedReports from "./pages/ResolvedReports";
 import BasePage from "./pages/BasePage";
 import About from "./pages/About";
+import Map from "./pages/Map";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/basepage" element={<BasePage />} />
 
         <Route path="/about" element={<About />} />
+        <Route path="/map" element={<Map />} />
 
         <Route
           path="/create"

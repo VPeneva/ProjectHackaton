@@ -19,6 +19,7 @@
     "axios": "^1.13.2",
     "dayjs": "^1.11.19",
     "icons-material": "^0.0.1-security",
+    "leaflet": "^1.9.4",
     "material": "^0.9.24",
     "mui": "^0.0.1",
     "react": "^19.2.0",

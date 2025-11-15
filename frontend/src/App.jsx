@@ -5,25 +5,32 @@ import Register from "./pages/Register";
 import Reports from "./pages/Reports";
 import ProtectedRoute from "./components/ProtectedRoute"; 
 import CreateReport from "./pages/CreateReport";
+import SignUp from "./pages/SignUp";
+import ResolvedReports from "./pages/ResolvedReports";
+import Admin from "./pages/Admin";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import ManageInstitutions from "./pages/ManageInstitutions";
+import ManageCategories from "./pages/ManageCategories";
+
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
+      <Navbar /> 
 
       <Routes>
         <Route path="/" element={<Reports />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        <Route
-          path="/create"
-          element={
-            <ProtectedRoute>
-              <CreateReport />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/create" element={ <ProtectedRoute> <CreateReport /> </ProtectedRoute> } />
+        <Route path="/admin" element={ <ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute> }/>
+        <Route path="/admin/institutions"element={<ProtectedAdminRoute><ManageInstitutions /></ProtectedAdminRoute>}/>
+        <Route path="/create" element={<ProtectedRoute> <CreateReport /> </ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
+        <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
+        <Route path="/admin/resolved" element={<ProtectedAdminRoute> <ResolvedReports /> </ProtectedAdminRoute>}/>
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/admin/categories" element={<ProtectedAdminRoute> <ManageCategories /> </ProtectedAdminRoute>} />
       </Routes>
     </BrowserRouter>
   );

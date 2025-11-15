@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import { hashPassword, comparePassword } from "../utils/hash.js";
 
 export const register = async (req, res) => {
-
   const { email, password, name, adminKey } = req.body;
 
   try {
@@ -12,9 +11,7 @@ export const register = async (req, res) => {
 
     const hashed = await hashPassword(password);
 
-    // Избор на роля
     let role = "USER";
-
     if (adminKey && adminKey === process.env.ADMIN_REGISTER_KEY) {
       role = "ADMIN";
     }
@@ -23,11 +20,21 @@ export const register = async (req, res) => {
       data: { email, password: hashed, name, role }
     });
 
-    res.json({ message: "Registered successfully", user });
+    // 🔥 Генерираме токен веднага
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // 🔥 Връщаме токен + потребител
+    res.json({ token, user });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 
 export const login = async (req, res) => {
@@ -41,7 +48,11 @@ export const login = async (req, res) => {
     if (!match) return res.status(400).json({ error: "Invalid credentials" });
 
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { 
+        id: user.id, 
+        email: user.email,
+        role: user.role   
+      },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );

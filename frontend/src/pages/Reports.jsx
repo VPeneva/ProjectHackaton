@@ -12,8 +12,8 @@ import { styled } from "@mui/material/styles";
 const PageContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
   padding: theme.spacing(3),
-  backgroundColor: theme.vars.palette.background.default,
-  color: theme.vars.palette.text.primary,
+  backgroundColor: theme.palette.background.default,
+  color: theme.palette.text.primary,
 }));
 
 export default function Reports() {
@@ -25,7 +25,7 @@ export default function Reports() {
 
   return (
     <>
-      <CssBaseline enableColorScheme />
+      <CssBaseline />
 
       <PageContainer>
         <Typography variant="h4" sx={{ mb: 3 }}>
@@ -42,13 +42,11 @@ export default function Reports() {
                   <Typography sx={{ mt: 1 }}>{r.description}</Typography>
                 )}
 
-                {/* CATEGORY FIX */}
                 <Typography sx={{ mt: 1 }}>
                   <strong>Category:</strong>{" "}
                   {r.category ? r.category.name : "N/A"}
                 </Typography>
 
-                {/* INSTITUTION FIX */}
                 {r.institution && (
                   <Typography>
                     <strong>Institution:</strong> {r.institution.name}

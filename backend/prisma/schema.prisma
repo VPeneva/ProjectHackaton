@@ -37,7 +37,7 @@ model Category {
 model Report {
   id             Int         @id @default(autoincrement())
   title          String
-  description    String
+  description    String?
   lat            Float
   lng            Float
   status         String?     // Pending / Sent / Resolved

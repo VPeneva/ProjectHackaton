@@ -3,6 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import reportRoutes from "./routes/reports.js";
+import adminRoutes from "./routes/admin.js";
+
+app.use("/api/admin", adminRoutes);
 
 dotenv.config();
 

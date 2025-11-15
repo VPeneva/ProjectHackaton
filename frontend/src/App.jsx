@@ -5,6 +5,9 @@ import Register from "./pages/Register";
 import Reports from "./pages/Reports";
 import ProtectedRoute from "./components/ProtectedRoute"; 
 import CreateReport from "./pages/CreateReport";
+import Admin from "./pages/Admin";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+
 
 function App() {
   return (
@@ -15,15 +18,8 @@ function App() {
         <Route path="/" element={<Reports />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        <Route
-          path="/create"
-          element={
-            <ProtectedRoute>
-              <CreateReport />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/create" element={ <ProtectedRoute> <CreateReport /> </ProtectedRoute> } />
+        <Route path="/admin" element={ <ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute> }/>
       </Routes>
     </BrowserRouter>
   );

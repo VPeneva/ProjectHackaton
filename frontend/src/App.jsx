@@ -10,6 +10,7 @@ import ResolvedReports from "./pages/ResolvedReports";
 import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import ManageInstitutions from "./pages/ManageInstitutions";
+import SignIn from "./pages/SignIn";
 
 
 
@@ -30,6 +31,8 @@ function App() {
         <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
         <Route path="/admin/resolved" element={<ProtectedAdminRoute> <ResolvedReports /> </ProtectedAdminRoute>}/>
         <Route path="/signup" element={<SignUp />} />
+                <Route path="/signin" element={<SignIn />} />
+
       </Routes>
     </BrowserRouter>
   );

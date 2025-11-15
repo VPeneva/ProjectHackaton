@@ -1,142 +1,86 @@
-import * as React from 'react';
-import { styled, alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
-import Drawer from '@mui/material/Drawer';
-import MenuIcon from '@mui/icons-material/Menu';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import ColorModeIconDropdown from '../theme/shared-theme/ColorModeIconDropdown';
-import Sitemark from './SitemarkIcon';
-import { Link } from 'react-router-dom';
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import Box from "@mui/material/Box";
+import { styled } from "@mui/material/styles";
+import Button from "@mui/material/Button";
+import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
-const StyledToolbar = styled(Toolbar)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  flexShrink: 0,
-  borderRadius: `calc(${theme.shape.borderRadius}px + 8px)`,
-  backdropFilter: 'blur(24px)',
-  border: '1px solid',
-  borderColor: (theme.vars || theme).palette.divider,
-  backgroundColor: theme.vars
-    ? `rgba(${theme.vars.palette.background.defaultChannel} / 0.4)`
-    : alpha(theme.palette.background.default, 0.4),
-  boxShadow: (theme.vars || theme).shadows[1],
-  padding: '8px 12px',
+// Wrapper → full width
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  background: theme.vars.palette.background.paper,
+  borderBottom: `1px solid ${theme.vars.palette.divider}`,
+  boxShadow: "none",
+}));
+
+// Inner container → SAME width as Reports (1200px default)
+const AppBarInner = styled(Box)(({ theme }) => ({
+  maxWidth: "1200px",
+  width: "100%",
+  margin: "0 auto",
+  padding: "0 20px",
+  display: "flex",
+  alignItems: "center",
+  gap: 20,
 }));
 
 export default function AppAppBar() {
-  const [open, setOpen] = React.useState(false);
-
-  const toggleDrawer = (newOpen) => () => {
-    setOpen(newOpen);
-  };
+  const { user, logout } = React.useContext(AuthContext);
 
   return (
-    <AppBar
-      position="fixed"
-      enableColorOnDark
-      sx={{
-        boxShadow: 0,
-        bgcolor: 'transparent',
-        backgroundImage: 'none',
-        mt: 'calc(var(--template-frame-height, 0px) + 1rem)',
-      }}
-    >
-      <Container maxWidth="lg">
-        <StyledToolbar variant="dense" disableGutters>
-          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
-            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Link to="/">
-                <Button variant="text" color="info" size="small">
-                  Reports
-                </Button>
-              </Link>
-              <Link to="/dashboard" style={{ marginLeft: "10px" }}>
-                <Button variant="text" color="info" size="small">
-                  Dashboard
-                </Button>
-              </Link>
-            </Box>
-          </Box>
-          <Box
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              gap: 1,
-              alignItems: 'center',
-            }}
-          >
-            <Link to="/signin" style={{ marginLeft: "10px" }}>
-              <Button color="primary" variant="text" size="small">
-                Sign in
-              </Button>
-            </Link>
-            <Link to="/signup" style={{ marginLeft: "10px" }}>
-              <Button color="primary" variant="contained" size="small">
-                Sign up
-              </Button>
-            </Link>
-            <ColorModeIconDropdown />
-          </Box>
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
-            <ColorModeIconDropdown size="medium" />
-            <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
-              <MenuIcon />
-            </IconButton>
-            <Drawer
-              anchor="top"
-              open={open}
-              onClose={toggleDrawer(false)}
-              PaperProps={{
-                sx: {
-                  top: 'var(--template-frame-height, 0px)',
-                },
-              }}
-            >
-              <Box sx={{ p: 2, backgroundColor: 'background.default' }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                  }}
-                >
-                  <IconButton onClick={toggleDrawer(false)}>
-                    <CloseRoundedIcon />
-                  </IconButton>
-                </Box>
+    <StyledAppBar position="static">
+      <Toolbar disableGutters>
+        <AppBarInner>
+          {/* Left side */}
+          <Button color="inherit" component={Link} to="/">
+            Reports
+          </Button>
 
-                <MenuItem>Features</MenuItem>
-                <MenuItem>Testimonials</MenuItem>
-                <MenuItem>Highlights</MenuItem>
-                <MenuItem>Pricing</MenuItem>
-                <MenuItem>FAQ</MenuItem>
-                <MenuItem>Blog</MenuItem>
-                <Divider sx={{ my: 3 }} />
-                <Link to="/signup">
-                  <MenuItem>
-                      <Button color="primary" variant="contained" fullWidth>
-                        Sign up
-                      </Button>
-                  </MenuItem>
-                </Link>
-                <Link to="/signin">
-                  <MenuItem>
-                    <Button color="primary" variant="outlined" fullWidth>
-                      Sign in
-                    </Button>
-                  </MenuItem>
-                </Link>
-              </Box>
-            </Drawer>
+          {user && (
+            <Button color="inherit" component={Link} to="/create">
+              Create Report
+            </Button>
+          )}
+
+          {user?.role === "ADMIN" && (
+            <>
+              <Button color="inherit" component={Link} to="/admin">
+                Admin Panel
+              </Button>
+              <Button color="inherit" component={Link} to="/admin/institutions">
+                Institutions
+              </Button>
+              <Button color="inherit" component={Link} to="/admin/categories">
+                Categories
+              </Button>
+            </>
+          )}
+
+          {/* Right side */}
+          <Box sx={{ marginLeft: "auto", display: "flex", gap: 2 }}>
+            {user ? (
+              <>
+                <Box sx={{ display: "flex", alignItems: "center", opacity: 0.8 }}>
+                  Hello, {user.name}
+                </Box>
+                <Button variant="outlined" onClick={logout}>
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button color="inherit" component={Link} to="/signin">
+                  Sign In
+                </Button>
+                <Button variant="contained" component={Link} to="/signup">
+                  Sign Up
+                </Button>
+              </>
+            )}
           </Box>
-        </StyledToolbar>
-      </Container>
-    </AppBar>
+        </AppBarInner>
+      </Toolbar>
+    </StyledAppBar>
   );
 }

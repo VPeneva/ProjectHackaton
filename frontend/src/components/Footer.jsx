@@ -16,8 +16,8 @@ function Copyright() {
   return (
     <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
       {'Copyright © '}
-      <Link color="text.secondary" href="https://mgpz.org/">
-        MGPZ.org
+      <Link color="text.secondary" href="https://junioraccelerator.org/">
+        JuniorAccelerator.org
       </Link>
       &nbsp;
       {new Date().getFullYear()}
@@ -153,15 +153,15 @@ export default function Footer() {
         }}
       >
         <div>
-          <Link color="text.secondary" variant="body2" href="#">
+          <Typography color="text.secondary" variant="body2" href="#">
             We won't sell your kidneys
-          </Link>
+          </Typography>
           <Typography sx={{ display: 'inline', mx: 0.5, opacity: 0.5 }}>
             &nbsp;•&nbsp;
           </Typography>
-          <Link color="text.secondary" variant="body2" href="#">
+          <Typography color="text.secondary" variant="body2" href="#">
             We promise
-          </Link>
+          </Typography>
           <Copyright />
         </div>
         <Stack

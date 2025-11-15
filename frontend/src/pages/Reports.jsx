@@ -6,7 +6,10 @@ export default function Reports() {
 
   useEffect(() => {
     api.get("/reports").then((res) => {
+      console.log("REPORTS:", res.data);
       setReports(res.data);
+    }).catch(err => {
+      console.error("Error loading reports:", err);
     });
   }, []);
 
@@ -14,8 +17,9 @@ export default function Reports() {
     if (report.status === "Sent") {
       return (
         <span>
-          Изпратено към <strong>{report.institution}</strong> (в процес на
-          отстраняване)
+          Изпратено към{" "}
+          <strong>{report.institution?.name || "няма институция"}</strong>{" "}
+          (в процес на отстраняване)
         </span>
       );
     }
@@ -24,13 +28,14 @@ export default function Reports() {
       return <span>Проблемът е <strong>отстранен</strong>.</span>;
     }
 
-    // Pending / null / други
     return <span>Очаква обработка</span>;
   };
 
   return (
     <div style={{ padding: "20px" }}>
       <h2>Reports</h2>
+
+      {reports.length === 0 && <p>Няма репорти.</p>}
 
       {reports.map((r) => (
         <div
@@ -42,13 +47,24 @@ export default function Reports() {
           }}
         >
           <h3>{r.title}</h3>
-          <p>{r.description}</p>
+
+          {r.description && <p>{r.description}</p>}
+
           <p>
-            <strong>Category:</strong> {r.category}
+            <strong>Category:</strong>{" "}
+            {r.category?.name || "Няма категория"}
           </p>
+
           <p>
-            <strong>Reported by:</strong> {r.user?.name}
+            <strong>Institution:</strong>{" "}
+            {r.institution?.name || "Няма институция"}
           </p>
+
+          <p>
+            <strong>Reported by:</strong>{" "}
+            {r.user?.name || "Unknown"}
+          </p>
+
           <p>
             <strong>Status:</strong> {renderStatus(r)}
           </p>

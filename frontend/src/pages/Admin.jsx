@@ -14,7 +14,6 @@ export default function Admin() {
     });
   }, []);
 
-  // Зареждане на репорти
   const loadReports = () => {
     setLoading(true);
 
@@ -24,8 +23,13 @@ export default function Admin() {
 
     api
       .get(url)
-      .then((res) => setReports(res.data))
-      .catch((err) => console.error("Error loading admin reports:", err))
+      .then((res) => {
+        console.log("ADMIN REPORTS:", res.data);
+        setReports(res.data);
+      })
+      .catch((err) => {
+        console.error("Error loading admin reports:", err);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -40,7 +44,7 @@ export default function Admin() {
     }
 
     await api.patch(`/admin/reports/${id}/send`, {
-      institutionId: Number(selectedInstitution)
+      institutionId: Number(selectedInstitution),
     });
 
     loadReports();
@@ -51,7 +55,9 @@ export default function Admin() {
     loadReports();
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return <div style={{ padding: "20px" }}>Loading...</div>;
+  }
 
   return (
     <div style={{ padding: "20px" }}>
@@ -80,20 +86,36 @@ export default function Admin() {
             style={{
               border: "1px solid #ccc",
               padding: "10px",
-              marginBottom: "10px"
+              marginBottom: "10px",
             }}
           >
             <h3>{r.title}</h3>
-            <p>{r.description}</p>
-            <p><b>Category:</b> {r.category}</p>
-            <p><b>User:</b> {r.user?.name}</p>
-            <p><b>Status:</b> {r.status || "Pending"}</p>
-            <p><b>Institution:</b> {r.institutionRecord?.name || "None"}</p>
+            {r.description && <p>{r.description}</p>}
 
-            <button onClick={() => sendToInstitution(r.id)} style={{ marginRight: "10px" }}>
+            <p>
+              <strong>Category:</strong>{" "}
+              {r.category?.name || "Няма категория"}
+            </p>
+
+            <p>
+              <strong>Institution:</strong>{" "}
+              {r.institution?.name || "Няма институция"}
+            </p>
+
+            <p>
+              <strong>User:</strong> {r.user?.name} ({r.user?.email})
+            </p>
+
+            <p>
+              <strong>Status:</strong> {r.status || "Pending"}
+            </p>
+
+            <button
+              onClick={() => sendToInstitution(r.id)}
+              style={{ marginRight: "10px" }}
+            >
               Send
             </button>
-
             <button onClick={() => markResolved(r.id)}>Resolve</button>
           </div>
         ))

@@ -20,20 +20,24 @@ export const register = async (req, res) => {
       data: { email, password: hashed, name, role }
     });
 
-    // 🔥 Генерираме токен веднага
+    // 🔥 създаваме token веднага, както при login:
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    // 🔥 Връщаме токен + потребител
-    res.json({ token, user });
+    res.json({
+      message: "Registered successfully",
+      user,
+      token
+    });
+
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 
 

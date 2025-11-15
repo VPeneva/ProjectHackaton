@@ -9,7 +9,7 @@ export default function CreateReport() {
   const [categoryId, setCategoryId] = useState("");
 
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(""); // OPTIONAL
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
 
@@ -20,7 +20,7 @@ export default function CreateReport() {
     });
   }, []);
 
-  // Зареждане на категории според избраната институция
+  // Зареждане на категории за институция
   useEffect(() => {
     if (institutionId) {
       api
@@ -36,25 +36,23 @@ export default function CreateReport() {
 
     if (!institutionId) return alert("Please select an institution.");
     if (!categoryId) return alert("Please select a category.");
-
-    if (!title || !description || !lat || !lng) {
-      return alert("All fields are required.");
+    if (!title || !lat || !lng) {
+      return alert("Title and coordinates are required.");
     }
 
     await api.post("/reports", {
-      title,
-      description,
-      categoryId: Number(categoryId),
-      lat: parseFloat(lat),
-      lng: parseFloat(lng),
-      institutionId: Number(institutionId),
-    });
+    title,
+    description: description || null,
+    categoryId: categoryId ? Number(categoryId) : null,
+    institutionId: institutionId ? Number(institutionId) : null,
+    lat: Number(lat),
+    lng: Number(lng),
+   });
 
     alert("Report created successfully!");
 
-    // Reset
     setTitle("");
-    setDescription("");
+    setDescription(""); // OPTIONAL RESET
     setLat("");
     setLng("");
     setInstitutionId("");
@@ -92,7 +90,7 @@ export default function CreateReport() {
           ))}
         </select>
 
-        {/* Categories (only visible after selecting institution) */}
+        {/* Category */}
         {institutionId && (
           <>
             <label><strong>Select Category:</strong></label>
@@ -112,26 +110,26 @@ export default function CreateReport() {
 
         {/* Title */}
         <input
-          placeholder="Report Title"
+          placeholder="Report Title (required)"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
 
-        {/* Description */}
+        {/* Description (OPTIONAL) */}
         <textarea
-          placeholder="Describe the issue..."
+          placeholder="Description (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
 
         {/* Coordinates */}
         <input
-          placeholder="Latitude"
+          placeholder="Latitude (required)"
           value={lat}
           onChange={(e) => setLat(e.target.value)}
         />
         <input
-          placeholder="Longitude"
+          placeholder="Longitude (required)"
           value={lng}
           onChange={(e) => setLng(e.target.value)}
         />

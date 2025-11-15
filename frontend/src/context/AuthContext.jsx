@@ -6,35 +6,48 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  // ако има token – взимаме user от localStorage
+  // Зареждане на user от localStorage при refresh
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
+    const savedToken = localStorage.getItem("token");
+
+    if (savedUser && savedToken) {
+      setUser(JSON.parse(savedUser));
+    }
   }, []);
 
+  // LOGIN
   const login = async (email, password) => {
     const res = await api.post("/auth/login", { email, password });
-    setUser(res.data.user);
-    localStorage.setItem("user", JSON.stringify(res.data.user));
-    localStorage.setItem("token", res.data.token);
+
+    const { user, token } = res.data;
+
+    setUser(user);
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", token);
   };
 
-const register = async (name, email, password, adminKey) => {
-  const res = await api.post("/auth/register", {
-    name,
-    email,
-    password,
-    adminKey
-  });
+  // REGISTER — след регистрация автоматично логва потребителя
+  const register = async (name, email, password, adminKey) => {
+    const res = await api.post("/auth/register", {
+      name,
+      email,
+      password,
+      adminKey
+    });
 
-  const { token, user } = res.data;
+    // 💡 backendът трябва да връща user + token (ще ти дам fix по-долу)
+    const { user, token } = res.data;
 
-  localStorage.setItem("token", token);
-  setUser(user);
-};
+    setUser(user);
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", token);
+  };
 
+  // LOGOUT
   const logout = () => {
-    localStorage.clear();
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     setUser(null);
   };
 

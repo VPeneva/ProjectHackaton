@@ -36,6 +36,7 @@ yarn-error.log*
 
 # Prisma
 backend/prisma/migrations/
+backend/prisma/dev.db
 
 # OS
 Thumbs.db

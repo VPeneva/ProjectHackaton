@@ -22,7 +22,7 @@ import Privacy from "./pages/Legal"
 
 import ReportDetails from "./pages/ReportDetails";
 import ContactUs from "./pages/ContactUs";
-
+import AdminContactMessages from "./pages/AdminContactPage";
 
 function App() {
   return (

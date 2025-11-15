@@ -15,7 +15,7 @@ import ResolvedReports from "./pages/ResolvedReports";
 function App() {
   return (
     <BrowserRouter>
-      {/* <Navbar /> */}
+      <Navbar />
 
       <Routes>
         <Route path="/" element={<Reports />} />

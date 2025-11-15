@@ -17,6 +17,9 @@ import ResolvedReports from "./pages/ResolvedReports";
 import BasePage from "./pages/BasePage";
 import About from "./pages/About";
 
+import ReportDetails from "./pages/ReportDetails";
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -24,6 +27,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Reports />} />
+        <Route path="/report/:id" element={<ReportDetails />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
 
@@ -31,14 +35,7 @@ function App() {
 
         <Route path="/about" element={<About />} />
 
-        <Route
-          path="/create"
-          element={
-            <ProtectedRoute>
-              <CreateReport />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/create" element={<ProtectedRoute><CreateReport /></ProtectedRoute>}/>
 
         <Route
           path="/admin"
@@ -76,6 +73,7 @@ function App() {
           }
         />
       </Routes>
+      
 
       <Footer />
     </BrowserRouter>

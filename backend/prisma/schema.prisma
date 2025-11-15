@@ -30,8 +30,8 @@ model Report {
   lat         Float
   lng         Float
   category    String
+  status      String    @default("Pending")   // <--- НОВО
   userId      Int
   user        User      @relation(fields: [userId], references: [id])
   createdAt   DateTime  @default(now())
-  /// where the problem is found cordinates on the map.
 }

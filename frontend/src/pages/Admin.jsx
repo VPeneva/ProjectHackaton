@@ -21,7 +21,12 @@ import { styled } from "@mui/material/styles";
 
 const PageContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
+  width: "100%",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
   padding: theme.spacing(4),
+
   backgroundColor: theme.palette.background.default,
   backgroundImage:
     theme.palette.mode === "dark"

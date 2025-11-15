@@ -85,7 +85,7 @@ export default function Footer() {
                 size="small"
                 sx={{ flexShrink: 0 }}
               >
-                Aide edno laikche
+                Join the dark side
               </Button>
             </Stack>
           </Box>

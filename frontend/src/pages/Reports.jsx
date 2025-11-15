@@ -1,59 +1,68 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import {
+  Card,
+  CardContent,
+  Typography,
+  CssBaseline,
+  Stack,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+
+const PageContainer = styled(Stack)(({ theme }) => ({
+  minHeight: "100vh",
+  padding: theme.spacing(3),
+  backgroundColor: theme.vars.palette.background.default,
+  color: theme.vars.palette.text.primary,
+}));
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
 
   useEffect(() => {
-    api.get("/reports").then((res) => {
-      setReports(res.data);
-    });
+    api.get("/reports").then((res) => setReports(res.data));
   }, []);
 
-  const renderStatus = (report) => {
-    if (report.status === "Sent") {
-      return (
-        <span>
-          Изпратено към <strong>{report.institution}</strong> (в процес на
-          отстраняване)
-        </span>
-      );
-    }
-
-    if (report.status === "Resolved") {
-      return <span>Проблемът е <strong>отстранен</strong>.</span>;
-    }
-
-    // Pending / null / други
-    return <span>Очаква обработка</span>;
-  };
-
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Reports</h2>
+    <>
+      <CssBaseline enableColorScheme />
 
-      {reports.map((r) => (
-        <div
-          key={r.id}
-          style={{
-            padding: "10px",
-            margin: "10px 0",
-            border: "1px solid #ccc",
-          }}
-        >
-          <h3>{r.title}</h3>
-          <p>{r.description}</p>
-          <p>
-            <strong>Category:</strong> {r.category}
-          </p>
-          <p>
-            <strong>Reported by:</strong> {r.user?.name}
-          </p>
-          <p>
-            <strong>Status:</strong> {renderStatus(r)}
-          </p>
-        </div>
-      ))}
-    </div>
+      <PageContainer>
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          Reports
+        </Typography>
+
+        <Stack spacing={2}>
+          {reports.map((r) => (
+            <Card key={r.id} variant="outlined">
+              <CardContent>
+                <Typography variant="h6">{r.title}</Typography>
+
+                {r.description && (
+                  <Typography sx={{ mt: 1 }}>{r.description}</Typography>
+                )}
+
+                {/* CATEGORY FIX */}
+                <Typography sx={{ mt: 1 }}>
+                  <strong>Category:</strong>{" "}
+                  {r.category ? r.category.name : "N/A"}
+                </Typography>
+
+                {/* INSTITUTION FIX */}
+                {r.institution && (
+                  <Typography>
+                    <strong>Institution:</strong> {r.institution.name}
+                  </Typography>
+                )}
+
+                <Typography sx={{ mt: 1, fontSize: "0.9rem", opacity: 0.7 }}>
+                  Created by: {r.user?.name || "Unknown"}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      </PageContainer>
+    </>
   );
 }

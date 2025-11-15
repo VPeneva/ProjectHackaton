@@ -5,8 +5,7 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 /**
- * Взимане на всички репорти (за потребителския интерфейс)
- * Включваме и user, и institution
+ * GET всички репорти
  */
 router.get("/", async (req, res) => {
   try {
@@ -14,6 +13,7 @@ router.get("/", async (req, res) => {
       include: {
         user: true,
         institution: true,
+        category: true
       },
       orderBy: { createdAt: "desc" },
     });
@@ -26,37 +26,38 @@ router.get("/", async (req, res) => {
 });
 
 /**
- * Създаване на нов репорт
- * Само логнат потребител може да го направи
+ * POST създаване на репорт (задължително логнат)
  */
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const {
       title,
       description,
-      category,
+      categoryId,
       lat,
       lng,
-      institutionId, // може да е null
+      institutionId,
     } = req.body;
 
-    if (!title || !description || !category || !lat || !lng) {
+    // Задължителни полета
+    if (!title || !categoryId || !lat || !lng || !institutionId) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     const report = await prisma.report.create({
       data: {
         title,
-        description,
-        category,
+        description: description || null, // optional
         lat: parseFloat(lat),
         lng: parseFloat(lng),
-        institutionId: institutionId ? Number(institutionId) : null,
+        categoryId: Number(categoryId),
+        institutionId: Number(institutionId),
         userId: req.user.id,
       },
       include: {
         user: true,
         institution: true,
+        category: true,
       },
     });
 
@@ -68,7 +69,7 @@ router.post("/", authMiddleware, async (req, res) => {
 });
 
 /**
- * Взимане на един репорт по ID
+ * GET репорт по ID
  */
 router.get("/:id", async (req, res) => {
   try {
@@ -77,6 +78,7 @@ router.get("/:id", async (req, res) => {
       include: {
         user: true,
         institution: true,
+        category: true
       },
     });
 

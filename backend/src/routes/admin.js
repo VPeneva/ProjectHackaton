@@ -21,9 +21,10 @@ router.get("/reports", authMiddleware, isAdmin, async (req, res) => {
         ]
       },
       include: {
-        user: true,
-        institutionRecord: true  // <- институцията
-      },
+  user: true,
+  institution: true,
+  category: true,
+},
       orderBy: { createdAt: "desc" }
     });
 

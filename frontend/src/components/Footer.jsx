@@ -100,10 +100,10 @@ export default function Footer() {
             Product
           </Typography>
           <Link color="text.secondary" variant="body2" href="#">
-            Features unknown yet
+            Features
           </Link>
           <Link color="text.secondary" variant="body2" href="#">
-            FAQs may not be answered
+            FAQs
           </Link>
         </Box>
         <Box
@@ -136,7 +136,7 @@ export default function Footer() {
           <Link color="text.secondary" variant="body2" href="/privacy">
             Privacy Policy
           </Link>
-          <Link color="text.secondary" variant="body2" href="#">
+          <Link color="text.secondary" variant="body2" href="/contactus">
             Contact us
           </Link>
         </Box>

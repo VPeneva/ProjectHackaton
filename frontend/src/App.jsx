@@ -21,6 +21,7 @@ import Terms from "./pages/TermsOfService"
 import Privacy from "./pages/Legal"
 
 import ReportDetails from "./pages/ReportDetails";
+import ContactUs from "./pages/ContactUs";
 
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
         <Route path="/aboutus" element={<About />} />
         <Route path="/terms" element={<Terms/>} />
         <Route path="/privacy" element={<Privacy/>} />
+        <Route path="/contactus" element={<ContactUs/>} />
         <Route
           path="/create"
           element={
@@ -85,9 +87,16 @@ function App() {
             </ProtectedAdminRoute>
           }
         />
+        <Route
+          path="/admin/contact-messages"
+          element={
+            <ProtectedAdminRoute>
+              <AdminContactMessages />
+            </ProtectedAdminRoute>
+          }
+        />
       </Routes>
-      
-
+    
       <Footer />
     </BrowserRouter>
   );

@@ -9,6 +9,11 @@ import adminRoutes from "./routes/admin.js";
 import institutionRoutes from "./routes/institutions.js";
 import categoryRoutes from "./routes/categories.js"; // <<< ДОБАВЕНО
 
+import contactRoutes from "./routes/contact.js";
+
+
+
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -19,6 +24,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/institutions", institutionRoutes);
 app.use("/api/categories", categoryRoutes); // <<< ДОБАВЕНО
+app.use("/api/contact", contactRoutes);
 
 const PORT = process.env.PORT || 5000;
 

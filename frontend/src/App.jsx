@@ -5,13 +5,11 @@ import Register from "./pages/Register";
 import Reports from "./pages/Reports";
 import ProtectedRoute from "./components/ProtectedRoute"; 
 import CreateReport from "./pages/CreateReport";
-<<<<<<< HEAD
 import SignUp from "./pages/SignUp";
-=======
+
 import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
->>>>>>> 6e04ded88e3bcd32a8072f4835efa28688bdb572
 
 function App() {
   return (
@@ -22,7 +20,6 @@ function App() {
         <Route path="/" element={<Reports />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-<<<<<<< HEAD
         <Route path="/signup" element={<SignUp />} />
 
         <Route
@@ -33,10 +30,8 @@ function App() {
             </ProtectedRoute>
           }
         />
-=======
         <Route path="/create" element={ <ProtectedRoute> <CreateReport /> </ProtectedRoute> } />
         <Route path="/admin" element={ <ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute> }/>
->>>>>>> 6e04ded88e3bcd32a8072f4835efa28688bdb572
       </Routes>
     </BrowserRouter>
   );

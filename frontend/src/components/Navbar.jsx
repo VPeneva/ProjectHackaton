@@ -38,7 +38,12 @@ export default function Navbar() {
           Institutions
         </Link>
       )}
+      {user?.role === "ADMIN" && (
+      <>
 
+          <Link to="/admin/categories">Categories</Link>
+        </>
+      )}
       {/* Right side (auth section) */}
       <div style={{ marginLeft: "auto" }}>
         {user ? (

@@ -10,7 +10,7 @@ import ResolvedReports from "./pages/ResolvedReports";
 import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import ManageInstitutions from "./pages/ManageInstitutions";
-
+import ManageCategories from "./pages/ManageCategories";
 
 
 function App() {
@@ -30,6 +30,7 @@ function App() {
         <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
         <Route path="/admin/resolved" element={<ProtectedAdminRoute> <ResolvedReports /> </ProtectedAdminRoute>}/>
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/admin/categories" element={<ProtectedAdminRoute> <ManageCategories /> </ProtectedAdminRoute>} />
       </Routes>
     </BrowserRouter>
   );

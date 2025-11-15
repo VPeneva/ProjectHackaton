@@ -26,25 +26,14 @@ const PageContainer = styled(Stack)(({ theme }) => ({
   justifyContent: "center",
   alignItems: "center",
   padding: theme.spacing(4),
-
   backgroundColor: theme.palette.background.default,
-  backgroundImage:
-    theme.palette.mode === "dark"
-      ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.4), hsl(220, 30%, 5%))"
-      : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-  backgroundRepeat: "no-repeat",
 }));
 
 const StyledCard = styled(Card)(({ theme }) => ({
   width: "100%",
   maxWidth: "900px",
-  margin: "0 auto",
   padding: theme.spacing(3),
   borderRadius: "14px",
-  ...theme.applyStyles?.("dark", {
-    boxShadow:
-      "hsla(220, 30%, 5%, 0.4) 0px 5px 15px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
-  }),
 }));
 
 const ReportCard = styled(Card)(({ theme }) => ({
@@ -58,10 +47,12 @@ export default function Admin() {
   const [selectedInstitution, setSelectedInstitution] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Load institutions
   useEffect(() => {
     api.get("/institutions").then((res) => setInstitutions(res.data));
   }, []);
 
+  // Load reports based on filter
   const loadReports = () => {
     setLoading(true);
 
@@ -72,7 +63,6 @@ export default function Admin() {
     api
       .get(url)
       .then((res) => setReports(res.data))
-      .catch((err) => console.error("Error loading admin reports:", err))
       .finally(() => setLoading(false));
   };
 
@@ -80,28 +70,44 @@ export default function Admin() {
     loadReports();
   }, [selectedInstitution]);
 
+  // Local per-report institution override
+  const handleLocalInstitutionChange = (id, value) => {
+    setReports((prev) =>
+      prev.map((r) =>
+        r.id === id ? { ...r, _selectedInstitution: value } : r
+      )
+    );
+  };
+
+  // SEND report
   const sendToInstitution = async (id) => {
-    if (!selectedInstitution) {
-      alert("Select an institution first.");
+    const report = reports.find((r) => r.id === id);
+    const instId =
+      report._selectedInstitution || report.institution?.id || null;
+
+    if (!instId) {
+      alert("Please select an institution first.");
       return;
     }
 
     await api.patch(`/admin/reports/${id}/send`, {
-      institutionId: Number(selectedInstitution),
+      institutionId: Number(instId),
     });
 
     loadReports();
   };
 
+  // RESOLVE report
   const markResolved = async (id) => {
     await api.patch(`/admin/reports/${id}/resolve`);
     loadReports();
   };
 
-  // 🟦 Dynamic label calculation
+  // Dynamic label for main filter
   const selectedInstitutionLabel =
     selectedInstitution
-      ? institutions.find(i => i.id === Number(selectedInstitution))?.name || "All Institutions"
+      ? institutions.find((i) => i.id === Number(selectedInstitution))?.name ||
+        "All Institutions"
       : "All Institutions";
 
   return (
@@ -116,19 +122,16 @@ export default function Admin() {
 
           <Divider sx={{ mb: 3 }} />
 
-          {/* Institution Filter */}
+          {/* FILTER */}
           <FormControl fullWidth sx={{ mb: 3 }}>
             <FormLabel>Select Institution</FormLabel>
-
             <Select
               value={selectedInstitution}
               displayEmpty
               onChange={(e) => setSelectedInstitution(e.target.value)}
               renderValue={() => selectedInstitutionLabel}
             >
-              {/* Allows user to reset to "all" */}
               <MenuItem value="">All Institutions</MenuItem>
-
               {institutions.map((inst) => (
                 <MenuItem key={inst.id} value={inst.id}>
                   {inst.name}
@@ -151,51 +154,99 @@ export default function Admin() {
 
           {/* Reports */}
           <Stack spacing={2}>
-            {reports.map((r) => (
-              <ReportCard variant="outlined" key={r.id}>
-                <CardContent>
-                  <Typography variant="h6">{r.title}</Typography>
+            {reports.map((r) => {
+              const localInst = r._selectedInstitution ?? r.institution?.id ?? "";
+              const isSent = r.status === "SENT";
+              const isFinished = r.status === "FINISHED";
 
-                  {r.description && (
-                    <Typography sx={{ mt: 1 }}>{r.description}</Typography>
-                  )}
+              return (
+                <ReportCard variant="outlined" key={r.id}>
+                  <CardContent>
+                    <Typography variant="h6">{r.title}</Typography>
 
-                  <Typography sx={{ mt: 1 }}>
-                    <strong>Category:</strong> {r.category?.name || "No category"}
-                  </Typography>
+                    {r.description && (
+                      <Typography sx={{ mt: 1 }}>{r.description}</Typography>
+                    )}
 
-                  <Typography>
-                    <strong>Institution:</strong> {r.institution?.name || "No institution"}
-                  </Typography>
+                    <Typography sx={{ mt: 1 }}>
+                      <strong>Category:</strong> {r.category?.name || "No category"}
+                    </Typography>
 
-                  <Typography sx={{ mt: 1 }}>
-                    <strong>User:</strong> {r.user?.name} ({r.user?.email})
-                  </Typography>
+                    <Typography sx={{ mt: 1 }}>
+                      <strong>User:</strong> {r.user?.name} ({r.user?.email})
+                    </Typography>
 
-                  <Typography sx={{ mt: 1 }}>
-                    <strong>Status:</strong> {r.status || "Pending"}
-                  </Typography>
-
-                  <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => sendToInstitution(r.id)}
+                    {/* STATUS BADGE */}
+                    <Typography
+                      sx={{
+                        mt: 1,
+                        fontWeight: "bold",
+                        color:
+                          r.status === "SENT"
+                            ? "orange"
+                            : r.status === "FINISHED"
+                            ? "green"
+                            : "grey",
+                      }}
                     >
-                      Send
-                    </Button>
+                      Status: {r.status}
+                    </Typography>
 
-                    <Button
-                      variant="contained"
-                      color="success"
-                      onClick={() => markResolved(r.id)}
-                    >
-                      Resolve
-                    </Button>
-                  </Stack>
-                </CardContent>
-              </ReportCard>
-            ))}
+                    {/* ⛔ IF SENT → NO SELECT, NO SEND */}
+                    {isSent && !isFinished && (
+                      <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                        <Button
+                          variant="contained"
+                          color="success"
+                          onClick={() => markResolved(r.id)}
+                        >
+                          Resolve
+                        </Button>
+                      </Stack>
+                    )}
+
+                    {/* 🟩 IF PENDING → SHOW SELECT + SEND + RESOLVE */}
+                    {!isSent && !isFinished && (
+                      <>
+                        <FormControl fullWidth sx={{ mt: 2 }}>
+                          <FormLabel>Send To Institution</FormLabel>
+                          <Select
+                            value={localInst}
+                            onChange={(e) =>
+                              handleLocalInstitutionChange(r.id, e.target.value)
+                            }
+                          >
+                            {institutions.map((inst) => (
+                              <MenuItem key={inst.id} value={inst.id}>
+                                {inst.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+
+                        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => sendToInstitution(r.id)}
+                          >
+                            Send
+                          </Button>
+
+                          <Button
+                            variant="contained"
+                            color="success"
+                            onClick={() => markResolved(r.id)}
+                          >
+                            Resolve
+                          </Button>
+                        </Stack>
+                      </>
+                    )}
+                  </CardContent>
+                </ReportCard>
+              );
+            })}
           </Stack>
         </StyledCard>
       </PageContainer>

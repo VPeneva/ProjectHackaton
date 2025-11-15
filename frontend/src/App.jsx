@@ -15,6 +15,7 @@ import ManageInstitutions from "./pages/ManageInstitutions";
 import ManageCategories from "./pages/ManageCategories";
 import ResolvedReports from "./pages/ResolvedReports";
 import BasePage from "./pages/BasePage";
+import About from "./pages/About";
 
 function App() {
   return (

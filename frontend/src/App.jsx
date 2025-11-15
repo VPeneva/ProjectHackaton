@@ -15,7 +15,8 @@ import ManageInstitutions from "./pages/ManageInstitutions";
 import ManageCategories from "./pages/ManageCategories";
 import ResolvedReports from "./pages/ResolvedReports";
 import BasePage from "./pages/BasePage";
-import About from "./pages/AboutUs";
+import About from "./pages/About";
+import Map from "./pages/Map";
 import Terms from "./pages/TermsOfService"
 import Privacy from "./pages/Legal"
 
@@ -34,6 +35,8 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
 
         <Route path="/basepage" element={<BasePage />} />
+
+        <Route path="/map" element={<Map />} />
 
         <Route path="/aboutus" element={<About />} />
         <Route path="/terms" element={<Terms/>} />

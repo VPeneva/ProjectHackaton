@@ -11,6 +11,7 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
+import ForgotPassword from "../components/ForgotPassword";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -66,6 +67,8 @@ export default function SignIn() {
     password: "",
   });
 
+  const [forgotOpen, setForgotOpen] = React.useState(false);
+
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -84,6 +87,10 @@ export default function SignIn() {
   return (
     <>
       <CssBaseline enableColorScheme />
+
+      {/* Forgot Password Dialog */}
+      <ForgotPassword open={forgotOpen} handleClose={() => setForgotOpen(false)} />
+
       <SignInContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
           <Typography
@@ -132,6 +139,21 @@ export default function SignIn() {
             <Button type="submit" fullWidth variant="contained">
               Sign in
             </Button>
+
+            {/* Forgot password link */}
+            <Typography
+              variant="body2"
+              color="primary"
+              sx={{
+                mt: 1,
+                textAlign: "center",
+                cursor: "pointer",
+                "&:hover": { textDecoration: "underline" },
+              }}
+              onClick={() => setForgotOpen(true)}
+            >
+              Forgot your password?
+            </Typography>
           </Box>
 
           <Divider />

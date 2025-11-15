@@ -5,6 +5,8 @@ import Register from "./pages/Register";
 import Reports from "./pages/Reports";
 import ProtectedRoute from "./components/ProtectedRoute"; 
 import CreateReport from "./pages/CreateReport";
+import SignUp from "./pages/SignUp";
+
 import Admin from "./pages/Admin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import ResolvedReports from "./pages/ResolvedReports";
@@ -13,7 +15,7 @@ import ResolvedReports from "./pages/ResolvedReports";
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
+      {/* <Navbar /> */}
 
       <Routes>
         <Route path="/" element={<Reports />} />
@@ -23,6 +25,7 @@ function App() {
         <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
         <Route path="/admin" element={<ProtectedAdminRoute> <Admin /> </ProtectedAdminRoute>}/>
         <Route path="/admin/resolved" element={<ProtectedAdminRoute> <ResolvedReports /> </ProtectedAdminRoute>}/>
+        <Route path="/signup" element={<SignUp />} />
       </Routes>
     </BrowserRouter>
   );

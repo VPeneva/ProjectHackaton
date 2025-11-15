@@ -8,12 +8,12 @@ import SignIn from "./pages/SignIn";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import ResolvedReports from "./pages/ResolvedReports";
 
 import CreateReport from "./pages/CreateReport";
 import Admin from "./pages/Admin";
 import ManageInstitutions from "./pages/ManageInstitutions";
 import ManageCategories from "./pages/ManageCategories";
-import ResolvedReports from "./pages/ResolvedReports";
 import BasePage from "./pages/BasePage";
 import About from "./pages/AboutUs";
 import Map from "./pages/Map";

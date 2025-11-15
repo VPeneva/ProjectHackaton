@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 
 import {
-  Box,
   Button,
   Card,
-  CardContent,
   CssBaseline,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   List,
   ListItem,
@@ -24,11 +27,6 @@ const PageContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
   padding: theme.spacing(4),
   backgroundColor: theme.palette.background.default,
-  backgroundImage:
-    theme.palette.mode === "dark"
-      ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.4), hsl(220, 30%, 5%))"
-      : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-  backgroundRepeat: "no-repeat",
 }));
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -37,15 +35,12 @@ const StyledCard = styled(Card)(({ theme }) => ({
   margin: "0 auto",
   padding: theme.spacing(3),
   borderRadius: "14px",
-  ...theme.applyStyles?.("dark", {
-    boxShadow:
-      "hsla(220, 30%, 5%, 0.4) 0px 5px 15px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
-  }),
 }));
 
 export default function ManageInstitutions() {
   const [institutions, setInstitutions] = useState([]);
   const [name, setName] = useState("");
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     load();
@@ -62,14 +57,34 @@ export default function ManageInstitutions() {
     load();
   };
 
-  const deleteInstitution = async (id) => {
-    await api.delete(`/institutions/${id}`);
+  const deleteInstitution = async () => {
+    await api.delete(`/institutions/${deleteId}`);
+    setDeleteId(null);
     load();
   };
 
   return (
     <>
       <CssBaseline />
+
+      {/* DELETE CONFIRMATION */}
+      <Dialog
+        open={Boolean(deleteId)}
+        onClose={() => setDeleteId(null)}
+      >
+        <DialogTitle>Delete Institution</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this institution?  
+            This action cannot be undone and may impact existing reports.
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setDeleteId(null)}>Cancel</Button>
+          <Button color="error" onClick={deleteInstitution}>Delete</Button>
+        </DialogActions>
+      </Dialog>
 
       <PageContainer>
         <StyledCard variant="outlined">
@@ -79,35 +94,50 @@ export default function ManageInstitutions() {
 
           <Divider sx={{ mb: 3 }} />
 
-          {/* Add Institution */}
-          <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-            <TextField
-              label="Institution name"
-              fullWidth
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+          {/* 1️⃣ ADD SECTION */}
+          <Card variant="outlined" sx={{ p: 2, mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Add New Institution
+            </Typography>
 
-            <Button variant="contained" onClick={addInstitution}>
-              Add
-            </Button>
-          </Stack>
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="Institution name"
+                fullWidth
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
 
-          {/* Institution List */}
-          <List>
-            {institutions.map((inst) => (
-              <ListItem
-                key={inst.id}
-                secondaryAction={
-                  <IconButton color="error" onClick={() => deleteInstitution(inst.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                }
-              >
-                <ListItemText primary={inst.name} />
-              </ListItem>
-            ))}
-          </List>
+              <Button variant="contained" onClick={addInstitution}>
+                Add
+              </Button>
+            </Stack>
+          </Card>
+
+          {/* 2️⃣ DELETE / LIST SECTION */}
+          <Card variant="outlined" sx={{ p: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Existing Institutions
+            </Typography>
+
+            <List>
+              {institutions.map((inst) => (
+                <ListItem
+                  key={inst.id}
+                  secondaryAction={
+                    <IconButton
+                      color="error"
+                      onClick={() => setDeleteId(inst.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText primary={inst.name} />
+                </ListItem>
+              ))}
+            </List>
+          </Card>
         </StyledCard>
       </PageContainer>
     </>

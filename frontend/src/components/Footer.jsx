@@ -9,7 +9,6 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import TwitterIcon from '@mui/icons-material/X';
 import SitemarkIcon from './SitemarkIcon';
 
 function Copyright() {
@@ -85,7 +84,7 @@ export default function Footer() {
                 size="small"
                 sx={{ flexShrink: 0 }}
               >
-                Aide edno laikche
+                Join the dark side
               </Button>
             </Stack>
           </Box>
@@ -117,7 +116,7 @@ export default function Footer() {
           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
             Company
           </Typography>
-          <Link color="text.secondary" variant="body2" href="#">
+          <Link color="text.secondary" variant="body2" href="/aboutus">
             About us
           </Link>
         </Box>
@@ -131,11 +130,11 @@ export default function Footer() {
           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
             Legal
           </Typography>
-          <Link color="text.secondary" variant="body2" href="#">
+          <Link color="text.secondary" variant="body2" href="/terms">
             Terms
           </Link>
-          <Link color="text.secondary" variant="body2" href="#">
-            Privacy
+          <Link color="text.secondary" variant="body2" href="/privacy">
+            Privacy Policy
           </Link>
           <Link color="text.secondary" variant="body2" href="#">
             Contact us
@@ -152,19 +151,23 @@ export default function Footer() {
           borderColor: 'divider',
         }}
       >
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Typography color="text.secondary" variant="body2">
-            We won't sell your kidneys
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.5 }}>
-            •
-          </Typography>
-          <Typography color="text.secondary" variant="body2">
-            We promise
-          </Typography>
+        <div>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography color="text.secondary" variant="body2">
+              We won't sell your kidneys
+            </Typography>
+
+            <Typography variant="body2" sx={{ opacity: 0.5 }}>
+              •
+            </Typography>
+
+            <Typography color="text.secondary" variant="body2">
+              We promise
+            </Typography>
+          </Stack>
 
           <Copyright />
-        </Stack>
+        </div>
 
         <Stack
           direction="row"

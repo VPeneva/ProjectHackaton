@@ -17,6 +17,11 @@ import ResolvedReports from "./pages/ResolvedReports";
 import BasePage from "./pages/BasePage";
 import About from "./pages/About";
 import Map from "./pages/Map";
+import Terms from "./pages/TermsOfService"
+import Privacy from "./pages/Legal"
+
+import ReportDetails from "./pages/ReportDetails";
+
 
 function App() {
   return (
@@ -25,14 +30,17 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Reports />} />
+        <Route path="/report/:id" element={<ReportDetails />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
 
         <Route path="/basepage" element={<BasePage />} />
 
-        <Route path="/about" element={<About />} />
         <Route path="/map" element={<Map />} />
 
+        <Route path="/aboutus" element={<About />} />
+        <Route path="/terms" element={<Terms/>} />
+        <Route path="/privacy" element={<Privacy/>} />
         <Route
           path="/create"
           element={
@@ -78,6 +86,7 @@ function App() {
           }
         />
       </Routes>
+      
 
       <Footer />
     </BrowserRouter>

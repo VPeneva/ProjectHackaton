@@ -6,16 +6,22 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
-///roles model Role {...}
+
 model User {
   id        Int       @id @default(autoincrement())
   email     String    @unique
   password  String
   name      String
+  role      Role      @default(USER)
   createdAt DateTime  @default(now())
   reports   Report[]
-  ///roles     Role[]   @relation("UserRoles", references: [id])
 }
+
+enum Role {
+  USER
+  ADMIN
+}
+
 
 model Report {
   id          Int       @id @default(autoincrement())

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
+import { toast } from "react-hot-toast";
 
 import {
   Box,
@@ -175,7 +176,7 @@ export default function CreateReport() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!institutionId || !categoryId || !title || !lat || !lng) {
-      alert("All required fields must be filled.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -189,7 +190,7 @@ export default function CreateReport() {
       address: address || null,
     });
 
-    alert("Report created!");
+    toast.success("Report created successfully!");
 
     // reset
     setTitle("");

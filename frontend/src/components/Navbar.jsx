@@ -45,14 +45,9 @@ const AppBarInner = styled(Box)(({ theme }) => ({
   alignItems: "center",
   gap: 20,
 
-  // 🔥 Добавено
-  flexWrap: "wrap",
-  paddingBottom: "8px",
-
-  // Ако липсва — добавя spacing между редовете
-  rowGap: 12,
+  whiteSpace: "nowrap",
+  flexWrap: "nowrap",
 }));
-
 
 // =========================
 // Component
@@ -76,14 +71,6 @@ export default function NavBar() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
   const toggleDrawer = () => setDrawerOpen(!drawerOpen);
-
-  // Label
-  const modeLabel =
-    mode === "light"
-      ? "Light mode"
-      : mode === "dark"
-      ? "Dark mode"
-      : "System default";
 
   // ------------------------------
   // MENU BUTTONS (used in navbar + drawer)
@@ -116,36 +103,68 @@ export default function NavBar() {
           {/* LEFT MENU (hidden on mobile, visible on desktop) */}
           <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
             {menuItems.map((item) => (
-              <Button key={item.to} color="inherit" component={Link} to={item.to}>
+              <Button
+                key={item.to}
+                color="inherit"
+                component={Link}
+                to={item.to}
+              >
                 {item.label}
               </Button>
             ))}
           </Box>
 
           {/* RIGHT SIDE */}
-          <Box sx={{ marginLeft: "auto", display: "flex", gap: 2, alignItems: "center" }}>
-            {/* Light/Dark Mode */}
-            <Box sx={{ fontSize: "0.8rem", opacity: 0.7, display: { xs: "none", md: "block" } }}>
-              {modeLabel}
-            </Box>
-
+          <Box
+            sx={{
+              marginLeft: "auto",
+              display: "flex",
+              gap: 2,
+              alignItems: "center",
+            }}
+          >
             <IconButton onClick={handleOpenTheme} color="inherit" size="small">
               <Brightness4Icon />
             </IconButton>
 
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseTheme}>
-              <MenuItem onClick={() => { setMode("light"); handleCloseTheme(); }}>
-                {mode === "light" && <CheckIcon fontSize="small" sx={{ mr: 1 }} />}
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleCloseTheme}
+            >
+              <MenuItem
+                onClick={() => {
+                  setMode("light");
+                  handleCloseTheme();
+                }}
+              >
+                {mode === "light" && (
+                  <CheckIcon fontSize="small" sx={{ mr: 1 }} />
+                )}
                 Light
               </MenuItem>
 
-              <MenuItem onClick={() => { setMode("dark"); handleCloseTheme(); }}>
-                {mode === "dark" && <CheckIcon fontSize="small" sx={{ mr: 1 }} />}
+              <MenuItem
+                onClick={() => {
+                  setMode("dark");
+                  handleCloseTheme();
+                }}
+              >
+                {mode === "dark" && (
+                  <CheckIcon fontSize="small" sx={{ mr: 1 }} />
+                )}
                 Dark
               </MenuItem>
 
-              <MenuItem onClick={() => { setMode("system"); handleCloseTheme(); }}>
-                {mode === "system" && <CheckIcon fontSize="small" sx={{ mr: 1 }} />}
+              <MenuItem
+                onClick={() => {
+                  setMode("system");
+                  handleCloseTheme();
+                }}
+              >
+                {mode === "system" && (
+                  <CheckIcon fontSize="small" sx={{ mr: 1 }} />
+                )}
                 System
               </MenuItem>
             </Menu>
@@ -153,7 +172,9 @@ export default function NavBar() {
             {/* AUTH */}
             {user ? (
               <>
-                <Box sx={{ opacity: 0.8, display: { xs: "none", md: "block" } }}>
+                <Box
+                  sx={{ opacity: 0.8, display: { xs: "none", md: "block" } }}
+                >
                   Hello, {user.name}
                 </Box>
                 <Button variant="outlined" onClick={logout}>

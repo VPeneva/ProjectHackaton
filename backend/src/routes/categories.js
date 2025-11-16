@@ -5,18 +5,23 @@ import { isAdmin } from "../middleware/isAdmin.js";
 
 const router = express.Router();
 
-// Взима всички категории или категориите за дадена институция
+// Взима ВСИЧКИ категории или категориите за дадена институция
 router.get("/", async (req, res) => {
-  const { institutionId } = req.query;
+  try {
+    const { institutionId } = req.query;
 
-  const categories = await prisma.category.findMany({
-    where: institutionId
-      ? { institutionId: Number(institutionId) }
-      : {},
-    include: { institution: true }
-  });
+    const categories = await prisma.category.findMany({
+      where: institutionId
+        ? { institutionId: Number(institutionId) }
+        : {},
+      orderBy: { name: "asc" },
+    });
 
-  res.json(categories);
+    res.json(categories);
+  } catch (err) {
+    console.error("Error fetching categories:", err);
+    res.status(500).json({ error: "Failed to load categories" });
+  }
 });
 
 // Създаване на нова категория

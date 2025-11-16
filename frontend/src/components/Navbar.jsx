@@ -37,16 +37,12 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 }));
 
 const AppBarInner = styled(Box)(({ theme }) => ({
-  maxWidth: "1200px",
   width: "100%",
-  margin: "0 auto",
   padding: "0 20px",
   display: "flex",
   alignItems: "center",
   gap: 20,
-
   whiteSpace: "nowrap",
-  flexWrap: "nowrap",
 }));
 
 // =========================
@@ -69,15 +65,20 @@ export default function NavBar() {
 
   // Drawer (mobile hamburger)
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-
   const toggleDrawer = () => setDrawerOpen(!drawerOpen);
 
   // ------------------------------
-  // MENU BUTTONS (used in navbar + drawer)
+  // MENU BUTTONS
   // ------------------------------
   const menuItems = [
-    { label: "Reports", to: "/" },
+    { label: "Home", to: "/" }, // Landing page
+
+    ...(user
+      ? [{ label: "Reports", to: "/reports" }] // <--- FIXED
+      : []),
+
     ...(user ? [{ label: "Create Report", to: "/create" }] : []),
+
     ...(user?.role === "ADMIN"
       ? [
           { label: "Admin Panel", to: "/admin" },
@@ -93,15 +94,26 @@ export default function NavBar() {
     <StyledAppBar position="static">
       <Toolbar disableGutters>
         <AppBarInner>
-          {/* MOBILE BURGER (shows only on small screens) */}
+          {/* MOBILE BURGER */}
           <Box sx={{ display: { xs: "block", md: "none" } }}>
             <IconButton color="inherit" onClick={toggleDrawer}>
               <MenuIcon />
             </IconButton>
           </Box>
 
-          {/* LEFT MENU (hidden on mobile, visible on desktop) */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
+          {/* DESKTOP MENU */}
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              gap: 2,
+              flexGrow: 1, // <-- разширява се и ползва празното място
+              whiteSpace: "nowrap",
+              overflow: "hidden", // <-- скрива скрола
+              "& button": {
+                flexShrink: 0, // <-- не позволява текстът да пада на два реда
+              },
+            }}
+          >
             {menuItems.map((item) => (
               <Button
                 key={item.to}
@@ -121,8 +133,10 @@ export default function NavBar() {
               display: "flex",
               gap: 2,
               alignItems: "center",
+              minWidth: 150,
             }}
           >
+            {/* THEME SWITCHER */}
             <IconButton onClick={handleOpenTheme} color="inherit" size="small">
               <Brightness4Icon />
             </IconButton>
@@ -169,7 +183,7 @@ export default function NavBar() {
               </MenuItem>
             </Menu>
 
-            {/* AUTH */}
+            {/* AUTH BUTTONS */}
             {user ? (
               <>
                 <Box
@@ -207,8 +221,30 @@ export default function NavBar() {
               </ListItem>
             ))}
 
-            {/* AUTH inside drawer */}
-            <Divider sx={{ my: 1 }} />
+            <Divider />
+
+            {/* MOBILE AUTH */}
+            {user ? (
+              <ListItem disablePadding>
+                <ListItemButton onClick={logout}>
+                  <ListItemText primary="Logout" />
+                </ListItemButton>
+              </ListItem>
+            ) : (
+              <>
+                <ListItem disablePadding>
+                  <ListItemButton component={Link} to="/signin">
+                    <ListItemText primary="Sign In" />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListItem disablePadding>
+                  <ListItemButton component={Link} to="/signup">
+                    <ListItemText primary="Sign Up" />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            )}
           </List>
         </Box>
       </Drawer>

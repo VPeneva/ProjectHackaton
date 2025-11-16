@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NavBar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-import Reports from "./pages/Reports";
+import Landing from "./pages/LandingPage"; // ⬅ добавяме
+import Reports from "./pages/Reports"; // ⬅ преместено от '/'
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 
@@ -19,38 +20,43 @@ import About from "./pages/AboutUs";
 import Map from "./pages/Map";
 import Terms from "./pages/TermsOfService";
 import Privacy from "./pages/Legal";
-import Features from "./pages/Features";
-import FAQ from "./pages/FAQ";
 
 import ReportDetails from "./pages/ReportDetails";
 import ContactUs from "./pages/ContactUs";
 import AdminContactMessages from "./pages/AdminContactPage";
-import LandingPage from "./pages/LandingPage";
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <NavBar />
 
       <Routes>
-        <Route path="/" element={<Reports />} />
-        <Route path="/report/:id" element={<ReportDetails />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-
-        <Route path="/basepage" element={<BasePage />} />
-
-        <Route path="/map" element={<Map />} />
-
+        {/* PUBLIC ROUTES */}
+        <Route path="/" element={<Landing />} />{" "}
+        {/* ⬅ базова landing страница */}
         <Route path="/aboutus" element={<About />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/contactus" element={<ContactUs />} />
-
-        <Route path="/features" element={<Features />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/landing" element={<LandingPage />} />
-
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        {/* PROTECTED USER ROUTES */}
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/report/:id"
+          element={
+            <ProtectedRoute>
+              <ReportDetails />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/create"
           element={
@@ -59,7 +65,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        {/* ADMIN ROUTES */}
         <Route
           path="/admin"
           element={
@@ -68,7 +74,6 @@ function App() {
             </ProtectedAdminRoute>
           }
         />
-
         <Route
           path="/admin/institutions"
           element={
@@ -77,7 +82,6 @@ function App() {
             </ProtectedAdminRoute>
           }
         />
-
         <Route
           path="/admin/categories"
           element={
@@ -86,7 +90,6 @@ function App() {
             </ProtectedAdminRoute>
           }
         />
-
         <Route
           path="/admin/resolved"
           element={
@@ -109,5 +112,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;

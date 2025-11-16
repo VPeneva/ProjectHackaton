@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 
 import { styled } from "@mui/material/styles";
+import toast from "react-hot-toast";
 
 const PageContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
@@ -73,9 +74,7 @@ export default function Admin() {
   // Local per-report institution override
   const handleLocalInstitutionChange = (id, value) => {
     setReports((prev) =>
-      prev.map((r) =>
-        r.id === id ? { ...r, _selectedInstitution: value } : r
-      )
+      prev.map((r) => (r.id === id ? { ...r, _selectedInstitution: value } : r))
     );
   };
 
@@ -86,7 +85,7 @@ export default function Admin() {
       report._selectedInstitution || report.institution?.id || null;
 
     if (!instId) {
-      alert("Please select an institution first.");
+      toast.error("Please select an institution to send the report to.");
       return;
     }
 
@@ -104,11 +103,10 @@ export default function Admin() {
   };
 
   // Dynamic label for main filter
-  const selectedInstitutionLabel =
-    selectedInstitution
-      ? institutions.find((i) => i.id === Number(selectedInstitution))?.name ||
-        "All Institutions"
-      : "All Institutions";
+  const selectedInstitutionLabel = selectedInstitution
+    ? institutions.find((i) => i.id === Number(selectedInstitution))?.name ||
+      "All Institutions"
+    : "All Institutions";
 
   return (
     <>
@@ -155,7 +153,8 @@ export default function Admin() {
           {/* Reports */}
           <Stack spacing={2}>
             {reports.map((r) => {
-              const localInst = r._selectedInstitution ?? r.institution?.id ?? "";
+              const localInst =
+                r._selectedInstitution ?? r.institution?.id ?? "";
               const isSent = r.status === "SENT";
               const isFinished = r.status === "FINISHED";
 
@@ -168,8 +167,30 @@ export default function Admin() {
                       <Typography sx={{ mt: 1 }}>{r.description}</Typography>
                     )}
 
+                    {r.imageUrl && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography sx={{ mb: 1, fontWeight: 600 }}>
+                          Photo:
+                        </Typography>
+                        <a href={r.imageUrl} target="_blank" rel="noreferrer">
+                          <img
+                            src={r.imageUrl}
+                            alt="report"
+                            style={{
+                              maxWidth: 240,
+                              maxHeight: 160,
+                              borderRadius: 8,
+                              objectFit: "cover",
+                              display: "block",
+                            }}
+                          />
+                        </a>
+                      </Box>
+                    )}
+
                     <Typography sx={{ mt: 1 }}>
-                      <strong>Category:</strong> {r.category?.name || "No category"}
+                      <strong>Category:</strong>{" "}
+                      {r.category?.name || "No category"}
                     </Typography>
 
                     <Typography sx={{ mt: 1 }}>

@@ -30,8 +30,20 @@ router.get("/", async (req, res) => {
  */
 router.post("/", authMiddleware, async (req, res) => {
   try {
+<<<<<<< HEAD
     const { title, description, categoryId, lat, lng, institutionId } =
       req.body;
+=======
+    const {
+      title,
+      description,
+      imageUrl,
+      categoryId,
+      lat,
+      lng,
+      institutionId,
+    } = req.body;
+>>>>>>> 8742b43ab7f6006c62da2e68b59025c344fb103e
 
     // Задължителни полета
     if (!title || !categoryId || !lat || !lng || !institutionId) {
@@ -42,6 +54,7 @@ router.post("/", authMiddleware, async (req, res) => {
       data: {
         title,
         description: description || null, // optional
+        imageUrl: imageUrl || null,
         lat: parseFloat(lat),
         lng: parseFloat(lng),
         categoryId: Number(categoryId),

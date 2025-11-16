@@ -53,12 +53,7 @@ export default function ReportDetails() {
         {/* LEFT SIDE — REPORT INFO */}
         <Card variant="outlined">
           <CardContent>
-            <Button
-              component={Link}
-              to="/"
-              variant="outlined"
-              sx={{ mb: 2 }}
-            >
+            <Button component={Link} to="/" variant="outlined" sx={{ mb: 2 }}>
               ← Back to Reports
             </Button>
 
@@ -83,6 +78,24 @@ export default function ReportDetails() {
             <Typography sx={{ mt: 1 }}>
               <strong>Coordinates:</strong> {report.lat}, {report.lng}
             </Typography>
+
+            {report.imageUrl && (
+              <Box sx={{ mt: 2 }}>
+                <Typography sx={{ mb: 1, fontWeight: 600 }}>Photo</Typography>
+                <a href={report.imageUrl} target="_blank" rel="noreferrer">
+                  <img
+                    src={report.imageUrl}
+                    alt="report"
+                    style={{
+                      width: "100%",
+                      borderRadius: 8,
+                      maxHeight: 500,
+                      objectFit: "cover",
+                    }}
+                  />
+                </a>
+              </Box>
+            )}
 
             <Typography sx={{ mt: 2, opacity: 0.6 }}>
               Created by: {report.user?.name || "Unknown"}

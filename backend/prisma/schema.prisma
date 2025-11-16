@@ -62,4 +62,6 @@ model Report {
   // Category
   categoryId     Int?
   category       Category?    @relation(fields: [categoryId], references: [id])
+  // Optional image URL for the report
+  imageUrl       String?
 }

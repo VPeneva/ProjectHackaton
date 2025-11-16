@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
       include: {
         user: true,
         institution: true,
-        category: true
+        category: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -33,6 +33,7 @@ router.post("/", authMiddleware, async (req, res) => {
     const {
       title,
       description,
+      imageUrl,
       categoryId,
       lat,
       lng,
@@ -48,6 +49,7 @@ router.post("/", authMiddleware, async (req, res) => {
       data: {
         title,
         description: description || null, // optional
+        imageUrl: imageUrl || null,
         lat: parseFloat(lat),
         lng: parseFloat(lng),
         categoryId: Number(categoryId),
@@ -78,7 +80,7 @@ router.get("/:id", async (req, res) => {
       include: {
         user: true,
         institution: true,
-        category: true
+        category: true,
       },
     });
 

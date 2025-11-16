@@ -90,6 +90,10 @@ export default function CreateReport() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
@@ -180,7 +184,7 @@ export default function CreateReport() {
       return;
     }
 
-    await api.post("/reports", {
+    const payload = {
       title,
       description: description || null,
       categoryId: Number(categoryId),
@@ -188,7 +192,10 @@ export default function CreateReport() {
       lat: Number(lat),
       lng: Number(lng),
       address: address || null,
-    });
+      imageUrl: uploadedImageUrl || null,
+    };
+
+    await api.post("/reports", payload);
 
     toast.success("Report created successfully!");
 
@@ -202,6 +209,9 @@ export default function CreateReport() {
     setMarkerPosition(null);
     setAddress("");
     setSuggestions([]);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setUploadedImageUrl(null);
   };
 
   // ======================================================================
@@ -401,6 +411,113 @@ export default function CreateReport() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Photo (optional, images only, max 5MB)</FormLabel>
+                <Box
+                  sx={{
+                    position: "relative",
+                    display: "inline-block",
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      // validate type
+                      if (!file.type.startsWith("image/")) {
+                        toast.error("Only image files are allowed.");
+                        return;
+                      }
+
+                      // validate size (<5MB)
+                      const max = 5 * 1024 * 1024;
+                      if (file.size > max) {
+                        toast.error("Image too large. Max size is 5MB.");
+                        return;
+                      }
+
+                      setSelectedFile(file);
+                      setPreviewUrl(URL.createObjectURL(file));
+
+                      // auto-upload
+                      try {
+                        setUploading(true);
+                        const form = new FormData();
+                        form.append("image", file);
+                        const res = await api.post("/upload", form, {
+                          headers: { "Content-Type": "multipart/form-data" },
+                        });
+                        setUploadedImageUrl(res.data.url);
+                        toast.success("Image uploaded.");
+                      } catch (err) {
+                        console.error(err);
+                        toast.error(
+                          err?.response?.data?.error || "Upload failed"
+                        );
+                      } finally {
+                        setUploading(false);
+                      }
+                    }}
+                    style={{ display: "none" }}
+                    id="photo-input"
+                  />
+                  <label htmlFor="photo-input">
+                    <Button
+                      variant="contained"
+                      component="span"
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "1rem",
+                        padding: "10px 20px",
+                      }}
+                    >
+                      Choose Photo
+                    </Button>
+                  </label>
+                  {uploading && (
+                    <Typography sx={{ mt: 1 }}>Uploading...</Typography>
+                  )}
+                </Box>
+
+                {previewUrl && (
+                  <Box sx={{ mt: 1 }}>
+                    <Box
+                      sx={{
+                        mb: 1,
+                        maxWidth: 240,
+                        borderRadius: 8,
+                        // overflow: "hidden",
+                      }}
+                    >
+                      <img
+                        src={previewUrl}
+                        alt="preview"
+                        style={{
+                          maxWidth: 240,
+                          display: "block",
+                          borderRadius: 8,
+                        }}
+                      />
+                    </Box>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        setPreviewUrl(null);
+                        setUploadedImageUrl(null);
+                      }}
+                    >
+                      Remove Photo
+                    </Button>
+                  </Box>
+                )}
               </FormControl>
 
               <FormControl>

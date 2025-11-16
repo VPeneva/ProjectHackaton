@@ -87,17 +87,14 @@ export default function Footer() {
                 size="small"
                 sx={{ flexShrink: 0 }}
                 onClick={() => {
-                  const email = emailRef.current?.value?.trim();
-
-                  if (!email) {
-                    toast.error("Enter an email before joining us.");
+                  if (!title) {
+                    toast.error("Enter an email before joining JuniorAccelerator");
                     return;
                   }
-
                   toast.success("We have harvested your soul, thank you.");
                 }}
               >
-                Join Us
+                Join the dark side
               </Button>
             </Stack>
           </Box>

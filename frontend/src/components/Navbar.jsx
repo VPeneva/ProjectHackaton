@@ -189,7 +189,7 @@ export default function NavBar() {
                 <Box
                   sx={{ opacity: 0.8, display: { xs: "none", md: "block" } }}
                 >
-                  Hello, {user.name}
+                  Hello, {user.name}!
                 </Box>
                 <Button variant="outlined" onClick={logout}>
                   Logout

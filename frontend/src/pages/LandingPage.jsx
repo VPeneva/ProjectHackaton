@@ -1,30 +1,54 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
 
 import {
   Box,
   Card,
+  CardContent,
   CssBaseline,
   Typography,
   Stack,
   Divider,
-  Grid,
 } from "@mui/material";
 
 import { styled } from "@mui/material/styles";
 
-// ---- PAGE STYLES ----
+import {
+  GoogleMap,
+  Marker,
+  InfoWindow,
+  useLoadScript,
+} from "@react-google-maps/api";
+
+// =============================
+// STYLES
+// =============================
 const PageContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
   padding: theme.spacing(4),
+  backgroundImage:
+    theme.palette.mode === "dark"
+      ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.4), hsl(220, 30%, 5%))"
+      : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), white)",
 }));
 
 const InfoCard = styled(Card)(({ theme }) => ({
-  maxWidth: "1100px",
+  maxWidth: "900px",
   margin: "0 auto",
   padding: theme.spacing(4),
   borderRadius: "14px",
 }));
+
+// =============================
+// GOOGLE MAP OPTIONS
+// =============================
+const mapContainerStyle = {
+  width: "100%",
+  height: "500px",
+  borderRadius: "14px",
+};
+
+const defaultCenter = { lat: 42.6977, lng: 23.3219 }; // Sofia
 
 export default function LandingPage() {
   const [reports, setReports] = useState([]);
@@ -35,161 +59,120 @@ export default function LandingPage() {
     resolved: 0,
   });
 
-  const mapRef = useRef(null);
-  const googleMap = useRef(null);
-  const markersRef = useRef([]);
+  const [selectedReport, setSelectedReport] = useState(null);
 
-  // -------------------------
-  // Load reports from backend
-  // -------------------------
+  // Load Google Maps script
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API,
+  });
+
+  // Load reports
   useEffect(() => {
-    api.get("/reports/map").then((res) => {
-      console.log("Reports from DB:", res.data);
-      setReports(res.data);
-    });
+    api.get("/reports")
+      .then((res) => {
+        setReports(res.data);
 
-    api.get("/reports/stats").then((res) => {
-      console.log("Stats:", res.data);
-      setStats(res.data);
-    });
+        const pending = res.data.filter((r) => r.status === "Pending").length;
+        const sent = res.data.filter((r) => r.status === "Sent").length;
+        const resolved = res.data.filter((r) => r.status === "Resolved").length;
+
+        setStats({
+          total: res.data.length,
+          pending,
+          sent,
+          resolved,
+        });
+      })
+      .catch((err) => console.log(err));
   }, []);
 
-  // -------------------------
-  // Load Google Maps script
-  // -------------------------
-  useEffect(() => {
-    const existing = document.getElementById("google-maps");
-
-    if (!existing) {
-      const script = document.createElement("script");
-      script.id = "google-maps";
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${
-        import.meta.env.VITE_GOOGLE_MAPS_API
-      }`;
-      script.async = true;
-      script.onload = initMap;
-      document.body.appendChild(script);
-    } else {
-      initMap();
-    }
-  }, [reports]);
-
-  // -------------------------
-  // Initialize Map + Markers
-  // -------------------------
-  function initMap() {
-    if (!mapRef.current) return;
-
-    googleMap.current = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 42.6977, lng: 23.3219 }, // Sofia
-      zoom: 12,
-      mapId: "smartcity-map",
-    });
-
-    // Add markers
-    markersRef.current.forEach((m) => m.setMap(null));
-    markersRef.current = [];
-
-    reports.forEach((report) => {
-      const marker = new window.google.maps.Marker({
-        position: { lat: report.lat, lng: report.lng },
-        map: googleMap.current,
-        title: report.title,
-      });
-
-      const infoWindow = new window.google.maps.InfoWindow({
-        content: `
-          <div style="font-family: sans-serif;">
-            <strong>${report.title}</strong><br/>
-            Status: ${report.status}<br/>
-            <a href="/report/${report.id}" target="_blank" style="color:#1976d2">View details</a>
-          </div>
-        `,
-      });
-
-      marker.addListener("click", () => {
-        infoWindow.open(googleMap.current, marker);
-      });
-
-      markersRef.current.push(marker);
-    });
-  }
+  if (!isLoaded) return <div>Loading Map...</div>;
 
   return (
     <>
       <CssBaseline enableColorScheme />
-
       <PageContainer spacing={4}>
-        {/* ------------------- HEADER ------------------- */}
+        {/* ============================= INFO CARD ============================= */}
         <InfoCard>
           <Typography variant="h3" sx={{ fontWeight: 600, mb: 2 }}>
             Welcome to SmartCity
           </Typography>
 
           <Typography sx={{ opacity: 0.8 }}>
-            View the current issues reported by citizens in your city.
-            Each problem is assigned to the correct institution automatically.
+            View all issues citizens have reported across the city.  
+            Explore the live map below.
           </Typography>
 
-          <Divider sx={{ my: 3 }} />
+          <Divider sx={{ my: 2 }} />
 
-          <Typography variant="h5" sx={{ mb: 2 }}>
-            Current System Statistics
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            City Issue Statistics:
           </Typography>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ p: 2, borderLeft: "4px solid #9c27b0" }}>
-                <Typography variant="h6">Total Reports</Typography>
-                <Typography variant="h4">{stats.total}</Typography>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={3}>
-              <Card sx={{ p: 2, borderLeft: "4px solid #f44336" }}>
-                <Typography variant="h6">Pending</Typography>
-                <Typography variant="h4">{stats.pending}</Typography>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={3}>
-              <Card sx={{ p: 2, borderLeft: "4px solid #ff9800" }}>
-                <Typography variant="h6">Sent</Typography>
-                <Typography variant="h4">{stats.sent}</Typography>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={3}>
-              <Card sx={{ p: 2, borderLeft: "4px solid #4caf50" }}>
-                <Typography variant="h6">Resolved</Typography>
-                <Typography variant="h4">{stats.resolved}</Typography>
-              </Card>
-            </Grid>
-          </Grid>
+          <Typography sx={{ opacity: 0.8 }}>
+            Total reports: <strong>{stats.total}</strong>
+            <br />
+            Pending: <strong style={{ color: "orange" }}>{stats.pending}</strong>
+            <br />
+            Sent: <strong style={{ color: "#007bff" }}>{stats.sent}</strong>
+            <br />
+            Resolved: <strong style={{ color: "green" }}>{stats.resolved}</strong>
+          </Typography>
         </InfoCard>
 
-        {/* ------------------- MAP ------------------- */}
-        <Card
-          sx={{
-            maxWidth: "1100px",
-            margin: "0 auto",
-            padding: 2,
-            borderRadius: "14px",
-          }}
-        >
+        {/* ============================= MAP ============================= */}
+        <Card sx={{ maxWidth: "1100px", margin: "0 auto", padding: 2 }}>
           <Typography variant="h5" sx={{ mb: 2 }}>
-            Live Google Map: Active Issues
+            Live Map: City Issues
           </Typography>
 
-          <Box
-            ref={mapRef}
-            sx={{
-              height: 500,
-              width: "100%",
-              borderRadius: 2,
-              border: "1px solid #ccc",
-            }}
-          />
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            zoom={12}
+            center={defaultCenter}
+          >
+            {reports.map((r) => (
+              <Marker
+                key={r.id}
+                position={{ lat: r.lat, lng: r.lng }}
+                onClick={() => setSelectedReport(r)}
+              />
+            ))}
+
+            {selectedReport && (
+              <InfoWindow
+                position={{ lat: selectedReport.lat, lng: selectedReport.lng }}
+                onCloseClick={() => setSelectedReport(null)}
+              >
+                <Box sx={{ maxWidth: 200 }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {selectedReport.title}
+                  </Typography>
+
+                  <Typography sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
+                    Status: {selectedReport.status}
+                  </Typography>
+
+                  <Typography sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
+                    Category: {selectedReport.category?.name || "N/A"}
+                  </Typography>
+
+                  <Typography sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
+                    Institution: {selectedReport.institution?.name || "N/A"}
+                  </Typography>
+
+                  <button
+                    style={{ marginTop: "8px" }}
+                    onClick={() =>
+                      window.open(`/report/${selectedReport.id}`, "_blank")
+                    }
+                  >
+                    View details
+                  </button>
+                </Box>
+              </InfoWindow>
+            )}
+          </GoogleMap>
         </Card>
       </PageContainer>
     </>

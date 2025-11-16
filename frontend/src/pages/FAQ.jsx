@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 
 export default function BasePage(props) {
   return (
-    <Container id="features" sx={{ pt: { xs: 12, sm: 12 } }}>
+    <Container id="faq" sx={{ pt: { xs: 12, sm: 12 } }}>
       <Box sx={{ width: { sm: '100%', md: '60%' } }}>
         <Typography
           component="h2"
@@ -13,17 +13,17 @@ export default function BasePage(props) {
           gutterBottom
           sx={{ color: 'text.primary' }}
         >
-          Product features
+          FAQ about our product
         </Typography>
         <Typography
           variant="body1"
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
-          What is this app? Think of it as Waze, but without the navigation pat, meaning
+          What is this app? Think of it as Waze, but without the navigation part, meaning
           it works by alerting you or allowing you to report things that
           are out of order or are a threat to civilians.<br></br>
-          Why choose us? We offer a user-frinedly interface along with simple features that will 
-          help you navigate through our website if you're lost
+          Why choose us? We offer a user-friendly interface along with simple features that will 
+          help you navigate through our website if you're lost.
         </Typography>
       </Box>
     </Container>

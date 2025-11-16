@@ -19,7 +19,7 @@ export default function BasePage(props) {
           variant="body1"
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
-          Using this app, you can pick a precise locatin of where the problem is,
+          Using this app, you can pick the precise location of where a problem is,
           allowing the proper authorities to have the location of the report. <br></br>
           Everything is stored in a database which can be accessed using an admin account.
         </Typography>

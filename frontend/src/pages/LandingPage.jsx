@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
 
 import {
@@ -13,20 +13,7 @@ import {
 
 import { styled } from "@mui/material/styles";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { Icon } from "leaflet";
-
-// WORKING MARKER ICON (fix for Vite + Leaflet)
-const markerIcon = new Icon({
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-// Background layout
+// ---- PAGE STYLES ----
 const PageContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
   padding: theme.spacing(4),
@@ -48,27 +35,92 @@ export default function LandingPage() {
     resolved: 0,
   });
 
-  // Load reports (for map)
+  const mapRef = useRef(null);
+  const googleMap = useRef(null);
+  const markersRef = useRef([]);
+
+  // -------------------------
+  // Load reports from backend
+  // -------------------------
   useEffect(() => {
     api.get("/reports/map").then((res) => {
-      console.log("Map reports:", res.data);
+      console.log("Reports from DB:", res.data);
       setReports(res.data);
     });
-  }, []);
 
-  // Load stats from backend
-  useEffect(() => {
     api.get("/reports/stats").then((res) => {
       console.log("Stats:", res.data);
       setStats(res.data);
     });
   }, []);
 
+  // -------------------------
+  // Load Google Maps script
+  // -------------------------
+  useEffect(() => {
+    const existing = document.getElementById("google-maps");
+
+    if (!existing) {
+      const script = document.createElement("script");
+      script.id = "google-maps";
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${
+        import.meta.env.VITE_GOOGLE_MAPS_API
+      }`;
+      script.async = true;
+      script.onload = initMap;
+      document.body.appendChild(script);
+    } else {
+      initMap();
+    }
+  }, [reports]);
+
+  // -------------------------
+  // Initialize Map + Markers
+  // -------------------------
+  function initMap() {
+    if (!mapRef.current) return;
+
+    googleMap.current = new window.google.maps.Map(mapRef.current, {
+      center: { lat: 42.6977, lng: 23.3219 }, // Sofia
+      zoom: 12,
+      mapId: "smartcity-map",
+    });
+
+    // Add markers
+    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current = [];
+
+    reports.forEach((report) => {
+      const marker = new window.google.maps.Marker({
+        position: { lat: report.lat, lng: report.lng },
+        map: googleMap.current,
+        title: report.title,
+      });
+
+      const infoWindow = new window.google.maps.InfoWindow({
+        content: `
+          <div style="font-family: sans-serif;">
+            <strong>${report.title}</strong><br/>
+            Status: ${report.status}<br/>
+            <a href="/report/${report.id}" target="_blank" style="color:#1976d2">View details</a>
+          </div>
+        `,
+      });
+
+      marker.addListener("click", () => {
+        infoWindow.open(googleMap.current, marker);
+      });
+
+      markersRef.current.push(marker);
+    });
+  }
+
   return (
     <>
       <CssBaseline enableColorScheme />
+
       <PageContainer spacing={4}>
-        {/* HEADER */}
+        {/* ------------------- HEADER ------------------- */}
         <InfoCard>
           <Typography variant="h3" sx={{ fontWeight: 600, mb: 2 }}>
             Welcome to SmartCity
@@ -116,7 +168,7 @@ export default function LandingPage() {
           </Grid>
         </InfoCard>
 
-        {/* MAP */}
+        {/* ------------------- MAP ------------------- */}
         <Card
           sx={{
             maxWidth: "1100px",
@@ -126,55 +178,18 @@ export default function LandingPage() {
           }}
         >
           <Typography variant="h5" sx={{ mb: 2 }}>
-            Live Map: Active Issues
+            Live Google Map: Active Issues
           </Typography>
 
           <Box
+            ref={mapRef}
             sx={{
               height: 500,
+              width: "100%",
               borderRadius: 2,
-              overflow: "hidden",
-              border: "1px solid",
-              borderColor: "divider",
+              border: "1px solid #ccc",
             }}
-          >
-            <MapContainer
-              center={[42.6977, 23.3219]}
-              zoom={12}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                attribution="&copy; OpenStreetMap contributors"
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-
-              {reports.map((r) => (
-                <Marker
-                  key={r.id}
-                  position={[r.lat, r.lng]}
-                  icon={markerIcon} // IMPORTANT FIX
-                >
-                  <Popup>
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      {r.title}
-                    </Typography>
-                    <Typography sx={{ opacity: 0.7, fontSize: "0.85rem" }}>
-                      Status: {r.status}
-                    </Typography>
-
-                    <a
-                      href={`/report/${r.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ color: "#1976d2", fontWeight: 600 }}
-                    >
-                      View details →
-                    </a>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </Box>
+          />
         </Card>
       </PageContainer>
     </>

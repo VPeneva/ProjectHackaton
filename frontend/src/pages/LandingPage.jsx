@@ -68,13 +68,14 @@ export default function LandingPage() {
 
   // Load reports
   useEffect(() => {
-    api.get("/reports")
+    api
+      .get("/reports")
       .then((res) => {
         setReports(res.data);
 
         const pending = res.data.filter((r) => r.status === "Pending").length;
-        const sent = res.data.filter((r) => r.status === "Sent").length;
-        const resolved = res.data.filter((r) => r.status === "Resolved").length;
+        const sent = res.data.filter((r) => r.status === "SENT").length;
+        const resolved = res.data.filter((r) => r.status === "FINISHED").length;
 
         setStats({
           total: res.data.length,
@@ -99,8 +100,8 @@ export default function LandingPage() {
           </Typography>
 
           <Typography sx={{ opacity: 0.8 }}>
-            View all issues citizens have reported across the city.  
-            Explore the live map below.
+            View all issues citizens have reported across the city. Explore the
+            live map below.
           </Typography>
 
           <Divider sx={{ my: 2 }} />
@@ -112,11 +113,13 @@ export default function LandingPage() {
           <Typography sx={{ opacity: 0.8 }}>
             Total reports: <strong>{stats.total}</strong>
             <br />
-            Pending: <strong style={{ color: "orange" }}>{stats.pending}</strong>
+            Pending:{" "}
+            <strong style={{ color: "orange" }}>{stats.pending}</strong>
             <br />
             Sent: <strong style={{ color: "#007bff" }}>{stats.sent}</strong>
             <br />
-            Resolved: <strong style={{ color: "green" }}>{stats.resolved}</strong>
+            Resolved:{" "}
+            <strong style={{ color: "green" }}>{stats.resolved}</strong>
           </Typography>
         </InfoCard>
 

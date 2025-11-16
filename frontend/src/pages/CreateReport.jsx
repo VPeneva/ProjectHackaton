@@ -523,7 +523,7 @@ export default function CreateReport() {
                       </Box>
                     )}
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       color="error"
                       size="small"
                       onClick={() => {
@@ -570,13 +570,6 @@ export default function CreateReport() {
                         mb: 1,
                       }}
                     />
-                    <Button
-                      component="span"
-                      variant="contained"
-                      startIcon={<CloudUploadIcon />}
-                    >
-                      Upload photo
-                    </Button>
                     <Typography
                       variant="caption"
                       sx={{ color: "text.secondary", mt: 1 }}

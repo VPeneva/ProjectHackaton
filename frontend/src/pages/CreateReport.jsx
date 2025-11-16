@@ -415,49 +415,74 @@ export default function CreateReport() {
 
               <FormControl>
                 <FormLabel>Photo (optional, images only, max 5MB)</FormLabel>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-
-                    // validate type
-                    if (!file.type.startsWith("image/")) {
-                      toast.error("Only image files are allowed.");
-                      return;
-                    }
-
-                    // validate size (<5MB)
-                    const max = 5 * 1024 * 1024;
-                    if (file.size > max) {
-                      toast.error("Image too large. Max size is 5MB.");
-                      return;
-                    }
-
-                    setSelectedFile(file);
-                    setPreviewUrl(URL.createObjectURL(file));
-
-                    // auto-upload
-                    try {
-                      setUploading(true);
-                      const form = new FormData();
-                      form.append("image", file);
-                      const res = await api.post("/upload", form, {
-                        headers: { "Content-Type": "multipart/form-data" },
-                      });
-                      setUploadedImageUrl(res.data.url);
-                      toast.success("Image uploaded.");
-                    } catch (err) {
-                      console.error(err);
-                      toast.error(
-                        err?.response?.data?.error || "Upload failed"
-                      );
-                    } finally {
-                      setUploading(false);
-                    }
+                <Box
+                  sx={{
+                    position: "relative",
+                    display: "inline-block",
                   }}
-                />
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      // validate type
+                      if (!file.type.startsWith("image/")) {
+                        toast.error("Only image files are allowed.");
+                        return;
+                      }
+
+                      // validate size (<5MB)
+                      const max = 5 * 1024 * 1024;
+                      if (file.size > max) {
+                        toast.error("Image too large. Max size is 5MB.");
+                        return;
+                      }
+
+                      setSelectedFile(file);
+                      setPreviewUrl(URL.createObjectURL(file));
+
+                      // auto-upload
+                      try {
+                        setUploading(true);
+                        const form = new FormData();
+                        form.append("image", file);
+                        const res = await api.post("/upload", form, {
+                          headers: { "Content-Type": "multipart/form-data" },
+                        });
+                        setUploadedImageUrl(res.data.url);
+                        toast.success("Image uploaded.");
+                      } catch (err) {
+                        console.error(err);
+                        toast.error(
+                          err?.response?.data?.error || "Upload failed"
+                        );
+                      } finally {
+                        setUploading(false);
+                      }
+                    }}
+                    style={{ display: "none" }}
+                    id="photo-input"
+                  />
+                  <label htmlFor="photo-input">
+                    <Button
+                      variant="contained"
+                      component="span"
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "1rem",
+                        padding: "10px 20px",
+                      }}
+                    >
+                      Choose Photo
+                    </Button>
+                  </label>
+                  {uploading && (
+                    <Typography sx={{ mt: 1 }}>Uploading...</Typography>
+                  )}
+                </Box>
 
                 {previewUrl && (
                   <Box sx={{ mt: 1 }}>

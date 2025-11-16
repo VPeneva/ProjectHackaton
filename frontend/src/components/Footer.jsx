@@ -11,6 +11,9 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import SitemarkIcon from './SitemarkIcon';
 
+import { toast } from "react-hot-toast";
+
+
 function Copyright() {
   return (
     <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
@@ -83,9 +86,17 @@ export default function Footer() {
                 color="primary"
                 size="small"
                 sx={{ flexShrink: 0 }}
+                onClick={() => {
+                  if (!title) {
+                    toast.error("Enter an email before joining Us");
+                    return;
+                  }
+                  toast.success("We have harvested your soul, thank you.");
+                }}
               >
                 Join the dark side
               </Button>
+
             </Stack>
           </Box>
         </Box>
@@ -156,16 +167,13 @@ export default function Footer() {
             <Typography color="text.secondary" variant="body2">
               We won't sell your kidneys
             </Typography>
-
             <Typography variant="body2" sx={{ opacity: 0.5 }}>
               •
             </Typography>
-
             <Typography color="text.secondary" variant="body2">
               We promise
             </Typography>
           </Stack>
-
           <Copyright />
         </div>
 
@@ -195,7 +203,7 @@ export default function Footer() {
           >
             <GitHubIcon />
           </IconButton>
-          
+
           <IconButton
             color="inherit"
             size="small"

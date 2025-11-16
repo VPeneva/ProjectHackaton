@@ -20,8 +20,11 @@ export default function About(props) {
           variant="body1"
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        </Typography>
+          We are a small bunch of wanna-be developers who aim and
+          strive for a better future. The application we, along with our mentor,
+          managed to create in the limit of 24 hours is a small examples of the many
+          posibilities on how to protect ourselves, our cities and our nature.
+          </Typography>
       </Box>
     </Container>
   );

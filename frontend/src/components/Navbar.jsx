@@ -1,21 +1,34 @@
 import * as React from "react";
 import { useContext } from "react";
+
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { styled } from "@mui/material/styles";
-import { Link } from "react-router-dom";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Divider from "@mui/material/Divider";
+
+import MenuIcon from "@mui/icons-material/Menu";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import CheckIcon from "@mui/icons-material/Check";
+
+import { styled } from "@mui/material/styles";
+import { Link } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
 import { ColorModeContext } from "../theme/ThemeProvider";
 
-// --- Styled Components ---
+// =========================
+// Styles
+// =========================
+
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   color: theme.palette.text.primary,
@@ -31,59 +44,77 @@ const AppBarInner = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   gap: 20,
+
+  whiteSpace: "nowrap",
+  flexWrap: "nowrap",
 }));
+
+// =========================
+// Component
+// =========================
 
 export default function NavBar() {
   const auth = useContext(AuthContext);
   const colorMode = useContext(ColorModeContext);
 
-  // ако по някаква причина няма AuthProvider – не крашваме
-  if (!auth) return null;
-  if (!colorMode) return null;
+  if (!auth || !colorMode) return null;
 
   const { user, logout } = auth;
   const { mode, setMode } = colorMode;
 
+  // Theme menu
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const handleOpen = (e) => setAnchorEl(e.currentTarget);
-  const handleClose = () => setAnchorEl(null);
+  const handleOpenTheme = (e) => setAnchorEl(e.currentTarget);
+  const handleCloseTheme = () => setAnchorEl(null);
 
-  const modeLabel = {
-    light: "Light mode",
-    dark: "Dark mode",
-    system: "System default",
-  }[mode];
+  // Drawer (mobile hamburger)
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+
+  const toggleDrawer = () => setDrawerOpen(!drawerOpen);
+
+  // ------------------------------
+  // MENU BUTTONS (used in navbar + drawer)
+  // ------------------------------
+  const menuItems = [
+    { label: "Reports", to: "/" },
+    ...(user ? [{ label: "Create Report", to: "/create" }] : []),
+    ...(user?.role === "ADMIN"
+      ? [
+          { label: "Admin Panel", to: "/admin" },
+          { label: "Institutions", to: "/admin/institutions" },
+          { label: "Categories", to: "/admin/categories" },
+          { label: "Resolved Reports", to: "/admin/resolved" },
+          { label: "Contact Messages", to: "/admin/contact-messages" },
+        ]
+      : []),
+  ];
 
   return (
     <StyledAppBar position="static">
       <Toolbar disableGutters>
         <AppBarInner>
-          {/* Left Side */}
-          <Button color="inherit" component={Link} to="/">
-            Reports
-          </Button>
+          {/* MOBILE BURGER (shows only on small screens) */}
+          <Box sx={{ display: { xs: "block", md: "none" } }}>
+            <IconButton color="inherit" onClick={toggleDrawer}>
+              <MenuIcon />
+            </IconButton>
+          </Box>
 
-          {user && (
-            <Button color="inherit" component={Link} to="/create">
-              Create Report
-            </Button>
-          )}
+          {/* LEFT MENU (hidden on mobile, visible on desktop) */}
+          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
+            {menuItems.map((item) => (
+              <Button
+                key={item.to}
+                color="inherit"
+                component={Link}
+                to={item.to}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </Box>
 
-          {user?.role === "ADMIN" && (
-            <>
-              <Button color="inherit" component={Link} to="/admin">
-                Admin Panel
-              </Button>
-              <Button color="inherit" component={Link} to="/admin/institutions">
-                Institutions
-              </Button>
-              <Button color="inherit" component={Link} to="/admin/categories">
-                Categories
-              </Button>
-            </>
-          )}
-
-          {/* Right Side */}
+          {/* RIGHT SIDE */}
           <Box
             sx={{
               marginLeft: "auto",
@@ -92,29 +123,23 @@ export default function NavBar() {
               alignItems: "center",
             }}
           >
-            {/* Текущ режим (малък текст) */}
-            <Box sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
-              {modeLabel}
-            </Box>
-
-            {/* THEME SWITCHER */}
-            <IconButton onClick={handleOpen} color="inherit" size="small">
+            <IconButton onClick={handleOpenTheme} color="inherit" size="small">
               <Brightness4Icon />
             </IconButton>
 
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
-              onClose={handleClose}
+              onClose={handleCloseTheme}
             >
               <MenuItem
                 onClick={() => {
                   setMode("light");
-                  handleClose();
+                  handleCloseTheme();
                 }}
               >
                 {mode === "light" && (
-                  <CheckIcon fontSize="small" style={{ marginRight: 8 }} />
+                  <CheckIcon fontSize="small" sx={{ mr: 1 }} />
                 )}
                 Light
               </MenuItem>
@@ -122,11 +147,11 @@ export default function NavBar() {
               <MenuItem
                 onClick={() => {
                   setMode("dark");
-                  handleClose();
+                  handleCloseTheme();
                 }}
               >
                 {mode === "dark" && (
-                  <CheckIcon fontSize="small" style={{ marginRight: 8 }} />
+                  <CheckIcon fontSize="small" sx={{ mr: 1 }} />
                 )}
                 Dark
               </MenuItem>
@@ -134,20 +159,24 @@ export default function NavBar() {
               <MenuItem
                 onClick={() => {
                   setMode("system");
-                  handleClose();
+                  handleCloseTheme();
                 }}
               >
                 {mode === "system" && (
-                  <CheckIcon fontSize="small" style={{ marginRight: 8 }} />
+                  <CheckIcon fontSize="small" sx={{ mr: 1 }} />
                 )}
                 System
               </MenuItem>
             </Menu>
 
-            {/* AUTH SECTION */}
+            {/* AUTH */}
             {user ? (
               <>
-                <Box sx={{ opacity: 0.8 }}>Hello, {user.name}</Box>
+                <Box
+                  sx={{ opacity: 0.8, display: { xs: "none", md: "block" } }}
+                >
+                  Hello, {user.name}
+                </Box>
                 <Button variant="outlined" onClick={logout}>
                   Logout
                 </Button>
@@ -165,6 +194,24 @@ export default function NavBar() {
           </Box>
         </AppBarInner>
       </Toolbar>
+
+      {/* ========== MOBILE DRAWER ========== */}
+      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
+        <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer}>
+          <List>
+            {menuItems.map((item) => (
+              <ListItem disablePadding key={item.to}>
+                <ListItemButton component={Link} to={item.to}>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+
+            {/* AUTH inside drawer */}
+            <Divider sx={{ my: 1 }} />
+          </List>
+        </Box>
+      </Drawer>
     </StyledAppBar>
   );
 }

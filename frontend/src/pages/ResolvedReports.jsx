@@ -36,9 +36,10 @@ export default function ResolvedReports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ✅ ТОЗИ URL Е ПРАВИЛНИЯТ
   useEffect(() => {
     api
-      .get("/admin/reports/resolved")
+      .get("/admin/resolved")
       .then((res) => setReports(res.data))
       .finally(() => setLoading(false));
   }, []);
@@ -49,10 +50,7 @@ export default function ResolvedReports() {
 
       <PageContainer>
         <StyledCard variant="outlined">
-          <Typography
-            variant="h4"
-            sx={{ mb: 2, fontWeight: 600 }}
-          >
+          <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
             Resolved Reports
           </Typography>
 
@@ -92,12 +90,15 @@ export default function ResolvedReports() {
                   </Typography>
 
                   <Typography sx={{ mt: 1 }}>
-                    <strong>User:</strong>{" "}
-                    {r.user?.name} ({r.user?.email})
+                    <strong>User:</strong> {r.user?.name} ({r.user?.email})
                   </Typography>
 
                   <Typography
-                    sx={{ mt: 1, color: "green", fontWeight: "bold" }}
+                    sx={{
+                      mt: 1,
+                      color: "green",
+                      fontWeight: "bold",
+                    }}
                   >
                     ✔ Finished
                   </Typography>

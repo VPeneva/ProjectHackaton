@@ -21,7 +21,8 @@ export default function BasePage(props) {
           variant="body1"
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
-          Blah blah blah legal stuff goes here.
+          We will call our lawyers, so don't steal. JuniorAccelerator said they'll pay
+          the lawsuit.
         </Typography>
       </Box>
     </Container>

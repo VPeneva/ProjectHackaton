@@ -8,20 +8,23 @@ import SignIn from "./pages/SignIn";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import ResolvedReports from "./pages/ResolvedReports";
 
 import CreateReport from "./pages/CreateReport";
 import Admin from "./pages/Admin";
 import ManageInstitutions from "./pages/ManageInstitutions";
 import ManageCategories from "./pages/ManageCategories";
-import ResolvedReports from "./pages/ResolvedReports";
 import BasePage from "./pages/BasePage";
 import About from "./pages/AboutUs";
 import Map from "./pages/Map";
 import Terms from "./pages/TermsOfService"
 import Privacy from "./pages/Legal"
+import Features from "./pages/Features"
+import FAQ from "./pages/FAQ"
 
 import ReportDetails from "./pages/ReportDetails";
-
+import ContactUs from "./pages/ContactUs";
+import AdminContactMessages from "./pages/AdminContactPage";
 
 function App() {
   return (
@@ -41,6 +44,11 @@ function App() {
         <Route path="/aboutus" element={<About />} />
         <Route path="/terms" element={<Terms/>} />
         <Route path="/privacy" element={<Privacy/>} />
+        <Route path="/contactus" element={<ContactUs/>} />
+
+        <Route path="/features" element={<Features/>} />
+        <Route path="/faq" element={<FAQ/>} />
+
         <Route
           path="/create"
           element={
@@ -85,9 +93,16 @@ function App() {
             </ProtectedAdminRoute>
           }
         />
+        <Route
+          path="/admin/contact-messages"
+          element={
+            <ProtectedAdminRoute>
+              <AdminContactMessages />
+            </ProtectedAdminRoute>
+          }
+        />
       </Routes>
-      
-
+    
       <Footer />
     </BrowserRouter>
   );

@@ -19,6 +19,8 @@ import About from "./pages/AboutUs";
 import Map from "./pages/Map";
 import Terms from "./pages/TermsOfService"
 import Privacy from "./pages/Legal"
+import Features from "./pages/Features"
+import FAQ from "./pages/FAQ"
 
 import ReportDetails from "./pages/ReportDetails";
 import ContactUs from "./pages/ContactUs";
@@ -43,6 +45,10 @@ function App() {
         <Route path="/terms" element={<Terms/>} />
         <Route path="/privacy" element={<Privacy/>} />
         <Route path="/contactus" element={<ContactUs/>} />
+
+        <Route path="/features" element={<Features/>} />
+        <Route path="/faq" element={<FAQ/>} />
+
         <Route
           path="/create"
           element={

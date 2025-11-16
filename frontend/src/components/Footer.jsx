@@ -99,10 +99,10 @@ export default function Footer() {
           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
             Product
           </Typography>
-          <Link color="text.secondary" variant="body2" href="#">
+          <Link color="text.secondary" variant="body2" href="/features">
             Features
           </Link>
-          <Link color="text.secondary" variant="body2" href="#">
+          <Link color="text.secondary" variant="body2" href="/faq">
             FAQs
           </Link>
         </Box>

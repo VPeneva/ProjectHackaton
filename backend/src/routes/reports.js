@@ -140,40 +140,22 @@ router.get("/map", async (req, res) => {
 router.get("/stats", async (req, res) => {
   try {
     const total = await prisma.report.count();
-    const pending = await prisma.report.count({ where: { status: "Pending" }});
-    const sent = await prisma.report.count({ where: { status: "Sent" }});
-    const resolved = await prisma.report.count({ where: { status: "Resolved" }});
+    const pending = await prisma.report.count({ where: { status: "Pending" } });
+    const sent = await prisma.report.count({ where: { status: "Sent" } });
+    const resolved = await prisma.report.count({
+      where: { status: "Resolved" },
+    });
 
     res.json({
       total,
       pending,
       sent,
-      resolved
+      resolved,
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to load stats" });
   }
 });
-
-router.get("/reports/resolved", authMiddleware, isAdmin, async (req, res) => {
-  try {
-    const reports = await prisma.report.findMany({
-      where: { status: "FINISHED" },
-      include: {
-        user: true,
-        institution: true,
-        category: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    res.json(reports);
-  } catch (err) {
-    console.error("Error fetching resolved reports:", err);
-    res.status(500).json({ error: "Failed to fetch resolved reports" });
-  }
-});
-
 
 export default router;

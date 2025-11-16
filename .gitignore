@@ -40,3 +40,6 @@ backend/prisma/dev.db
 
 # OS
 Thumbs.db
+
+# Images
+backend/uploads/

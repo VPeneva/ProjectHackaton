@@ -20,8 +20,8 @@ export default function BasePage(props) {
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
           Using this app, you can pick a precise locatin of where the problem is,
-          allowing the proper authorities to have the location of the report. Everything is stored in
-          a database which can be accessed using an admin account.
+          allowing the proper authorities to have the location of the report. <br></br>
+          Everything is stored in a database which can be accessed using an admin account.
         </Typography>
       </Box>
     </Container>

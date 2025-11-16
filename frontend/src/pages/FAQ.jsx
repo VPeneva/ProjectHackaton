@@ -21,7 +21,7 @@ export default function BasePage(props) {
         >
           What is this app? Think of it as Waze, but without the navigation pat, meaning
           it works by alerting you or allowing you to report things that
-          are out of order or are a threat to civilians.
+          are out of order or are a threat to civilians.<br></br>
           Why choose us? We offer a user-frinedly interface along with simple features that will 
           help you navigate through our website if you're lost
         </Typography>

@@ -1,113 +1,96 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-
 import {
   Box,
   Card,
   CardContent,
-  CircularProgress,
-  CssBaseline,
-  Divider,
-  Stack,
   Typography,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
-
-const PageContainer = styled(Stack)(({ theme }) => ({
-  minHeight: "100vh",
-  padding: theme.spacing(4),
-  alignItems: "center",
-  backgroundColor: theme.palette.background.default,
-}));
-
-const StyledCard = styled(Card)(({ theme }) => ({
-  width: "100%",
-  maxWidth: "900px",
-  padding: theme.spacing(3),
-  borderRadius: "14px",
-}));
-
-const ReportCard = styled(Card)(({ theme }) => ({
-  padding: theme.spacing(2),
-  borderRadius: "10px",
-}));
 
 export default function ResolvedReports() {
   const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
+  const [filterCategory, setFilterCategory] = useState("ALL");
 
-  // ✅ ТОЗИ URL Е ПРАВИЛНИЯТ
+  // Load resolved reports
   useEffect(() => {
-    api
-      .get("/admin/resolved")
-      .then((res) => setReports(res.data))
-      .finally(() => setLoading(false));
+    api.get("/admin/reports/resolved").then((res) => setReports(res.data));
   }, []);
 
+  // Load categories
+  useEffect(() => {
+    api.get("/categories").then((res) => setCategories(res.data));
+  }, []);
+
+  // Filter reports by category
+  const filteredReports =
+    filterCategory === "ALL"
+      ? reports
+      : reports.filter((r) => r.categoryId === Number(filterCategory));
+
   return (
-    <>
-      <CssBaseline />
+    <Box sx={{ padding: "20px" }}>
+      <Typography variant="h4" sx={{ mb: 2 }}>
+        Resolved Reports
+      </Typography>
 
-      <PageContainer>
-        <StyledCard variant="outlined">
-          <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
-            Resolved Reports
-          </Typography>
+      {/* Dropdown Filter */}
+      <FormControl sx={{ minWidth: 250, mb: 3 }}>
+        <InputLabel>Filter by Category</InputLabel>
+        <Select
+          value={filterCategory}
+          label="Filter by Category"
+          onChange={(e) => setFilterCategory(e.target.value)}
+        >
+          <MenuItem value="ALL">All Categories</MenuItem>
+          {categories.map((c) => (
+            <MenuItem key={c.id} value={c.id}>
+              {c.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-          <Divider sx={{ mb: 3 }} />
+      {/* Report Cards */}
+      {filteredReports.length === 0 && (
+        <Typography sx={{ mt: 2, opacity: 0.7 }}>
+          No reports found for this category.
+        </Typography>
+      )}
 
-          {/* Loading */}
-          {loading && (
-            <Box sx={{ textAlign: "center", py: 4 }}>
-              <CircularProgress />
-            </Box>
-          )}
+      {filteredReports.map((r) => (
+        <Card
+          key={r.id}
+          sx={{
+            borderLeft: "5px solid green",
+            mb: 2,
+          }}
+        >
+          <CardContent>
+            <Typography variant="h6">{r.title}</Typography>
 
-          {/* Empty */}
-          {!loading && reports.length === 0 && (
-            <Typography>No resolved reports found.</Typography>
-          )}
+            <Typography sx={{ mb: 1, opacity: 0.8 }}>
+              {r.description}
+            </Typography>
 
-          {/* Reports */}
-          <Stack spacing={2}>
-            {reports.map((r) => (
-              <ReportCard key={r.id} variant="outlined">
-                <CardContent>
-                  <Typography variant="h6">{r.title}</Typography>
+            <Typography>
+              <strong>Category:</strong> {r.category?.name || "N/A"}
+            </Typography>
 
-                  {r.description && (
-                    <Typography sx={{ mt: 1 }}>{r.description}</Typography>
-                  )}
+            <Typography>
+              <strong>Institution:</strong> {r.institution?.name || "N/A"}
+            </Typography>
 
-                  <Typography sx={{ mt: 1 }}>
-                    <strong>Category:</strong>{" "}
-                    {r.category?.name || "Unknown"}
-                  </Typography>
-
-                  <Typography>
-                    <strong>Institution:</strong>{" "}
-                    {r.institution?.name || "Unknown"}
-                  </Typography>
-
-                  <Typography sx={{ mt: 1 }}>
-                    <strong>User:</strong> {r.user?.name} ({r.user?.email})
-                  </Typography>
-
-                  <Typography
-                    sx={{
-                      mt: 1,
-                      color: "green",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    ✔ Finished
-                  </Typography>
-                </CardContent>
-              </ReportCard>
-            ))}
-          </Stack>
-        </StyledCard>
-      </PageContainer>
-    </>
+            <Typography sx={{ mt: 1, color: "green" }}>
+              Status: Resolved
+            </Typography>
+          </CardContent>
+        </Card>
+      ))}
+    </Box>
   );
 }

@@ -45,9 +45,14 @@ const AppBarInner = styled(Box)(({ theme }) => ({
   alignItems: "center",
   gap: 20,
 
-  whiteSpace: "nowrap",
-  flexWrap: "nowrap",
+  // 🔥 Добавено
+  flexWrap: "wrap",
+  paddingBottom: "8px",
+
+  // Ако липсва — добавя spacing между редовете
+  rowGap: 12,
 }));
+
 
 // =========================
 // Component

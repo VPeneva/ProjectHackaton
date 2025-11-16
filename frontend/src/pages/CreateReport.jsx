@@ -523,7 +523,7 @@ export default function CreateReport() {
                       </Box>
                     )}
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       color="error"
                       size="small"
                       onClick={() => {

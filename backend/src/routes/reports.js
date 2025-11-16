@@ -137,4 +137,23 @@ router.get("/map", async (req, res) => {
   }
 });
 
+router.get("/stats", async (req, res) => {
+  try {
+    const total = await prisma.report.count();
+    const pending = await prisma.report.count({ where: { status: "Pending" }});
+    const sent = await prisma.report.count({ where: { status: "Sent" }});
+    const resolved = await prisma.report.count({ where: { status: "Resolved" }});
+
+    res.json({
+      total,
+      pending,
+      sent,
+      resolved
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load stats" });
+  }
+});
+
 export default router;

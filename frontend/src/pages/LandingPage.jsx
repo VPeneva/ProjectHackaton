@@ -1,9 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
 
 import {
   Box,
-  Button,
   Card,
   CardContent,
   CssBaseline,
@@ -14,18 +13,16 @@ import {
 
 import { styled } from "@mui/material/styles";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { Icon } from "leaflet";
+import {
+  GoogleMap,
+  Marker,
+  InfoWindow,
+  useLoadScript,
+} from "@react-google-maps/api";
 
-// Custom marker icon
-const markerIcon = new Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-// Page background
+// =============================
+// STYLES
+// =============================
 const PageContainer = styled(Stack)(({ theme }) => ({
   minHeight: "100vh",
   padding: theme.spacing(4),
@@ -33,131 +30,152 @@ const PageContainer = styled(Stack)(({ theme }) => ({
     theme.palette.mode === "dark"
       ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.4), hsl(220, 30%, 5%))"
       : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), white)",
-  backgroundRepeat: "no-repeat",
 }));
 
-// Info card
 const InfoCard = styled(Card)(({ theme }) => ({
   maxWidth: "900px",
   margin: "0 auto",
   padding: theme.spacing(4),
   borderRadius: "14px",
-  boxShadow:
-    "hsla(220, 30%, 5%, 0.05) 0px 5px 15px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
-  ...theme.applyStyles?.("dark", {
-    boxShadow:
-      "hsla(220, 30%, 5%, 0.4) 0px 5px 15px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
-  }),
 }));
 
+// =============================
+// GOOGLE MAP OPTIONS
+// =============================
+const mapContainerStyle = {
+  width: "100%",
+  height: "500px",
+  borderRadius: "14px",
+};
+
+const defaultCenter = { lat: 42.6977, lng: 23.3219 }; // Sofia
+
 export default function LandingPage() {
-  const [activeReports, setActiveReports] = useState([]);
-
-  useEffect(() => {
-    api.get("/reports/active").then((res) => setActiveReports(res.data));
-  }, []);
   const [reports, setReports] = useState([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    sent: 0,
+    resolved: 0,
+  });
 
+  const [selectedReport, setSelectedReport] = useState(null);
+
+  // Load Google Maps script
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API,
+  });
+
+  // Load reports
   useEffect(() => {
-    api.get("/reports/map").then((res) => setReports(res.data));
+    api
+      .get("/reports")
+      .then((res) => {
+        setReports(res.data);
+
+        const pending = res.data.filter((r) => r.status === "Pending").length;
+        const sent = res.data.filter((r) => r.status === "SENT").length;
+        const resolved = res.data.filter((r) => r.status === "FINISHED").length;
+
+        setStats({
+          total: res.data.length,
+          pending,
+          sent,
+          resolved,
+        });
+      })
+      .catch((err) => console.log(err));
   }, []);
 
-  const mapCenter = [42.6977, 23.3219]; // София по default
+  if (!isLoaded) return <div>Loading Map...</div>;
 
   return (
     <>
       <CssBaseline enableColorScheme />
       <PageContainer spacing={4}>
-        {/* ---------- INFO SECTION ---------- */}
+        {/* ============================= INFO CARD ============================= */}
         <InfoCard>
           <Typography variant="h3" sx={{ fontWeight: 600, mb: 2 }}>
             Welcome to SmartCity
           </Typography>
 
           <Typography sx={{ opacity: 0.8 }}>
-            A platform where citizens can report issues in the city — street
-            problems, lights, infrastructure, and more. Our system routes each
-            report to the correct institution for fast and efficient resolution.
+            View all issues citizens have reported across the city. Explore the
+            live map below.
           </Typography>
 
           <Divider sx={{ my: 2 }} />
 
           <Typography variant="h6" sx={{ mb: 1 }}>
-            Active issues in the city:
+            City Issue Statistics:
           </Typography>
 
-          <Typography sx={{ opacity: 0.7, mb: 2 }}>
-            The map below displays all problems that are currently being
-            processed or already sent to institutions.
+          <Typography sx={{ opacity: 0.8 }}>
+            Total reports: <strong>{stats.total}</strong>
+            <br />
+            Pending:{" "}
+            <strong style={{ color: "orange" }}>{stats.pending}</strong>
+            <br />
+            Sent: <strong style={{ color: "#007bff" }}>{stats.sent}</strong>
+            <br />
+            Resolved:{" "}
+            <strong style={{ color: "green" }}>{stats.resolved}</strong>
           </Typography>
         </InfoCard>
 
-        {/* ---------- MAP SECTION ---------- */}
-        <Card
-          sx={{
-            maxWidth: "1100px",
-            margin: "0 auto",
-            padding: 2,
-            borderRadius: "14px",
-          }}
-        >
+        {/* ============================= MAP ============================= */}
+        <Card sx={{ maxWidth: "1100px", margin: "0 auto", padding: 2 }}>
           <Typography variant="h5" sx={{ mb: 2 }}>
             Live Map: City Issues
           </Typography>
 
-          <Box
-            sx={{
-              height: 500,
-              borderRadius: 2,
-              overflow: "hidden",
-              border: "1px solid",
-              borderColor: "divider",
-            }}
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            zoom={12}
+            center={defaultCenter}
           >
-            <MapContainer
-              center={[42.6977, 23.3219]}
-              zoom={12}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                attribution="&copy; OpenStreetMap contributors"
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            {reports.map((r) => (
+              <Marker
+                key={r.id}
+                position={{ lat: r.lat, lng: r.lng }}
+                onClick={() => setSelectedReport(r)}
               />
+            ))}
 
-              {reports.map((r) => (
-                <Marker key={r.id} icon={markerIcon} position={[r.lat, r.lng]}>
-                  <Popup>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {r.title}
-                    </Typography>
+            {selectedReport && (
+              <InfoWindow
+                position={{ lat: selectedReport.lat, lng: selectedReport.lng }}
+                onCloseClick={() => setSelectedReport(null)}
+              >
+                <Box sx={{ maxWidth: 200 }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {selectedReport.title}
+                  </Typography>
 
-                    <Typography sx={{ fontSize: "0.85rem", opacity: 0.7 }}>
-                      Category: {r.category?.name || "N/A"}
-                    </Typography>
+                  <Typography sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
+                    Status: {selectedReport.status}
+                  </Typography>
 
-                    <Typography sx={{ fontSize: "0.85rem", opacity: 0.7 }}>
-                      Institution: {r.institution?.name || "Not assigned"}
-                    </Typography>
+                  <Typography sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
+                    Category: {selectedReport.category?.name || "N/A"}
+                  </Typography>
 
-                    <Typography
-                      sx={{ fontSize: "0.8rem", mt: 1, color: "primary.main" }}
-                    >
-                      Status: {r.status}
-                    </Typography>
+                  <Typography sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
+                    Institution: {selectedReport.institution?.name || "N/A"}
+                  </Typography>
 
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      sx={{ mt: 1 }}
-                      onClick={() => window.open(`/report/${r.id}`, "_blank")}
-                    >
-                      View details
-                    </Button>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </Box>
+                  <button
+                    style={{ marginTop: "8px" }}
+                    onClick={() =>
+                      window.open(`/report/${selectedReport.id}`, "_blank")
+                    }
+                  >
+                    View details
+                  </button>
+                </Box>
+              </InfoWindow>
+            )}
+          </GoogleMap>
         </Card>
       </PageContainer>
     </>

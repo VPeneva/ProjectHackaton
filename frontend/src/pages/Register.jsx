@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Register() {
   const { register } = useContext(AuthContext);
@@ -19,8 +20,8 @@ export default function Register() {
 
       // 🔥 автоматичен login → редирект
       navigate("/");
-    } catch (err) {
-      alert("Registration failed");
+    } catch (err) {     
+      toast.error("Registration failed. Please try again.");
       console.error(err);
     }
   };

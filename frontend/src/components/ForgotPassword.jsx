@@ -10,6 +10,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import api from "../services/api";
+import toast from "react-hot-toast";
 
 function ForgotPassword({ open, handleClose }) {
   const [email, setEmail] = React.useState("");
@@ -17,8 +18,7 @@ function ForgotPassword({ open, handleClose }) {
   const [success, setSuccess] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
-  const validateEmail = (email) =>
-    /\S+@\S+\.\S+/.test(email);
+  const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -41,7 +41,6 @@ function ForgotPassword({ open, handleClose }) {
         handleClose();
         setSuccess("");
       }, 2000);
-
     } catch (err) {
       setError("Something went wrong. Try again.");
     }
@@ -62,9 +61,11 @@ function ForgotPassword({ open, handleClose }) {
 
             try {
               await api.post("/auth/forgot-password", { email });
-              alert("If this email exists, a reset link has been sent.");
+              toast.success(
+                "If this email exists, a reset link has been sent."
+              );
             } catch (err) {
-              alert("If this email exists, a reset link has been sent.");
+              toast.error("Something went wrong. Please try again.");
             }
 
             handleClose();

@@ -19,9 +19,11 @@ export default function BasePage(props) {
           variant="body1"
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
-          Provide a brief overview of the key features of the product. For example,
-          you could list the number of features, their types or benefits, and
-          add-ons.
+          What is this app? Think of it as Waze, but without the navigation pat, meaning
+          it works by alerting you or allowing you to report things that
+          are out of order or are a threat to civilians.
+          Why choose us? We offer a user-frinedly interface along with simple features that will 
+          help you navigate through our website if you're lost
         </Typography>
       </Box>
     </Container>

@@ -19,9 +19,9 @@ export default function BasePage(props) {
           variant="body1"
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
-          Provide a brief overview of the key features of the product. For example,
-          you could list the number of features, their types or benefits, and
-          add-ons.
+          Using this app, you can pick a precise locatin of where the problem is,
+          allowing the proper authorities to have the location of the report. Everything is stored in
+          a database which can be accessed using an admin account.
         </Typography>
       </Box>
     </Container>

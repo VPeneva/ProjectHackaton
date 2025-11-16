@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
 import { toast } from "react-hot-toast";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 import {
   Box,
@@ -22,6 +23,18 @@ import { styled } from "@mui/material/styles";
 
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { Icon } from "leaflet";
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
 // ---------------------
 // Leaflet Marker Icon
@@ -415,95 +428,100 @@ export default function CreateReport() {
 
               <FormControl>
                 <FormLabel>Photo (optional, images only, max 5MB)</FormLabel>
-                <Box
-                  sx={{
-                    position: "relative",
-                    display: "inline-block",
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    // validate type
+                    if (!file.type.startsWith("image/")) {
+                      toast.error("Only image files are allowed.");
+                      return;
+                    }
+
+                    // validate size (<5MB)
+                    const max = 5 * 1024 * 1024;
+                    if (file.size > max) {
+                      toast.error("Image too large. Max size is 5MB.");
+                      return;
+                    }
+
+                    setSelectedFile(file);
+                    setPreviewUrl(URL.createObjectURL(file));
+
+                    // auto-upload
+                    try {
+                      setUploading(true);
+                      const form = new FormData();
+                      form.append("image", file);
+                      const res = await api.post("/upload", form, {
+                        headers: { "Content-Type": "multipart/form-data" },
+                      });
+                      setUploadedImageUrl(res.data.url);
+                      toast.success("Image uploaded.");
+                    } catch (err) {
+                      console.error(err);
+                      toast.error(
+                        err?.response?.data?.error || "Upload failed"
+                      );
+                    } finally {
+                      setUploading(false);
+                    }
                   }}
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
+                  onClick={(e) => {
+                    e.currentTarget.value = "";
+                  }}
+                  style={{ display: "none" }}
+                  id="photo-input"
+                />
 
-                      // validate type
-                      if (!file.type.startsWith("image/")) {
-                        toast.error("Only image files are allowed.");
-                        return;
-                      }
-
-                      // validate size (<5MB)
-                      const max = 5 * 1024 * 1024;
-                      if (file.size > max) {
-                        toast.error("Image too large. Max size is 5MB.");
-                        return;
-                      }
-
-                      setSelectedFile(file);
-                      setPreviewUrl(URL.createObjectURL(file));
-
-                      // auto-upload
-                      try {
-                        setUploading(true);
-                        const form = new FormData();
-                        form.append("image", file);
-                        const res = await api.post("/upload", form, {
-                          headers: { "Content-Type": "multipart/form-data" },
-                        });
-                        setUploadedImageUrl(res.data.url);
-                        toast.success("Image uploaded.");
-                      } catch (err) {
-                        console.error(err);
-                        toast.error(
-                          err?.response?.data?.error || "Upload failed"
-                        );
-                      } finally {
-                        setUploading(false);
-                      }
+                {previewUrl ? (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: 300,
+                      border: "2px solid",
+                      borderColor: "divider",
+                      borderRadius: 2,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                      backgroundColor: "action.hover",
+                      position: "relative",
                     }}
-                    style={{ display: "none" }}
-                    id="photo-input"
-                  />
-                  <label htmlFor="photo-input">
-                    <Button
-                      variant="contained"
-                      component="span"
-                      sx={{
-                        textTransform: "none",
-                        fontSize: "1rem",
-                        padding: "10px 20px",
+                  >
+                    <img
+                      src={previewUrl}
+                      alt="preview"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
                       }}
-                    >
-                      Choose Photo
-                    </Button>
-                  </label>
-                  {uploading && (
-                    <Typography sx={{ mt: 1 }}>Uploading...</Typography>
-                  )}
-                </Box>
-
-                {previewUrl && (
-                  <Box sx={{ mt: 1 }}>
-                    <Box
-                      sx={{
-                        mb: 1,
-                        maxWidth: 240,
-                        borderRadius: 8,
-                        // overflow: "hidden",
-                      }}
-                    >
-                      <img
-                        src={previewUrl}
-                        alt="preview"
-                        style={{
-                          maxWidth: 240,
-                          display: "block",
-                          borderRadius: 8,
+                    />
+                    {uploading && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: "rgba(0, 0, 0, 0.5)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
-                      />
-                    </Box>
+                      >
+                        <Typography sx={{ color: "white" }}>
+                          Uploading...
+                        </Typography>
+                      </Box>
+                    )}
                     <Button
                       variant="outlined"
                       color="error"
@@ -513,9 +531,58 @@ export default function CreateReport() {
                         setPreviewUrl(null);
                         setUploadedImageUrl(null);
                       }}
+                      sx={{
+                        position: "absolute",
+                        bottom: 8,
+                        right: 8,
+                      }}
                     >
                       Remove Photo
                     </Button>
+                  </Box>
+                ) : (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      border: "2px dashed",
+                      borderColor: "divider",
+                      borderRadius: 2,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 3,
+                      backgroundColor: "action.hover",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        borderColor: "primary.main",
+                        backgroundColor: "action.selected",
+                      },
+                    }}
+                    component="label"
+                    htmlFor="photo-input"
+                  >
+                    <CloudUploadIcon
+                      sx={{
+                        fontSize: 48,
+                        color: "text.secondary",
+                        mb: 1,
+                      }}
+                    />
+                    <Button
+                      component="span"
+                      variant="contained"
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Upload photo
+                    </Button>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "text.secondary", mt: 1 }}
+                    >
+                      or drag and drop
+                    </Typography>
                   </Box>
                 )}
               </FormControl>

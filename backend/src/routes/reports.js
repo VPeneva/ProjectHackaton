@@ -156,4 +156,24 @@ router.get("/stats", async (req, res) => {
   }
 });
 
+router.get("/reports/resolved", authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const reports = await prisma.report.findMany({
+      where: { status: "FINISHED" },
+      include: {
+        user: true,
+        institution: true,
+        category: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json(reports);
+  } catch (err) {
+    console.error("Error fetching resolved reports:", err);
+    res.status(500).json({ error: "Failed to fetch resolved reports" });
+  }
+});
+
+
 export default router;

@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
       include: {
         user: true,
         institution: true,
-        category: true
+        category: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -30,14 +30,8 @@ router.get("/", async (req, res) => {
  */
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    const {
-      title,
-      description,
-      categoryId,
-      lat,
-      lng,
-      institutionId,
-    } = req.body;
+    const { title, description, categoryId, lat, lng, institutionId } =
+      req.body;
 
     // Задължителни полета
     if (!title || !categoryId || !lat || !lng || !institutionId) {
@@ -78,7 +72,7 @@ router.get("/:id", async (req, res) => {
       include: {
         user: true,
         institution: true,
-        category: true
+        category: true,
       },
     });
 
@@ -90,6 +84,48 @@ router.get("/:id", async (req, res) => {
   } catch (err) {
     console.error("Error fetching report:", err);
     res.status(500).json({ error: "Failed to fetch report" });
+  }
+});
+
+// GET /api/reports/active
+router.get("/active", async (req, res) => {
+  try {
+    const reports = await prisma.report.findMany({
+      where: {
+        status: {
+          in: ["Sent", "Processing", "Pending"],
+        },
+      },
+      include: {
+        institution: true,
+        category: true,
+      },
+    });
+
+    res.json(reports);
+  } catch (err) {
+    console.error("Error loading active reports:", err);
+    res.status(500).json({ error: "Failed to load active reports" });
+  }
+});
+
+router.get("/map", async (req, res) => {
+  try {
+    const reports = await prisma.report.findMany({
+      where: {
+        status: { in: ["Pending", "Sent"] },
+      },
+      include: {
+        user: true,
+        institution: true,
+        category: true,
+      },
+    });
+
+    res.json(reports);
+  } catch (err) {
+    console.error("MAP ERROR:", err);
+    res.status(500).json({ error: "Failed to fetch reports" });
   }
 });
 

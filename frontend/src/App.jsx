@@ -17,14 +17,15 @@ import ManageCategories from "./pages/ManageCategories";
 import BasePage from "./pages/BasePage";
 import About from "./pages/AboutUs";
 import Map from "./pages/Map";
-import Terms from "./pages/TermsOfService"
-import Privacy from "./pages/Legal"
-import Features from "./pages/Features"
-import FAQ from "./pages/FAQ"
+import Terms from "./pages/TermsOfService";
+import Privacy from "./pages/Legal";
+import Features from "./pages/Features";
+import FAQ from "./pages/FAQ";
 
 import ReportDetails from "./pages/ReportDetails";
 import ContactUs from "./pages/ContactUs";
 import AdminContactMessages from "./pages/AdminContactPage";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
@@ -42,12 +43,13 @@ function App() {
         <Route path="/map" element={<Map />} />
 
         <Route path="/aboutus" element={<About />} />
-        <Route path="/terms" element={<Terms/>} />
-        <Route path="/privacy" element={<Privacy/>} />
-        <Route path="/contactus" element={<ContactUs/>} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/contactus" element={<ContactUs />} />
 
-        <Route path="/features" element={<Features/>} />
-        <Route path="/faq" element={<FAQ/>} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/landing" element={<LandingPage />} />
 
         <Route
           path="/create"
@@ -102,7 +104,7 @@ function App() {
           }
         />
       </Routes>
-    
+
       <Footer />
     </BrowserRouter>
   );

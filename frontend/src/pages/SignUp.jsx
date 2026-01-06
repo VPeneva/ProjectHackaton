@@ -1,176 +1,125 @@
-import * as React from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import Divider from "@mui/material/Divider";
-import FormLabel from "@mui/material/FormLabel";
-import FormControl from "@mui/material/FormControl";
-import Link from "@mui/material/Link";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import MuiCard from "@mui/material/Card";
-import { styled } from "@mui/material/styles";
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-
-const Card = styled(MuiCard)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  alignSelf: "center",
-  width: "100%",
-  padding: theme.spacing(4),
-  gap: theme.spacing(2),
-  margin: "auto",
-  boxShadow:
-    "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
-  [theme.breakpoints.up("sm")]: {
-    width: "450px",
-  },
-  ...theme.applyStyles("dark", {
-    boxShadow:
-      "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
-  }),
-}));
-
-const SignUpContainer = styled(Stack)(({ theme }) => ({
-  height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
-  minHeight: "100%",
-  padding: theme.spacing(2),
-  [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(4),
-  },
-  "&::before": {
-    content: '""',
-    display: "block",
-    position: "absolute",
-    zIndex: -1,
-    inset: 0,
-    backgroundImage:
-      "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-    backgroundRepeat: "no-repeat",
-    ...theme.applyStyles("dark", {
-      backgroundImage:
-        "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
-    }),
-  },
-}));
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import { Loader2, UserPlus } from "lucide-react";
 
 export default function SignUp() {
-  const { register } = React.useContext(AuthContext);
+  const { register } = useContext(AuthContext);
   const navigate = useNavigate();
-
-  const [form, setForm] = React.useState({
+  const [isLoading, setIsLoading] = useState(false);
+  const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  const [error, setError] = React.useState("");
-
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
       await register(form.name, form.email, form.password);
-      navigate("/"); // auto-login redirect
+      toast.success("Account created successfully!");
+      navigate("/");
     } catch (err) {
-      setError(err?.response?.data?.error || "Registration failed");
+      toast.error(err?.response?.data?.error || "Registration failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <CssBaseline enableColorScheme />
-      <SignUpContainer direction="column" justifyContent="space-between">
-        <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-          >
-            Sign up
-          </Typography>
+    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-4">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_50%,hsl(var(--primary)/0.1),transparent_70%)]" />
 
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
-            {error && (
-              <Typography color="error" sx={{ textAlign: "center" }}>
-                {error}
-              </Typography>
-            )}
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+          <CardDescription>
+            Enter your information to get started
+          </CardDescription>
+        </CardHeader>
 
-            <FormControl>
-              <FormLabel htmlFor="name">Full name</FormLabel>
-              <TextField
-                autoComplete="name"
-                name="name"
-                required
-                fullWidth
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
                 id="name"
-                placeholder="Jon Snow"
+                name="name"
+                type="text"
+                placeholder="John Doe"
+                required
                 value={form.name}
                 onChange={handleChange}
+                disabled={isLoading}
               />
-            </FormControl>
+            </div>
 
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                required
-                fullWidth
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
                 id="email"
-                placeholder="your@email.com"
                 name="email"
-                autoComplete="email"
-                variant="outlined"
+                type="email"
+                placeholder="you@example.com"
+                required
                 value={form.email}
                 onChange={handleChange}
+                disabled={isLoading}
               />
-            </FormControl>
+            </div>
 
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                placeholder="••••••"
-                type="password"
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
                 id="password"
-                autoComplete="new-password"
-                variant="outlined"
+                name="password"
+                type="password"
+                placeholder="Create a password"
+                required
                 value={form.password}
                 onChange={handleChange}
+                disabled={isLoading}
               />
-            </FormControl>
+            </div>
+          </CardContent>
 
-            <Button type="submit" fullWidth variant="contained">
-              Sign up
+          <CardFooter className="flex flex-col gap-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Sign up
+                </>
+              )}
             </Button>
-          </Box>
 
-          <Divider>
-            <Typography sx={{ color: "text.secondary" }}>or</Typography>
-          </Divider>
+            <Separator />
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Typography sx={{ textAlign: "center" }}>
+            <p className="text-sm text-muted-foreground text-center">
               Already have an account?{" "}
-              <Link href="/signin" variant="body2" sx={{ alignSelf: "center" }}>
+              <Link to="/signin" className="text-primary hover:underline font-medium">
                 Sign in
               </Link>
-            </Typography>
-          </Box>
-        </Card>
-      </SignUpContainer>
-    </>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
   );
 }

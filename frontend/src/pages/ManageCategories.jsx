@@ -1,47 +1,27 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
-  Box,
-  Button,
-  Card,
-  CssBaseline,
-  Divider,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-  List,
-  ListItem,
-  ListItemText,
-  MenuItem,
-  IconButton,
   Select,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-
-import DeleteIcon from "@mui/icons-material/Delete";
-import { styled } from "@mui/material/styles";
-
-// Page container
-const PageContainer = styled(Stack)(({ theme }) => ({
-  minHeight: "100vh",
-  padding: theme.spacing(4),
-  backgroundColor: theme.palette.background.default,
-}));
-
-const StyledCard = styled(Card)(({ theme }) => ({
-  width: "100%",
-  maxWidth: "700px",
-  margin: "0 auto",
-  padding: theme.spacing(3),
-  borderRadius: "14px",
-}));
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tags, Building2, Plus, Trash2, Loader2 } from "lucide-react";
 
 export default function ManageCategories() {
   const [institutions, setInstitutions] = useState([]);
@@ -49,152 +29,179 @@ export default function ManageCategories() {
   const [institutionId, setInstitutionId] = useState("");
   const [name, setName] = useState("");
   const [deleteId, setDeleteId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
 
-  // Load institutions
   useEffect(() => {
     api.get("/institutions").then((res) => setInstitutions(res.data));
   }, []);
 
-  // Load categories when institution changes
   useEffect(() => {
     if (institutionId) {
+      setIsLoading(true);
       api
         .get(`/categories?institutionId=${institutionId}`)
-        .then((res) => setCategories(res.data));
+        .then((res) => setCategories(res.data))
+        .finally(() => setIsLoading(false));
     } else {
       setCategories([]);
     }
   }, [institutionId]);
 
+  const loadCategories = () => {
+    if (institutionId) {
+      api
+        .get(`/categories?institutionId=${institutionId}`)
+        .then((res) => setCategories(res.data));
+    }
+  };
+
   const addCategory = async () => {
-    if (!name.trim() || !institutionId) return;
-
-    await api.post("/categories", {
-      name,
-      institutionId,
-    });
-
-    setName("");
-
-    api
-      .get(`/categories?institutionId=${institutionId}`)
-      .then((res) => setCategories(res.data));
+    if (!name.trim() || !institutionId) {
+      toast.error("Please select an institution and enter a category name");
+      return;
+    }
+    setIsAdding(true);
+    try {
+      await api.post("/categories", { name, institutionId });
+      toast.success("Category added successfully");
+      setName("");
+      loadCategories();
+    } catch {
+      toast.error("Failed to add category");
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const deleteCategory = async () => {
-    await api.delete(`/categories/${deleteId}`);
-    setDeleteId(null);
-
-    api
-      .get(`/categories?institutionId=${institutionId}`)
-      .then((res) => setCategories(res.data));
+    try {
+      await api.delete(`/categories/${deleteId}`);
+      toast.success("Category deleted");
+      setDeleteId(null);
+      loadCategories();
+    } catch {
+      toast.error("Failed to delete category");
+    }
   };
 
   return (
-    <>
-      <CssBaseline />
+    <div className="min-h-[calc(100vh-8rem)] py-8 px-4">
+      <div className="container max-w-2xl mx-auto">
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={Boolean(deleteId)} onOpenChange={() => setDeleteId(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Category</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this category? This action cannot
+                be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteId(null)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={deleteCategory}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* DELETE CONFIRMATION DIALOG */}
-      <Dialog
-        open={Boolean(deleteId)}
-        onClose={() => setDeleteId(null)}
-      >
-        <DialogTitle>Delete Category</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this category? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <Tags className="h-6 w-6" />
+              Manage Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Select Institution */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Select Institution
+              </Label>
+              <Select value={institutionId} onValueChange={setInstitutionId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose an institution" />
+                </SelectTrigger>
+                <SelectContent>
+                  {institutions.map((i) => (
+                    <SelectItem key={i.id} value={String(i.id)}>
+                      {i.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <DialogActions>
-          <Button onClick={() => setDeleteId(null)}>Cancel</Button>
-          <Button color="error" onClick={deleteCategory}>Delete</Button>
-        </DialogActions>
-      </Dialog>
+            {institutionId && (
+              <>
+                <Separator />
 
-      <PageContainer>
-        <StyledCard variant="outlined">
-          <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
-            Manage Categories
-          </Typography>
-
-          <Divider sx={{ mb: 3 }} />
-
-          {/* 1️⃣ SELECT INSTITUTION */}
-          <FormControl fullWidth sx={{ mb: 3 }}>
-            <InputLabel>Select Institution</InputLabel>
-            <Select
-              value={institutionId}
-              label="Select Institution"
-              onChange={(e) => setInstitutionId(e.target.value)}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {institutions.map((i) => (
-                <MenuItem key={i.id} value={i.id}>
-                  {i.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* 2️⃣ CATEGORY LIST (DELETE) */}
-          {institutionId && (
-            <Card variant="outlined" sx={{ p: 2, mb: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Existing Categories
-              </Typography>
-
-              <List>
-                {categories.length === 0 ? (
-                  <Typography sx={{ opacity: 0.7 }}>
-                    No categories available.
-                  </Typography>
-                ) : (
-                  categories.map((c) => (
-                    <ListItem
-                      key={c.id}
-                      secondaryAction={
-                        <IconButton
-                          color="error"
-                          onClick={() => setDeleteId(c.id)}
+                {/* Existing Categories */}
+                <div>
+                  <h3 className="font-semibold mb-4">Existing Categories</h3>
+                  {isLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : categories.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      No categories yet. Add one below.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {categories.map((c) => (
+                        <div
+                          key={c.id}
+                          className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                         >
-                          <DeleteIcon />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemText primary={c.name} />
-                    </ListItem>
-                  ))
-                )}
-              </List>
-            </Card>
-          )}
+                          <span className="font-medium">{c.name}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => setDeleteId(c.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-          {/* 3️⃣ ADD CATEGORY */}
-          {institutionId && (
-            <Card variant="outlined" sx={{ p: 2 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Add New Category
-              </Typography>
+                <Separator />
 
-              <Stack direction="row" spacing={2}>
-                <TextField
-                  label="Category name"
-                  fullWidth
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-
-                <Button variant="contained" onClick={addCategory}>
-                  Add
-                </Button>
-              </Stack>
-            </Card>
-          )}
-        </StyledCard>
-      </PageContainer>
-    </>
+                {/* Add Category */}
+                <Card className="border">
+                  <CardContent className="pt-6">
+                    <h3 className="font-semibold mb-4">Add New Category</h3>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Category name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && addCategory()}
+                      />
+                      <Button onClick={addCategory} disabled={isAdding}>
+                        {isAdding ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Plus className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

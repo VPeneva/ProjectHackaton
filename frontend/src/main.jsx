@@ -1,15 +1,16 @@
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import AppThemeProvider from "./theme/ThemeProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
 import { AuthProvider } from "./context/AuthContext";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "./components/ui/sonner";
+import "./index.css";
 import "leaflet/dist/leaflet.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <AppThemeProvider>
+  <ThemeProvider defaultTheme="system" storageKey="civicreport-theme">
     <AuthProvider>
-      <Toaster position="top-center" />
+      <Toaster position="top-center" richColors />
       <App />
     </AuthProvider>
-  </AppThemeProvider>
+  </ThemeProvider>
 );

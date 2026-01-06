@@ -1,8 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import SitemarkIcon from '../components/SitemarkIcon';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import 'leaflet/dist/leaflet.css';
 
 export default function Map(props) {
@@ -12,7 +9,7 @@ export default function Map(props) {
   useEffect(() => {
     let mounted = true;
     if (!mapContainerRef.current) return;
-    if (leafletMapRef.current) return; 
+    if (leafletMapRef.current) return;
 
     import('leaflet').then((module) => {
       if (!mounted) return;

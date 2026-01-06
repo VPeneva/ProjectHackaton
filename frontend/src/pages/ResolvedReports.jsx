@@ -1,96 +1,118 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  MenuItem,
   Select,
-  FormControl,
-  InputLabel,
-} from "@mui/material";
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CheckCircle, FileText, Building2, Loader2 } from "lucide-react";
 
 export default function ResolvedReports() {
   const [reports, setReports] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [filterCategory, setFilterCategory] = useState("ALL");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load resolved reports
   useEffect(() => {
-    api.get("/admin/reports/resolved").then((res) => setReports(res.data));
+    api
+      .get("/admin/reports/resolved")
+      .then((res) => setReports(res.data))
+      .finally(() => setIsLoading(false));
   }, []);
 
-  // Load categories
   useEffect(() => {
     api.get("/categories").then((res) => setCategories(res.data));
   }, []);
 
-  // Filter reports by category
   const filteredReports =
-    filterCategory === "ALL"
+    filterCategory === "all"
       ? reports
       : reports.filter((r) => r.categoryId === Number(filterCategory));
 
   return (
-    <Box sx={{ padding: "20px" }}>
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Resolved Reports
-      </Typography>
+    <div className="min-h-[calc(100vh-8rem)] py-8 px-4">
+      <div className="container max-w-4xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <CheckCircle className="h-6 w-6 text-green-500" />
+              Resolved Reports
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Filter */}
+            <div className="space-y-2">
+              <Label>Filter by Category</Label>
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="max-w-sm">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={String(c.id)}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      {/* Dropdown Filter */}
-      <FormControl sx={{ minWidth: 250, mb: 3 }}>
-        <InputLabel>Filter by Category</InputLabel>
-        <Select
-          value={filterCategory}
-          label="Filter by Category"
-          onChange={(e) => setFilterCategory(e.target.value)}
-        >
-          <MenuItem value="ALL">All Categories</MenuItem>
-          {categories.map((c) => (
-            <MenuItem key={c.id} value={c.id}>
-              {c.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+            {/* Loading */}
+            {isLoading && (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            )}
 
-      {/* Report Cards */}
-      {filteredReports.length === 0 && (
-        <Typography sx={{ mt: 2, opacity: 0.7 }}>
-          No reports found for this category.
-        </Typography>
-      )}
+            {/* No reports */}
+            {!isLoading && filteredReports.length === 0 && (
+              <div className="text-center py-12">
+                <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No resolved reports found for this category.</p>
+              </div>
+            )}
 
-      {filteredReports.map((r) => (
-        <Card
-          key={r.id}
-          sx={{
-            borderLeft: "5px solid green",
-            mb: 2,
-          }}
-        >
-          <CardContent>
-            <Typography variant="h6">{r.title}</Typography>
+            {/* Reports */}
+            {!isLoading && filteredReports.length > 0 && (
+              <div className="space-y-4">
+                {filteredReports.map((r) => (
+                  <Card key={r.id} className="border-l-4 border-l-green-500">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between gap-4 mb-2">
+                        <h3 className="text-lg font-semibold">{r.title}</h3>
+                        <Badge variant="success">Resolved</Badge>
+                      </div>
 
-            <Typography sx={{ mb: 1, opacity: 0.8 }}>
-              {r.description}
-            </Typography>
+                      {r.description && (
+                        <p className="text-muted-foreground mb-4">{r.description}</p>
+                      )}
 
-            <Typography>
-              <strong>Category:</strong> {r.category?.name || "N/A"}
-            </Typography>
-
-            <Typography>
-              <strong>Institution:</strong> {r.institution?.name || "N/A"}
-            </Typography>
-
-            <Typography sx={{ mt: 1, color: "green" }}>
-              Status: Resolved
-            </Typography>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <div className="flex items-center gap-1.5">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Category:</span>
+                          <span>{r.category?.name || "N/A"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Institution:</span>
+                          <span>{r.institution?.name || "N/A"}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
-      ))}
-    </Box>
+      </div>
+    </div>
   );
 }

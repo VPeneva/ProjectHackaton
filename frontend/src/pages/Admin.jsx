@@ -1,63 +1,42 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  CssBaseline,
-  Divider,
-  FormControl,
-  FormLabel,
-  MenuItem,
   Select,
-  Stack,
-  Typography,
-} from "@mui/material";
-
-import { styled } from "@mui/material/styles";
-import toast from "react-hot-toast";
-
-const PageContainer = styled(Stack)(({ theme }) => ({
-  minHeight: "100vh",
-  width: "100%",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  padding: theme.spacing(4),
-  backgroundColor: theme.palette.background.default,
-}));
-
-const StyledCard = styled(Card)(({ theme }) => ({
-  width: "100%",
-  maxWidth: "900px",
-  padding: theme.spacing(3),
-  borderRadius: "14px",
-}));
-
-const ReportCard = styled(Card)(({ theme }) => ({
-  padding: theme.spacing(2),
-  borderRadius: "10px",
-}));
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Loader2,
+  Settings,
+  Send,
+  CheckCircle,
+  Building2,
+  User,
+  FileText,
+  Image,
+} from "lucide-react";
 
 export default function Admin() {
   const [reports, setReports] = useState([]);
   const [institutions, setInstitutions] = useState([]);
-  const [selectedInstitution, setSelectedInstitution] = useState("");
+  const [selectedInstitution, setSelectedInstitution] = useState("all");
   const [loading, setLoading] = useState(true);
 
-  // Load institutions
   useEffect(() => {
     api.get("/institutions").then((res) => setInstitutions(res.data));
   }, []);
 
-  // Load reports based on filter
   const loadReports = () => {
     setLoading(true);
-
-    const url = selectedInstitution
+    const url = selectedInstitution !== "all"
       ? `/admin/reports?institutionId=${selectedInstitution}`
       : `/admin/reports`;
 
@@ -71,206 +50,202 @@ export default function Admin() {
     loadReports();
   }, [selectedInstitution]);
 
-  // Local per-report institution override
   const handleLocalInstitutionChange = (id, value) => {
     setReports((prev) =>
       prev.map((r) => (r.id === id ? { ...r, _selectedInstitution: value } : r))
     );
   };
 
-  // SEND report
   const sendToInstitution = async (id) => {
     const report = reports.find((r) => r.id === id);
-    const instId =
-      report._selectedInstitution || report.institution?.id || null;
+    const instId = report._selectedInstitution || report.institution?.id || null;
 
     if (!instId) {
       toast.error("Please select an institution to send the report to.");
       return;
     }
 
-    await api.patch(`/admin/reports/${id}/send`, {
-      institutionId: Number(instId),
-    });
-
-    loadReports();
+    try {
+      await api.patch(`/admin/reports/${id}/send`, { institutionId: Number(instId) });
+      toast.success("Report sent to institution");
+      loadReports();
+    } catch {
+      toast.error("Failed to send report");
+    }
   };
 
-  // RESOLVE report
   const markResolved = async (id) => {
-    await api.patch(`/admin/reports/${id}/resolve`);
-    loadReports();
+    try {
+      await api.patch(`/admin/reports/${id}/resolve`);
+      toast.success("Report marked as resolved");
+      loadReports();
+    } catch {
+      toast.error("Failed to resolve report");
+    }
   };
 
-  // Dynamic label for main filter
-  const selectedInstitutionLabel = selectedInstitution
-    ? institutions.find((i) => i.id === Number(selectedInstitution))?.name ||
-      "All Institutions"
-    : "All Institutions";
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "Pending":
+        return <Badge variant="secondary">Pending</Badge>;
+      case "SENT":
+        return <Badge variant="warning">Sent</Badge>;
+      case "FINISHED":
+        return <Badge variant="success">Resolved</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
 
   return (
-    <>
-      <CssBaseline />
+    <div className="min-h-[calc(100vh-8rem)] py-8 px-4">
+      <div className="container max-w-4xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <Settings className="h-6 w-6" />
+              Admin Panel
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Filter */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Filter by Institution
+              </Label>
+              <Select value={selectedInstitution} onValueChange={setSelectedInstitution}>
+                <SelectTrigger className="max-w-sm">
+                  <SelectValue placeholder="All Institutions" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Institutions</SelectItem>
+                  {institutions.map((inst) => (
+                    <SelectItem key={inst.id} value={String(inst.id)}>
+                      {inst.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      <PageContainer spacing={3}>
-        <StyledCard variant="outlined">
-          <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
-            Admin Panel
-          </Typography>
+            <Separator />
 
-          <Divider sx={{ mb: 3 }} />
+            {/* Loading */}
+            {loading && (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            )}
 
-          {/* FILTER */}
-          <FormControl fullWidth sx={{ mb: 3 }}>
-            <FormLabel>Select Institution</FormLabel>
-            <Select
-              value={selectedInstitution}
-              displayEmpty
-              onChange={(e) => setSelectedInstitution(e.target.value)}
-              renderValue={() => selectedInstitutionLabel}
-            >
-              <MenuItem value="">All Institutions</MenuItem>
-              {institutions.map((inst) => (
-                <MenuItem key={inst.id} value={inst.id}>
-                  {inst.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            {/* No reports */}
+            {!loading && reports.length === 0 && (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No reports found for this filter.</p>
+              </div>
+            )}
 
-          {/* Loading */}
-          {loading && (
-            <Box sx={{ textAlign: "center", py: 4 }}>
-              <CircularProgress />
-            </Box>
-          )}
+            {/* Reports */}
+            {!loading && reports.length > 0 && (
+              <div className="space-y-4">
+                {reports.map((r) => {
+                  const localInst = r._selectedInstitution ?? r.institution?.id ?? "";
+                  const isSent = r.status === "SENT";
+                  const isFinished = r.status === "FINISHED";
 
-          {/* No reports */}
-          {!loading && reports.length === 0 && (
-            <Typography>No reports for this institution.</Typography>
-          )}
+                  return (
+                    <Card key={r.id} className="border">
+                      <CardContent className="pt-6 space-y-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <h3 className="text-lg font-semibold">{r.title}</h3>
+                          {getStatusBadge(r.status)}
+                        </div>
 
-          {/* Reports */}
-          <Stack spacing={2}>
-            {reports.map((r) => {
-              const localInst =
-                r._selectedInstitution ?? r.institution?.id ?? "";
-              const isSent = r.status === "SENT";
-              const isFinished = r.status === "FINISHED";
+                        {r.description && (
+                          <p className="text-muted-foreground">{r.description}</p>
+                        )}
 
-              return (
-                <ReportCard variant="outlined" key={r.id}>
-                  <CardContent>
-                    <Typography variant="h6">{r.title}</Typography>
+                        {r.imageUrl && (
+                          <div>
+                            <p className="text-sm font-medium mb-2 flex items-center gap-1">
+                              <Image className="h-4 w-4" />
+                              Photo
+                            </p>
+                            <a href={r.imageUrl} target="_blank" rel="noreferrer">
+                              <img
+                                src={r.imageUrl}
+                                alt="Report"
+                                className="max-w-60 max-h-40 rounded-lg object-cover hover:opacity-90 transition-opacity"
+                              />
+                            </a>
+                          </div>
+                        )}
 
-                    {r.description && (
-                      <Typography sx={{ mt: 1 }}>{r.description}</Typography>
-                    )}
+                        <div className="flex flex-wrap gap-4 text-sm">
+                          <div className="flex items-center gap-1.5">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">Category:</span>
+                            <span>{r.category?.name || "N/A"}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">User:</span>
+                            <span>{r.user?.name} ({r.user?.email})</span>
+                          </div>
+                        </div>
 
-                    {r.imageUrl && (
-                      <Box sx={{ mt: 2 }}>
-                        <Typography sx={{ mb: 1, fontWeight: 600 }}>
-                          Photo:
-                        </Typography>
-                        <a href={r.imageUrl} target="_blank" rel="noreferrer">
-                          <img
-                            src={r.imageUrl}
-                            alt="report"
-                            style={{
-                              maxWidth: 240,
-                              maxHeight: 160,
-                              borderRadius: 8,
-                              objectFit: "cover",
-                              display: "block",
-                            }}
-                          />
-                        </a>
-                      </Box>
-                    )}
+                        {/* Actions */}
+                        {isSent && !isFinished && (
+                          <div className="flex gap-2 pt-2">
+                            <Button onClick={() => markResolved(r.id)} className="gap-2">
+                              <CheckCircle className="h-4 w-4" />
+                              Mark Resolved
+                            </Button>
+                          </div>
+                        )}
 
-                    <Typography sx={{ mt: 1 }}>
-                      <strong>Category:</strong>{" "}
-                      {r.category?.name || "No category"}
-                    </Typography>
-
-                    <Typography sx={{ mt: 1 }}>
-                      <strong>User:</strong> {r.user?.name} ({r.user?.email})
-                    </Typography>
-
-                    {/* STATUS BADGE */}
-                    <Typography
-                      sx={{
-                        mt: 1,
-                        fontWeight: "bold",
-                        color:
-                          r.status === "SENT"
-                            ? "orange"
-                            : r.status === "FINISHED"
-                            ? "green"
-                            : "grey",
-                      }}
-                    >
-                      Status: {r.status}
-                    </Typography>
-
-                    {/* ⛔ IF SENT → NO SELECT, NO SEND */}
-                    {isSent && !isFinished && (
-                      <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                        <Button
-                          variant="contained"
-                          color="success"
-                          onClick={() => markResolved(r.id)}
-                        >
-                          Resolve
-                        </Button>
-                      </Stack>
-                    )}
-
-                    {/* 🟩 IF PENDING → SHOW SELECT + SEND + RESOLVE */}
-                    {!isSent && !isFinished && (
-                      <>
-                        <FormControl fullWidth sx={{ mt: 2 }}>
-                          <FormLabel>Send To Institution</FormLabel>
-                          <Select
-                            value={localInst}
-                            onChange={(e) =>
-                              handleLocalInstitutionChange(r.id, e.target.value)
-                            }
-                          >
-                            {institutions.map((inst) => (
-                              <MenuItem key={inst.id} value={inst.id}>
-                                {inst.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-
-                        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => sendToInstitution(r.id)}
-                          >
-                            Send
-                          </Button>
-
-                          <Button
-                            variant="contained"
-                            color="success"
-                            onClick={() => markResolved(r.id)}
-                          >
-                            Resolve
-                          </Button>
-                        </Stack>
-                      </>
-                    )}
-                  </CardContent>
-                </ReportCard>
-              );
-            })}
-          </Stack>
-        </StyledCard>
-      </PageContainer>
-    </>
+                        {!isSent && !isFinished && (
+                          <div className="space-y-4 pt-2">
+                            <div className="space-y-2">
+                              <Label>Send to Institution</Label>
+                              <Select
+                                value={String(localInst)}
+                                onValueChange={(v) => handleLocalInstitutionChange(r.id, v)}
+                              >
+                                <SelectTrigger className="max-w-sm">
+                                  <SelectValue placeholder="Select institution" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {institutions.map((inst) => (
+                                    <SelectItem key={inst.id} value={String(inst.id)}>
+                                      {inst.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button onClick={() => sendToInstitution(r.id)} className="gap-2">
+                                <Send className="h-4 w-4" />
+                                Send
+                              </Button>
+                              <Button variant="outline" onClick={() => markResolved(r.id)} className="gap-2">
+                                <CheckCircle className="h-4 w-4" />
+                                Resolve
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

@@ -1,218 +1,120 @@
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Container from "@mui/material/Container";
-import IconButton from "@mui/material/IconButton";
-import InputLabel from "@mui/material/InputLabel";
-import Link from "@mui/material/Link";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import SitemarkIcon from "./SitemarkIcon";
-
-import { toast } from "react-hot-toast";
-import { useRef } from "react";
-
-function Copyright() {
-  return (
-    <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
-      {"Copyright © "}
-      <Link color="text.secondary" href="https://junioraccelerator.org/">
-        JuniorAccelerator.org
-      </Link>
-      &nbsp;
-      {new Date().getFullYear()}
-    </Typography>
-  );
-}
+import { Link } from "react-router-dom";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
+import { toast } from "sonner";
+import { Github, Linkedin, Mail } from "lucide-react";
 
 export default function Footer() {
-  const emailRef = useRef(null);
-  return (
-    <Container
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: { xs: 4, sm: 8 },
-        py: { xs: 8, sm: 10 },
-        textAlign: { sm: "center", md: "left" },
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          width: "100%",
-          justifyContent: "space-between",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            minWidth: { xs: "100%", sm: "60%" },
-          }}
-        >
-          <Box sx={{ width: { xs: "100%", sm: "60%" } }}>
-            <SitemarkIcon />
-            <Typography
-              variant="body2"
-              gutterBottom
-              sx={{ fontWeight: 600, mt: 2 }}
-            >
-              Join the circus
-            </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-              Subscribe for yearly updates. May spam!
-            </Typography>
-            <InputLabel htmlFor="email-newsletter">Email</InputLabel>
-            <Stack direction="row" spacing={1} useFlexGap>
-              <TextField
-                id="email-newsletter"
-                hiddenLabel
-                size="small"
-                variant="outlined"
-                fullWidth
-                inputRef={emailRef}
-                placeholder="Your email address"
-                sx={{ width: "250px" }}
-              />
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    if (!email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    toast.success("Thanks for subscribing!");
+    e.target.reset();
+  };
 
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                sx={{ flexShrink: 0 }}
-                onClick={() => {
-                  if (!title) {
-                    toast.error("Enter an email before joining JuniorAccelerator");
-                    return;
-                  }
-                  toast.success("We have harvested your soul, thank you.");
-                }}
-              >
-                Join the dark side
+  return (
+    <footer className="border-t bg-background">
+      <div className="container px-4 py-12">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          {/* Brand & Newsletter */}
+          <div className="lg:col-span-2">
+            <Link to="/" className="flex items-center gap-2 font-semibold mb-4">
+              <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground text-xs font-bold">CR</span>
+              </div>
+              <span>CivicReport</span>
+            </Link>
+            <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+              Report and track civic infrastructure issues in your community. Together we can make our cities better.
+            </p>
+            <form onSubmit={handleSubscribe} className="flex gap-2 max-w-sm">
+              <Input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                className="flex-1"
+              />
+              <Button type="submit" size="sm">
+                Subscribe
               </Button>
-            </Stack>
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            display: { xs: "none", sm: "flex" },
-            flexDirection: "column",
-            gap: 1,
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-            Product
-          </Typography>
-          <Link color="text.secondary" variant="body2" href="/features">
-            Features
-          </Link>
-          <Link color="text.secondary" variant="body2" href="/faq">
-            FAQs
-          </Link>
-        </Box>
-        <Box
-          sx={{
-            display: { xs: "none", sm: "flex" },
-            flexDirection: "column",
-            gap: 1,
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-            Company
-          </Typography>
-          <Link color="text.secondary" variant="body2" href="/aboutus">
-            About us
-          </Link>
-        </Box>
-        <Box
-          sx={{
-            display: { xs: "none", sm: "flex" },
-            flexDirection: "column",
-            gap: 1,
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-            Legal
-          </Typography>
-          <Link color="text.secondary" variant="body2" href="/terms">
-            Terms
-          </Link>
-          <Link color="text.secondary" variant="body2" href="/privacy">
-            Privacy Policy
-          </Link>
-          <Link color="text.secondary" variant="body2" href="/contactus">
-            Contact us
-          </Link>
-        </Box>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          pt: { xs: 4, sm: 8 },
-          width: "100%",
-          borderTop: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <div>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography color="text.secondary" variant="body2">
-              We won't sell your kidneys
-            </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.5 }}>
-              •
-            </Typography>
-            <Typography color="text.secondary" variant="body2">
-              We promise
-            </Typography>
-          </Stack>
-          <Copyright />
+            </form>
+          </div>
+
+          {/* Links */}
+          <div>
+            <h4 className="font-medium mb-3">Product</h4>
+            <nav className="flex flex-col gap-2">
+              <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Features
+              </Link>
+              <Link to="/reports" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Reports
+              </Link>
+              <Link to="/create" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Create Report
+              </Link>
+            </nav>
+          </div>
+
+          <div>
+            <h4 className="font-medium mb-3">Company</h4>
+            <nav className="flex flex-col gap-2">
+              <Link to="/aboutus" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                About Us
+              </Link>
+              <Link to="/contactus" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Contact
+              </Link>
+              <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Terms
+              </Link>
+              <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Privacy
+              </Link>
+            </nav>
+          </div>
         </div>
 
-        <Stack
-          direction="row"
-          spacing={1}
-          useFlexGap
-          sx={{ justifyContent: "left", color: "text.secondary" }}
-        >
-          <IconButton
-            color="inherit"
-            size="small"
-            href="https://www.linkedin.com/in/bozhidar-kamenski-862817253/"
-            aria-label="LinkedIn"
-            sx={{ alignSelf: "center" }}
-          >
-            <LinkedInIcon />
-          </IconButton>
+        <Separator className="my-8" />
 
-          <IconButton
-            color="inherit"
-            size="small"
-            href="https://github.com/VPeneva/ProjectHackaton"
-            aria-label="GitHub"
-            sx={{ alignSelf: "center" }}
-          >
-            <GitHubIcon />
-          </IconButton>
-
-          <IconButton
-            color="inherit"
-            size="small"
-            href="https://www.linkedin.com/in/ivo-radkov/"
-            aria-label="LinkedIn"
-            sx={{ alignSelf: "center" }}
-          >
-            <LinkedInIcon />
-          </IconButton>
-        </Stack>
-      </Box>
-    </Container>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} CivicReport. All rights reserved.
+          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" asChild>
+              <a
+                href="https://github.com/VPeneva/ProjectHackaton"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+              >
+                <Github className="h-4 w-4" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <a
+                href="https://www.linkedin.com/in/bozhidar-kamenski-862817253/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-4 w-4" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/contactus" aria-label="Contact">
+                <Mail className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }

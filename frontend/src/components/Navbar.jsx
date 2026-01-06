@@ -1,253 +1,244 @@
-import * as React from "react";
-import { useContext } from "react";
-
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Drawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import Divider from "@mui/material/Divider";
-
-import MenuIcon from "@mui/icons-material/Menu";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import CheckIcon from "@mui/icons-material/Check";
-
-import { styled } from "@mui/material/styles";
-import { Link } from "react-router-dom";
-
+import { useContext, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { ColorModeContext } from "../theme/ThemeProvider";
+import { useTheme } from "../providers/ThemeProvider";
+import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "./ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./ui/sheet";
+import { Separator } from "./ui/separator";
+import { cn } from "@/lib/utils";
+import {
+  Menu,
+  Sun,
+  Moon,
+  Monitor,
+  LogOut,
+  User,
+  FileText,
+  PlusCircle,
+  Settings,
+  Building2,
+  Tags,
+  CheckCircle,
+  MessageSquare,
+  Home,
+  ChevronDown,
+} from "lucide-react";
 
-// =========================
-// Styles
-// =========================
-
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  backgroundColor: theme.palette.background.paper,
-  color: theme.palette.text.primary,
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  boxShadow: "none",
-}));
-
-const AppBarInner = styled(Box)(({ theme }) => ({
-  width: "100%",
-  padding: "0 20px",
-  display: "flex",
-  alignItems: "center",
-  gap: 20,
-  whiteSpace: "nowrap",
-}));
-
-// =========================
-// Component
-// =========================
-
-export default function NavBar() {
+export default function Navbar() {
   const auth = useContext(AuthContext);
-  const colorMode = useContext(ColorModeContext);
+  const { theme, setTheme } = useTheme();
+  const location = useLocation();
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  if (!auth || !colorMode) return null;
-
+  if (!auth) return null;
   const { user, logout } = auth;
-  const { mode, setMode } = colorMode;
 
-  // Theme menu
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const handleOpenTheme = (e) => setAnchorEl(e.currentTarget);
-  const handleCloseTheme = () => setAnchorEl(null);
-
-  // Drawer (mobile hamburger)
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const toggleDrawer = () => setDrawerOpen(!drawerOpen);
-
-  // ------------------------------
-  // MENU BUTTONS
-  // ------------------------------
-  const menuItems = [
-    { label: "Home", to: "/" }, // Landing page
-
-    ...(user
-      ? [{ label: "Reports", to: "/reports" }] // <--- FIXED
-      : []),
-
-    ...(user ? [{ label: "Create Report", to: "/create" }] : []),
-
-    ...(user?.role === "ADMIN"
-      ? [
-          { label: "Admin Panel", to: "/admin" },
-          { label: "Institutions", to: "/admin/institutions" },
-          { label: "Categories", to: "/admin/categories" },
-          { label: "Resolved Reports", to: "/admin/resolved" },
-          { label: "Contact Messages", to: "/admin/contact-messages" },
-        ]
-      : []),
+  const mainNavItems = [
+    { label: "Home", to: "/", icon: Home },
+    ...(user ? [{ label: "Reports", to: "/reports", icon: FileText }] : []),
+    ...(user ? [{ label: "Create Report", to: "/create", icon: PlusCircle }] : []),
   ];
 
+  const adminNavItems = user?.role === "ADMIN" ? [
+    { label: "Admin Panel", to: "/admin", icon: Settings },
+    { label: "Institutions", to: "/admin/institutions", icon: Building2 },
+    { label: "Categories", to: "/admin/categories", icon: Tags },
+    { label: "Resolved", to: "/admin/resolved", icon: CheckCircle },
+    { label: "Messages", to: "/admin/contact-messages", icon: MessageSquare },
+  ] : [];
+
+  const allNavItems = [...mainNavItems, ...adminNavItems];
+
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <StyledAppBar position="static">
-      <Toolbar disableGutters>
-        <AppBarInner>
-          {/* MOBILE BURGER */}
-          <Box sx={{ display: { xs: "block", md: "none" } }}>
-            <IconButton color="inherit" onClick={toggleDrawer}>
-              <MenuIcon />
-            </IconButton>
-          </Box>
-
-          {/* DESKTOP MENU */}
-          <Box
-            sx={{
-              display: { xs: "none", md: "flex" },
-              gap: 2,
-              flexGrow: 1, // <-- разширява се и ползва празното място
-              whiteSpace: "nowrap",
-              overflow: "hidden", // <-- скрива скрола
-              "& button": {
-                flexShrink: 0, // <-- не позволява текстът да пада на два реда
-              },
-            }}
-          >
-            {menuItems.map((item) => (
-              <Button
-                key={item.to}
-                color="inherit"
-                component={Link}
-                to={item.to}
-              >
-                {item.label}
-              </Button>
-            ))}
-          </Box>
-
-          {/* RIGHT SIDE */}
-          <Box
-            sx={{
-              marginLeft: "auto",
-              display: "flex",
-              gap: 2,
-              alignItems: "center",
-              minWidth: 150,
-            }}
-          >
-            {/* THEME SWITCHER */}
-            <IconButton onClick={handleOpenTheme} color="inherit" size="small">
-              <Brightness4Icon />
-            </IconButton>
-
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleCloseTheme}
-            >
-              <MenuItem
-                onClick={() => {
-                  setMode("light");
-                  handleCloseTheme();
-                }}
-              >
-                {mode === "light" && (
-                  <CheckIcon fontSize="small" sx={{ mr: 1 }} />
-                )}
-                Light
-              </MenuItem>
-
-              <MenuItem
-                onClick={() => {
-                  setMode("dark");
-                  handleCloseTheme();
-                }}
-              >
-                {mode === "dark" && (
-                  <CheckIcon fontSize="small" sx={{ mr: 1 }} />
-                )}
-                Dark
-              </MenuItem>
-
-              <MenuItem
-                onClick={() => {
-                  setMode("system");
-                  handleCloseTheme();
-                }}
-              >
-                {mode === "system" && (
-                  <CheckIcon fontSize="small" sx={{ mr: 1 }} />
-                )}
-                System
-              </MenuItem>
-            </Menu>
-
-            {/* AUTH BUTTONS */}
-            {user ? (
-              <>
-                <Box
-                  sx={{ opacity: 0.8, display: { xs: "none", md: "block" } }}
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center px-4">
+        {/* Mobile Menu */}
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetTrigger asChild className="md:hidden">
+            <Button variant="ghost" size="icon" className="mr-2">
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-72">
+            <SheetHeader>
+              <SheetTitle className="text-left">Navigation</SheetTitle>
+            </SheetHeader>
+            <nav className="flex flex-col gap-1 mt-4">
+              {allNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setSheetOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                      isActive(item.to)
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-accent"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+              <Separator className="my-2" />
+              {user ? (
+                <button
+                  onClick={() => {
+                    logout();
+                    setSheetOpen(false);
+                  }}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                 >
-                  Hello, {user.name}!
-                </Box>
-                <Button variant="outlined" onClick={logout}>
+                  <LogOut className="h-4 w-4" />
                   Logout
+                </button>
+              ) : (
+                <>
+                  <Link
+                    to="/signin"
+                    onClick={() => setSheetOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-accent transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setSheetOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </nav>
+          </SheetContent>
+        </Sheet>
+
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 font-semibold mr-6">
+          <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground text-xs font-bold">CR</span>
+          </div>
+          <span className="hidden sm:inline">CivicReport</span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-1 flex-1">
+          {mainNavItems.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                isActive(item.to)
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+
+          {/* Admin Dropdown */}
+          {user?.role === "ADMIN" && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
+                  Admin
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
-              </>
-            ) : (
-              <>
-                <Button color="inherit" component={Link} to="/signin">
-                  Sign In
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                {adminNavItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem key={item.to} asChild>
+                      <Link to={item.to} className="flex items-center gap-2">
+                        <Icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </nav>
+
+        {/* Right Side */}
+        <div className="flex items-center gap-2 ml-auto">
+          {/* Theme Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme("light")} className="gap-2">
+                <Sun className="h-4 w-4" />
+                Light
+                {theme === "light" && <span className="ml-auto text-primary">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")} className="gap-2">
+                <Moon className="h-4 w-4" />
+                Dark
+                {theme === "dark" && <span className="ml-auto text-primary">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("system")} className="gap-2">
+                <Monitor className="h-4 w-4" />
+                System
+                {theme === "system" && <span className="ml-auto text-primary">✓</span>}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Auth */}
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline max-w-24 truncate">{user.name}</span>
                 </Button>
-                <Button variant="contained" component={Link} to="/signup">
-                  Sign Up
-                </Button>
-              </>
-            )}
-          </Box>
-        </AppBarInner>
-      </Toolbar>
-
-      {/* ========== MOBILE DRAWER ========== */}
-      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
-        <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer}>
-          <List>
-            {menuItems.map((item) => (
-              <ListItem disablePadding key={item.to}>
-                <ListItemButton component={Link} to={item.to}>
-                  <ListItemText primary={item.label} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-
-            <Divider />
-
-            {/* MOBILE AUTH */}
-            {user ? (
-              <ListItem disablePadding>
-                <ListItemButton onClick={logout}>
-                  <ListItemText primary="Logout" />
-                </ListItemButton>
-              </ListItem>
-            ) : (
-              <>
-                <ListItem disablePadding>
-                  <ListItemButton component={Link} to="/signin">
-                    <ListItemText primary="Sign In" />
-                  </ListItemButton>
-                </ListItem>
-
-                <ListItem disablePadding>
-                  <ListItemButton component={Link} to="/signup">
-                    <ListItemText primary="Sign Up" />
-                  </ListItemButton>
-                </ListItem>
-              </>
-            )}
-          </List>
-        </Box>
-      </Drawer>
-    </StyledAppBar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5 text-sm font-medium">{user.name}</div>
+                <div className="px-2 pb-1.5 text-xs text-muted-foreground">{user.email}</div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="text-destructive gap-2">
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/signin">Sign In</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/signup">Sign Up</Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
   );
 }

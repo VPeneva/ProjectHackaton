@@ -1,54 +1,33 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../services/api";
-
-import {
-  Box,
-  Card,
-  CardContent,
-  CssBaseline,
-  Typography,
-  Stack,
-  Divider,
-} from "@mui/material";
-
-import { styled } from "@mui/material/styles";
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   GoogleMap,
   Marker,
   InfoWindow,
   useLoadScript,
 } from "@react-google-maps/api";
+import {
+  FileText,
+  Clock,
+  Send,
+  CheckCircle,
+  MapPin,
+  ArrowRight,
+  Loader2,
+} from "lucide-react";
 
-// =============================
-// STYLES
-// =============================
-const PageContainer = styled(Stack)(({ theme }) => ({
-  minHeight: "100vh",
-  padding: theme.spacing(4),
-  backgroundImage:
-    theme.palette.mode === "dark"
-      ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.4), hsl(220, 30%, 5%))"
-      : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), white)",
-}));
-
-const InfoCard = styled(Card)(({ theme }) => ({
-  maxWidth: "900px",
-  margin: "0 auto",
-  padding: theme.spacing(4),
-  borderRadius: "14px",
-}));
-
-// =============================
-// GOOGLE MAP OPTIONS
-// =============================
 const mapContainerStyle = {
   width: "100%",
   height: "500px",
-  borderRadius: "14px",
+  borderRadius: "0.75rem",
 };
 
-const defaultCenter = { lat: 42.6977, lng: 23.3219 }; // Sofia
+const defaultCenter = { lat: 42.6977, lng: 23.3219 };
 
 export default function LandingPage() {
   const [reports, setReports] = useState([]);
@@ -58,126 +37,178 @@ export default function LandingPage() {
     sent: 0,
     resolved: 0,
   });
-
   const [selectedReport, setSelectedReport] = useState(null);
 
-  // Load Google Maps script
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API,
   });
 
-  // Load reports
   useEffect(() => {
     api
       .get("/reports")
       .then((res) => {
         setReports(res.data);
-
         const pending = res.data.filter((r) => r.status === "Pending").length;
         const sent = res.data.filter((r) => r.status === "SENT").length;
         const resolved = res.data.filter((r) => r.status === "FINISHED").length;
-
-        setStats({
-          total: res.data.length,
-          pending,
-          sent,
-          resolved,
-        });
+        setStats({ total: res.data.length, pending, sent, resolved });
       })
       .catch((err) => console.log(err));
   }, []);
 
-  if (!isLoaded) return <div>Loading Map...</div>;
-
   return (
-    <>
-      <CssBaseline enableColorScheme />
-      <PageContainer spacing={4}>
-        {/* ============================= INFO CARD ============================= */}
-        <InfoCard>
-          <Typography variant="h3" sx={{ fontWeight: 600, mb: 2 }}>
-            Welcome to SmartCity
-          </Typography>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative py-20 px-4">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_50%,hsl(var(--primary)/0.15),transparent_70%)]" />
+        <div className="container mx-auto max-w-4xl text-center">
+          <Badge variant="secondary" className="mb-4">
+            Community-Powered
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            Report Civic Issues,{" "}
+            <span className="text-primary">Build Better Cities</span>
+          </h1>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Help improve your community by reporting infrastructure problems.
+            Track progress and see real-time updates on issues across the city.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button size="lg" asChild>
+              <Link to="/create">
+                Report an Issue
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/reports">View All Reports</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
-          <Typography sx={{ opacity: 0.8 }}>
-            View all issues citizens have reported across the city. Explore the
-            live map below.
-          </Typography>
+      {/* Stats Section */}
+      <section className="py-12 px-4 bg-muted/50">
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.total}</p>
+                    <p className="text-sm text-muted-foreground">Total Reports</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-yellow-500/10">
+                    <Clock className="h-5 w-5 text-yellow-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.pending}</p>
+                    <p className="text-sm text-muted-foreground">Pending</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-blue-500/10">
+                    <Send className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.sent}</p>
+                    <p className="text-sm text-muted-foreground">In Progress</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-green-500/10">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.resolved}</p>
+                    <p className="text-sm text-muted-foreground">Resolved</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
 
-          <Divider sx={{ my: 2 }} />
+      {/* Map Section */}
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Live Issue Map
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!isLoaded ? (
+                <div className="flex items-center justify-center h-[500px] bg-muted rounded-lg">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <GoogleMap
+                  mapContainerStyle={mapContainerStyle}
+                  zoom={12}
+                  center={defaultCenter}
+                >
+                  {reports.map((r) => (
+                    <Marker
+                      key={r.id}
+                      position={{ lat: r.lat, lng: r.lng }}
+                      onClick={() => setSelectedReport(r)}
+                    />
+                  ))}
 
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            City Issue Statistics:
-          </Typography>
-
-          <Typography sx={{ opacity: 0.8 }}>
-            Total reports: <strong>{stats.total}</strong>
-            <br />
-            Pending:{" "}
-            <strong style={{ color: "orange" }}>{stats.pending}</strong>
-            <br />
-            Sent: <strong style={{ color: "#007bff" }}>{stats.sent}</strong>
-            <br />
-            Resolved:{" "}
-            <strong style={{ color: "green" }}>{stats.resolved}</strong>
-          </Typography>
-        </InfoCard>
-
-        {/* ============================= MAP ============================= */}
-        <Card sx={{ maxWidth: "1100px", margin: "0 auto", padding: 2 }}>
-          <Typography variant="h5" sx={{ mb: 2 }}>
-            Live Map: City Issues
-          </Typography>
-
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            zoom={12}
-            center={defaultCenter}
-          >
-            {reports.map((r) => (
-              <Marker
-                key={r.id}
-                position={{ lat: r.lat, lng: r.lng }}
-                onClick={() => setSelectedReport(r)}
-              />
-            ))}
-
-            {selectedReport && (
-              <InfoWindow
-                position={{ lat: selectedReport.lat, lng: selectedReport.lng }}
-                onCloseClick={() => setSelectedReport(null)}
-              >
-                <Box sx={{ maxWidth: 200 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    {selectedReport.title}
-                  </Typography>
-
-                  <Typography sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
-                    Status: {selectedReport.status}
-                  </Typography>
-
-                  <Typography sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
-                    Category: {selectedReport.category?.name || "N/A"}
-                  </Typography>
-
-                  <Typography sx={{ fontSize: "0.8rem", opacity: 0.7 }}>
-                    Institution: {selectedReport.institution?.name || "N/A"}
-                  </Typography>
-
-                  <button
-                    style={{ marginTop: "8px" }}
-                    onClick={() =>
-                      window.open(`/report/${selectedReport.id}`, "_blank")
-                    }
-                  >
-                    View details
-                  </button>
-                </Box>
-              </InfoWindow>
-            )}
-          </GoogleMap>
-        </Card>
-      </PageContainer>
-    </>
+                  {selectedReport && (
+                    <InfoWindow
+                      position={{ lat: selectedReport.lat, lng: selectedReport.lng }}
+                      onCloseClick={() => setSelectedReport(null)}
+                    >
+                      <div className="p-2 max-w-[200px]">
+                        <h4 className="font-semibold text-sm mb-1">
+                          {selectedReport.title}
+                        </h4>
+                        <p className="text-xs text-gray-600 mb-1">
+                          Status: {selectedReport.status}
+                        </p>
+                        <p className="text-xs text-gray-600 mb-1">
+                          Category: {selectedReport.category?.name || "N/A"}
+                        </p>
+                        <p className="text-xs text-gray-600 mb-2">
+                          Institution: {selectedReport.institution?.name || "N/A"}
+                        </p>
+                        <Link
+                          to={`/report/${selectedReport.id}`}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          View details →
+                        </Link>
+                      </div>
+                    </InfoWindow>
+                  )}
+                </GoogleMap>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    </div>
   );
 }

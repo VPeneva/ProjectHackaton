@@ -1,135 +1,162 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../services/api";
-
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  CssBaseline,
-  Divider,
-  Stack,
-} from "@mui/material";
-import { styled } from "@mui/material/styles";
-
-// Layout container
-const PageLayout = styled("div")(({ theme }) => ({
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "20px",
-  padding: theme.spacing(4),
-  minHeight: "100vh",
-  backgroundColor: theme.palette.background.default,
-  color: theme.palette.text.primary,
-
-  [theme.breakpoints.down("md")]: {
-    gridTemplateColumns: "1fr",
-  },
-}));
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, ArrowLeft, MapPin, Building2, FileText, User, Image } from "lucide-react";
 
 export default function ReportDetails() {
   const { id } = useParams();
   const [report, setReport] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.get(`/reports/${id}`).then((res) => setReport(res.data));
+    api
+      .get(`/reports/${id}`)
+      .then((res) => setReport(res.data))
+      .finally(() => setIsLoading(false));
   }, [id]);
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "Pending":
+        return <Badge variant="warning">Pending</Badge>;
+      case "SENT":
+        return <Badge variant="default">In Progress</Badge>;
+      case "FINISHED":
+        return <Badge variant="success">Resolved</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!report) {
     return (
-      <Typography sx={{ p: 4 }} variant="h5">
-        Loading...
-      </Typography>
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Report not found</h2>
+          <Button asChild>
+            <Link to="/reports">Back to Reports</Link>
+          </Button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <>
-      <CssBaseline />
+    <div className="min-h-[calc(100vh-8rem)] py-8 px-4">
+      <div className="container max-w-6xl mx-auto">
+        <Button variant="ghost" asChild className="mb-6">
+          <Link to="/reports">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Reports
+          </Link>
+        </Button>
 
-      <PageLayout>
-        {/* LEFT SIDE — REPORT INFO */}
-        <Card variant="outlined">
-          <CardContent>
-            <Button component={Link} to="/" variant="outlined" sx={{ mb: 2 }}>
-              ← Back to Reports
-            </Button>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Report Info */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-start justify-between gap-4">
+                <CardTitle className="text-2xl">{report.title}</CardTitle>
+                {getStatusBadge(report.status)}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {report.description && (
+                <div>
+                  <h4 className="font-medium mb-2">Description</h4>
+                  <p className="text-muted-foreground">{report.description}</p>
+                </div>
+              )}
 
-            <Typography variant="h4">{report.title}</Typography>
+              <Separator />
 
-            {report.description && (
-              <Typography sx={{ mt: 2 }}>{report.description}</Typography>
-            )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Category</p>
+                    <p className="font-medium">{report.category?.name || "N/A"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Institution</p>
+                    <p className="font-medium">{report.institution?.name || "N/A"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Coordinates</p>
+                    <p className="font-medium">{report.lat}, {report.lng}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Reported by</p>
+                    <p className="font-medium">{report.user?.name || "Unknown"}</p>
+                  </div>
+                </div>
+              </div>
 
-            <Divider sx={{ my: 2 }} />
+              {report.imageUrl && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-2">
+                      <Image className="h-4 w-4" />
+                      Photo
+                    </h4>
+                    <a href={report.imageUrl} target="_blank" rel="noreferrer">
+                      <img
+                        src={report.imageUrl}
+                        alt="Report"
+                        className="w-full rounded-lg object-cover max-h-80 hover:opacity-90 transition-opacity"
+                      />
+                    </a>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
-            <Typography sx={{ mt: 1 }}>
-              <strong>Category:</strong>{" "}
-              {report.category ? report.category.name : "N/A"}
-            </Typography>
-
-            <Typography sx={{ mt: 1 }}>
-              <strong>Institution:</strong>{" "}
-              {report.institution ? report.institution.name : "N/A"}
-            </Typography>
-
-            <Typography sx={{ mt: 1 }}>
-              <strong>Coordinates:</strong> {report.lat}, {report.lng}
-            </Typography>
-
-            {report.imageUrl && (
-              <Box sx={{ mt: 2 }}>
-                <Typography sx={{ mb: 1, fontWeight: 600 }}>Photo</Typography>
-                <a href={report.imageUrl} target="_blank" rel="noreferrer">
-                  <img
-                    src={report.imageUrl}
-                    alt="report"
-                    style={{
-                      width: "100%",
-                      borderRadius: 8,
-                      maxHeight: 500,
-                      objectFit: "cover",
-                    }}
-                  />
-                </a>
-              </Box>
-            )}
-
-            <Typography sx={{ mt: 2, opacity: 0.6 }}>
-              Created by: {report.user?.name || "Unknown"}
-            </Typography>
-          </CardContent>
-        </Card>
-
-        {/* RIGHT SIDE — MAP */}
-        <Card variant="outlined">
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Location
-            </Typography>
-
-            <Box
-              sx={{
-                width: "100%",
-                height: "400px",
-                borderRadius: "8px",
-                overflow: "hidden",
-              }}
-            >
-              <iframe
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                loading="lazy"
-                allowFullScreen
-                src={`https://www.google.com/maps?q=${report.lat},${report.lng}&hl=es;z=14&output=embed`}
-              ></iframe>
-            </Box>
-          </CardContent>
-        </Card>
-      </PageLayout>
-    </>
+          {/* Map */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Location
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-lg overflow-hidden h-[400px]">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://www.google.com/maps?q=${report.lat},${report.lng}&hl=en&z=14&output=embed`}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }

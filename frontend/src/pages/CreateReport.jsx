@@ -1,44 +1,31 @@
 import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
-import { toast } from "react-hot-toast";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  Box,
-  Button,
-  Card as MuiCard,
-  CssBaseline,
-  Divider,
-  FormControl,
-  FormLabel,
-  MenuItem,
   Select,
-  TextField,
-  Typography,
-  Stack,
-  Paper,
-} from "@mui/material";
-
-import { styled } from "@mui/material/styles";
-
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { Icon } from "leaflet";
+import {
+  Loader2,
+  Upload,
+  X,
+  MapPin,
+  Building2,
+  FileText,
+  Send,
+} from "lucide-react";
 
-const VisuallyHiddenInput = styled("input")({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: 1,
-  overflow: "hidden",
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  whiteSpace: "nowrap",
-  width: 1,
-});
-
-// ---------------------
-// Leaflet Marker Icon
-// ---------------------
 const markerIcon = new Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -46,41 +33,6 @@ const markerIcon = new Icon({
   iconAnchor: [12, 41],
 });
 
-// ---------------------
-// Styled Card
-// ---------------------
-const Card = styled(MuiCard)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  alignSelf: "center",
-  width: "100%",
-  padding: theme.spacing(4),
-  gap: theme.spacing(2),
-  margin: "auto",
-  marginTop: theme.spacing(4),
-  boxShadow:
-    "hsla(220, 30%, 5%, 0.05) 0px 5px 15px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
-  [theme.breakpoints.up("md")]: {
-    width: "1100px",
-  },
-}));
-
-// ---------------------
-// Page Background
-// ---------------------
-const PageContainer = styled(Stack)(({ theme }) => ({
-  minHeight: "100vh",
-  padding: theme.spacing(3),
-  backgroundImage:
-    theme.palette.mode === "dark"
-      ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))"
-      : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), white)",
-  backgroundRepeat: "no-repeat",
-}));
-
-// ---------------------
-// Map click handler
-// ---------------------
 function MapClickHandler({ onMapClick }) {
   useMapEvents({
     click(e) {
@@ -91,26 +43,21 @@ function MapClickHandler({ onMapClick }) {
   return null;
 }
 
-// ========================================================================
-// MAIN COMPONENT
-// ========================================================================
 export default function CreateReport() {
   const [institutions, setInstitutions] = useState([]);
   const [institutionId, setInstitutionId] = useState("");
-
   const [categories, setCategories] = useState([]);
   const [categoryId, setCategoryId] = useState("");
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
-
   const [markerPosition, setMarkerPosition] = useState(null);
   const [address, setAddress] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -118,9 +65,6 @@ export default function CreateReport() {
   const mapRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
-  // ======================================================================
-  // LOAD DATA
-  // ======================================================================
   useEffect(() => {
     api.get("/institutions").then((res) => setInstitutions(res.data));
   }, []);
@@ -136,109 +80,58 @@ export default function CreateReport() {
     }
   }, [institutionId]);
 
-  // ======================================================================
-  // GEOLOCATION
-  // ======================================================================
   useEffect(() => {
     if (!navigator.geolocation) return;
-
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        const latStr = latitude.toFixed(6);
-        const lngStr = longitude.toFixed(6);
-
-        setLat(latStr);
-        setLng(lngStr);
+        setLat(latitude.toFixed(6));
+        setLng(longitude.toFixed(6));
         setMarkerPosition([latitude, longitude]);
-        reverseGeocode(latitude, longitude); // адрес от координати
+        reverseGeocode(latitude, longitude);
       },
-      (err) => {
-        console.log("Geolocation denied or failed:", err);
-      },
+      (err) => console.log("Geolocation denied:", err),
       { enableHighAccuracy: true, timeout: 5000 }
     );
   }, []);
 
-  // ======================================================================
-  // MOVE MAP WHEN MARKER CHANGES
-  // ======================================================================
   useEffect(() => {
     if (mapRef.current && markerPosition) {
       mapRef.current.setView(markerPosition, 17, { animate: true });
     }
   }, [markerPosition]);
 
-  // ======================================================================
-  // REVERSE GEOCODING (координати → адрес)
-  // ======================================================================
   const reverseGeocode = async (latVal, lngVal) => {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latVal}&lon=${lngVal}&addressdetails=1`
       );
       const data = await res.json();
-      if (data && data.address) {
-        const formatted = formatAddress(data.address);
-        setAddress(formatted);
+      if (data?.address) {
+        setAddress(formatAddress(data.address));
       }
     } catch (err) {
       console.error("Reverse geocoding error:", err);
     }
   };
 
-  // ======================================================================
-  // SUBMIT
-  // ======================================================================
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!institutionId || !categoryId || !title || !lat || !lng) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
-
-    const payload = {
-      title,
-      description: description || null,
-      categoryId: Number(categoryId),
-      institutionId: Number(institutionId),
-      lat: Number(lat),
-      lng: Number(lng),
-      address: address || null,
-      imageUrl: uploadedImageUrl || null,
-    };
-
-    await api.post("/reports", payload);
-
-    toast.success("Report created successfully!");
-
-    // reset
-    setTitle("");
-    setDescription("");
-    setLat("");
-    setLng("");
-    setInstitutionId("");
-    setCategoryId("");
-    setMarkerPosition(null);
-    setAddress("");
-    setSuggestions([]);
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setUploadedImageUrl(null);
+  const formatAddress = (a) => {
+    const parts = [];
+    if (a.road) parts.push(a.road);
+    if (a.house_number) parts.push(`#${a.house_number}`);
+    if (a.neighbourhood) parts.push(a.neighbourhood);
+    if (a.suburb) parts.push(a.suburb);
+    if (a.city || a.town || a.village) parts.push(a.city || a.town || a.village);
+    if (a.postcode) parts.push(a.postcode);
+    if (a.country) parts.push(a.country);
+    return parts.join(", ");
   };
 
-  // ======================================================================
-  // ADDRESS AUTOCOMPLETE
-  // ======================================================================
   const handleAddressChange = (e) => {
     const value = e.target.value;
     setAddress(value);
-
     clearTimeout(typingTimeoutRef.current);
-
-    typingTimeoutRef.current = setTimeout(() => {
-      searchAddressSuggestions(value);
-    }, 300);
+    typingTimeoutRef.current = setTimeout(() => searchAddressSuggestions(value), 300);
   };
 
   const searchAddressSuggestions = async (query) => {
@@ -246,57 +139,33 @@ export default function CreateReport() {
       setSuggestions([]);
       return;
     }
-
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&q=${encodeURIComponent(
-          query
-        )}`
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`
       );
       const data = await res.json();
-
-      const formatted = data.map((item) => ({
-        lat: item.lat,
-        lon: item.lon,
-        display: formatAddress(item.address),
-      }));
-
-      setSuggestions(formatted);
+      setSuggestions(
+        data.map((item) => ({
+          lat: item.lat,
+          lon: item.lon,
+          display: formatAddress(item.address),
+        }))
+      );
     } catch (err) {
       console.error("Autocomplete error", err);
     }
   };
 
-  const formatAddress = (a) => {
-    const parts = [];
-    if (a.road) parts.push(a.road);
-    if (a.house_number) parts.push(`№ ${a.house_number}`);
-    if (a.neighbourhood) parts.push(a.neighbourhood);
-    if (a.suburb) parts.push(a.suburb);
-    if (a.city) parts.push(a.city);
-    if (a.town) parts.push(a.town);
-    if (a.village) parts.push(a.village);
-    if (a.postcode) parts.push(a.postcode);
-    if (a.country) parts.push(a.country);
-    return parts.join(", ");
-  };
-
   const selectSuggestion = (s) => {
     setAddress(s.display);
     setSuggestions([]);
-
     const latN = Number(s.lat);
     const lngN = Number(s.lon);
-
     setLat(latN.toFixed(6));
     setLng(lngN.toFixed(6));
-
     setMarkerPosition([latN, lngN]);
   };
 
-  // ======================================================================
-  // MAP CLICK / DRAG
-  // ======================================================================
   const handleMapPositionChange = (latVal, lngVal) => {
     setLat(latVal.toFixed(6));
     setLng(lngVal.toFixed(6));
@@ -304,361 +173,303 @@ export default function CreateReport() {
     reverseGeocode(latVal, lngVal);
   };
 
-  // ======================================================================
-  // UI
-  // ======================================================================
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image too large. Max size is 5MB.");
+      return;
+    }
+
+    setPreviewUrl(URL.createObjectURL(file));
+
+    try {
+      setUploading(true);
+      const form = new FormData();
+      form.append("image", file);
+      const res = await api.post("/upload", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setUploadedImageUrl(res.data.url);
+      toast.success("Image uploaded.");
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!institutionId || !categoryId || !title || !lat || !lng) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await api.post("/reports", {
+        title,
+        description: description || null,
+        categoryId: Number(categoryId),
+        institutionId: Number(institutionId),
+        lat: Number(lat),
+        lng: Number(lng),
+        address: address || null,
+        imageUrl: uploadedImageUrl || null,
+      });
+
+      toast.success("Report created successfully!");
+      setTitle("");
+      setDescription("");
+      setLat("");
+      setLng("");
+      setInstitutionId("");
+      setCategoryId("");
+      setMarkerPosition(null);
+      setAddress("");
+      setSuggestions([]);
+      setPreviewUrl(null);
+      setUploadedImageUrl(null);
+    } catch (err) {
+      toast.error("Failed to create report");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <>
-      <CssBaseline enableColorScheme />
-      <PageContainer direction="column">
-        <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ fontSize: "clamp(2rem, 10vw, 2.4rem)" }}
-          >
-            Create Report
-          </Typography>
+    <div className="min-h-[calc(100vh-8rem)] py-8 px-4">
+      <div className="container max-w-5xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <FileText className="h-6 w-6" />
+              Create Report
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              <div className="grid gap-8 lg:grid-cols-2">
+                {/* Left Side - Form */}
+                <div className="space-y-6">
+                  {/* Institution */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      Institution *
+                    </Label>
+                    <Select value={institutionId} onValueChange={(v) => { setInstitutionId(v); setCategoryId(""); }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select institution" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {institutions.map((i) => (
+                          <SelectItem key={i.id} value={String(i.id)}>
+                            {i.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-          <Divider sx={{ my: 2 }} />
-
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-              gap: 3,
-            }}
-          >
-            {/* LEFT SIDE */}
-            <Stack spacing={2}>
-              <FormControl>
-                <FormLabel>Select Institution</FormLabel>
-                <Select
-                  value={institutionId}
-                  onChange={(e) => {
-                    setInstitutionId(e.target.value);
-                    setCategoryId("");
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Choose institution</em>
-                  </MenuItem>
-                  {institutions.map((i) => (
-                    <MenuItem key={i.id} value={i.id}>
-                      {i.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {institutionId && (
-                <FormControl>
-                  <FormLabel>Select Category</FormLabel>
-                  <Select
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                  >
-                    <MenuItem value="">
-                      <em>Choose category</em>
-                    </MenuItem>
-                    {categories.map((c) => (
-                      <MenuItem key={c.id} value={c.id}>
-                        {c.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-
-              <FormControl>
-                <FormLabel>Address (optional)</FormLabel>
-                <TextField
-                  placeholder="Start typing address..."
-                  value={address}
-                  onChange={handleAddressChange}
-                />
-              </FormControl>
-
-              {suggestions.length > 0 && (
-                <Paper
-                  elevation={4}
-                  sx={{
-                    maxHeight: 200,
-                    overflowY: "auto",
-                    mt: -1,
-                  }}
-                >
-                  {suggestions.map((s, idx) => (
-                    <Box
-                      key={idx}
-                      sx={{
-                        p: 1.5,
-                        borderBottom: "1px solid #ddd",
-                        cursor: "pointer",
-                        "&:hover": { backgroundColor: "action.hover" },
-                      }}
-                      onClick={() => selectSuggestion(s)}
-                    >
-                      {s.display}
-                    </Box>
-                  ))}
-                </Paper>
-              )}
-
-              <FormControl>
-                <FormLabel>Report Title</FormLabel>
-                <TextField
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Description</FormLabel>
-                <TextField
-                  multiline
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Photo (optional, images only, max 5MB)</FormLabel>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-
-                    // validate type
-                    if (!file.type.startsWith("image/")) {
-                      toast.error("Only image files are allowed.");
-                      return;
-                    }
-
-                    // validate size (<5MB)
-                    const max = 5 * 1024 * 1024;
-                    if (file.size > max) {
-                      toast.error("Image too large. Max size is 5MB.");
-                      return;
-                    }
-
-                    setSelectedFile(file);
-                    setPreviewUrl(URL.createObjectURL(file));
-
-                    // auto-upload
-                    try {
-                      setUploading(true);
-                      const form = new FormData();
-                      form.append("image", file);
-                      const res = await api.post("/upload", form, {
-                        headers: { "Content-Type": "multipart/form-data" },
-                      });
-                      setUploadedImageUrl(res.data.url);
-                      toast.success("Image uploaded.");
-                    } catch (err) {
-                      console.error(err);
-                      toast.error(
-                        err?.response?.data?.error || "Upload failed"
-                      );
-                    } finally {
-                      setUploading(false);
-                    }
-                  }}
-                  onClick={(e) => {
-                    e.currentTarget.value = "";
-                  }}
-                  style={{ display: "none" }}
-                  id="photo-input"
-                />
-
-                {previewUrl ? (
-                  <Box
-                    sx={{
-                      width: "100%",
-                      height: 300,
-                      border: "2px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                      backgroundColor: "action.hover",
-                      position: "relative",
-                    }}
-                  >
-                    <img
-                      src={previewUrl}
-                      alt="preview"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                    {uploading && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          backgroundColor: "rgba(0, 0, 0, 0.5)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Typography sx={{ color: "white" }}>
-                          Uploading...
-                        </Typography>
-                      </Box>
-                    )}
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      onClick={() => {
-                        setSelectedFile(null);
-                        setPreviewUrl(null);
-                        setUploadedImageUrl(null);
-                      }}
-                      sx={{
-                        position: "absolute",
-                        bottom: 8,
-                        right: 8,
-                      }}
-                    >
-                      Remove Photo
-                    </Button>
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{
-                      width: "100%",
-                      border: "2px dashed",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: 3,
-                      backgroundColor: "action.hover",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        borderColor: "primary.main",
-                        backgroundColor: "action.selected",
-                      },
-                    }}
-                    component="label"
-                    htmlFor="photo-input"
-                  >
-                    <CloudUploadIcon
-                      sx={{
-                        fontSize: 48,
-                        color: "text.secondary",
-                        mb: 1,
-                      }}
-                    />
-                    <Button
-                      component="span"
-                      variant="contained"
-                      startIcon={<CloudUploadIcon />}
-                    >
-                      Upload photo
-                    </Button>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "text.secondary", mt: 1 }}
-                    >
-                      or drag and drop
-                    </Typography>
-                  </Box>
-                )}
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Latitude</FormLabel>
-                <TextField
-                  value={lat}
-                  onChange={(e) => setLat(e.target.value)}
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Longitude</FormLabel>
-                <TextField
-                  value={lng}
-                  onChange={(e) => setLng(e.target.value)}
-                />
-              </FormControl>
-
-              <Button type="submit" variant="contained" size="large">
-                Submit Report
-              </Button>
-            </Stack>
-
-            {/* MAP */}
-            <Box>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                Choose location on the map
-              </Typography>
-
-              <Box
-                sx={{
-                  height: 380,
-                  width: "100%",
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  border: "1px solid",
-                  borderColor: "divider",
-                }}
-              >
-                <MapContainer
-                  center={markerPosition || [42.6977, 23.3219]}
-                  zoom={13}
-                  ref={mapRef}
-                  whenCreated={(map) => (mapRef.current = map)}
-                  style={{ height: "100%", width: "100%" }}
-                >
-                  <TileLayer
-                    attribution="&copy; OpenStreetMap contributors"
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-
-                  {markerPosition && (
-                    <Marker
-                      draggable
-                      icon={markerIcon}
-                      position={markerPosition}
-                      eventHandlers={{
-                        dragend: (e) => {
-                          const pos = e.target.getLatLng();
-                          handleMapPositionChange(pos.lat, pos.lng);
-                        },
-                      }}
-                    />
+                  {/* Category */}
+                  {institutionId && (
+                    <div className="space-y-2">
+                      <Label>Category *</Label>
+                      <Select value={categoryId} onValueChange={setCategoryId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((c) => (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
 
-                  <MapClickHandler
-                    onMapClick={(lat, lng) => handleMapPositionChange(lat, lng)}
-                  />
-                </MapContainer>
-              </Box>
-            </Box>
-          </Box>
+                  {/* Address */}
+                  <div className="space-y-2 relative">
+                    <Label className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Address
+                    </Label>
+                    <Input
+                      placeholder="Start typing address..."
+                      value={address}
+                      onChange={handleAddressChange}
+                    />
+                    {suggestions.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-48 overflow-auto">
+                        {suggestions.map((s, idx) => (
+                          <div
+                            key={idx}
+                            className="px-3 py-2 text-sm cursor-pointer hover:bg-accent"
+                            onClick={() => selectSuggestion(s)}
+                          >
+                            {s.display}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Title */}
+                  <div className="space-y-2">
+                    <Label>Report Title *</Label>
+                    <Input
+                      required
+                      placeholder="Brief description of the issue"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      rows={4}
+                      placeholder="Provide more details about the issue..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Photo Upload */}
+                  <div className="space-y-2">
+                    <Label>Photo (optional)</Label>
+                    {previewUrl ? (
+                      <div className="relative rounded-lg overflow-hidden border">
+                        <img
+                          src={previewUrl}
+                          alt="Preview"
+                          className="w-full h-48 object-cover"
+                        />
+                        {uploading && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <Loader2 className="h-6 w-6 animate-spin text-white" />
+                          </div>
+                        )}
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2"
+                          onClick={() => {
+                            setPreviewUrl(null);
+                            setUploadedImageUrl(null);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+                        <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                        <span className="text-sm text-muted-foreground">
+                          Click to upload or drag and drop
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          Max 5MB
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* Coordinates */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Latitude</Label>
+                      <Input
+                        value={lat}
+                        onChange={(e) => setLat(e.target.value)}
+                        placeholder="42.6977"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Longitude</Label>
+                      <Input
+                        value={lng}
+                        onChange={(e) => setLng(e.target.value)}
+                        placeholder="23.3219"
+                      />
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Submit Report
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Right Side - Map */}
+                <div className="space-y-4">
+                  <Label className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Choose location on map
+                  </Label>
+                  <div className="rounded-lg overflow-hidden border h-[500px]">
+                    <MapContainer
+                      center={markerPosition || [42.6977, 23.3219]}
+                      zoom={13}
+                      ref={mapRef}
+                      style={{ height: "100%", width: "100%" }}
+                    >
+                      <TileLayer
+                        attribution="&copy; OpenStreetMap"
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      {markerPosition && (
+                        <Marker
+                          draggable
+                          icon={markerIcon}
+                          position={markerPosition}
+                          eventHandlers={{
+                            dragend: (e) => {
+                              const pos = e.target.getLatLng();
+                              handleMapPositionChange(pos.lat, pos.lng);
+                            },
+                          }}
+                        />
+                      )}
+                      <MapClickHandler onMapClick={handleMapPositionChange} />
+                    </MapContainer>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Click on the map or drag the marker to set the exact location
+                  </p>
+                </div>
+              </div>
+            </form>
+          </CardContent>
         </Card>
-      </PageContainer>
-    </>
+      </div>
+    </div>
   );
 }

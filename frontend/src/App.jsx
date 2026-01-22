@@ -1,29 +1,24 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import NavBar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-import Landing from "./pages/LandingPage"; // ⬅ добавяме
-import Reports from "./pages/Reports"; // ⬅ преместено от '/'
+import Landing from "./pages/LandingPage";
+import MapExplorer from "./pages/MapExplorer";
+import UserDashboard from "./pages/UserDashboard";
+import Reports from "./pages/Reports";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
-import ResolvedReports from "./pages/ResolvedReports";
 
 import CreateReport from "./pages/CreateReport";
 import Admin from "./pages/Admin";
-import ManageInstitutions from "./pages/ManageInstitutions";
-import ManageCategories from "./pages/ManageCategories";
-import BasePage from "./pages/BasePage";
 import About from "./pages/AboutUs";
-import Map from "./pages/Map";
-import Terms from "./pages/TermsOfService";
-import Privacy from "./pages/Legal";
+import Legal from "./pages/Legal";
 
 import ReportDetails from "./pages/ReportDetails";
 import ContactUs from "./pages/ContactUs";
-import AdminContactMessages from "./pages/AdminContactPage";
 
 export default function App() {
   return (
@@ -32,15 +27,28 @@ export default function App() {
 
       <Routes>
         {/* PUBLIC ROUTES */}
-        <Route path="/" element={<Landing />} />{" "}
-        {/* ⬅ базова landing страница */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/explore" element={<MapExplorer />} />
         <Route path="/aboutus" element={<About />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/legal" element={<Legal />} />
         <Route path="/contactus" element={<ContactUs />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+
+        {/* Redirects for old routes */}
+        <Route path="/terms" element={<Navigate to="/legal" replace />} />
+        <Route path="/privacy" element={<Navigate to="/legal" replace />} />
+        <Route path="/create" element={<Navigate to="/reports/new" replace />} />
+
         {/* PROTECTED USER ROUTES */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <UserDashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/reports"
           element={
@@ -50,22 +58,28 @@ export default function App() {
           }
         />
         <Route
-          path="/report/:id"
-          element={
-            <ProtectedRoute>
-              <ReportDetails />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create"
+          path="/reports/new"
           element={
             <ProtectedRoute>
               <CreateReport />
             </ProtectedRoute>
           }
         />
-        {/* ADMIN ROUTES */}
+        <Route
+          path="/reports/:id"
+          element={
+            <ProtectedRoute>
+              <ReportDetails />
+            </ProtectedRoute>
+          }
+        />
+        {/* Keep old route for backwards compatibility */}
+        <Route
+          path="/report/:id"
+          element={<Navigate to="/reports/:id" replace />}
+        />
+
+        {/* ADMIN ROUTES - Unified under /admin */}
         <Route
           path="/admin"
           element={
@@ -74,38 +88,11 @@ export default function App() {
             </ProtectedAdminRoute>
           }
         />
-        <Route
-          path="/admin/institutions"
-          element={
-            <ProtectedAdminRoute>
-              <ManageInstitutions />
-            </ProtectedAdminRoute>
-          }
-        />
-        <Route
-          path="/admin/categories"
-          element={
-            <ProtectedAdminRoute>
-              <ManageCategories />
-            </ProtectedAdminRoute>
-          }
-        />
-        <Route
-          path="/admin/resolved"
-          element={
-            <ProtectedAdminRoute>
-              <ResolvedReports />
-            </ProtectedAdminRoute>
-          }
-        />
-        <Route
-          path="/admin/contact-messages"
-          element={
-            <ProtectedAdminRoute>
-              <AdminContactMessages />
-            </ProtectedAdminRoute>
-          }
-        />
+        {/* Redirects for old admin routes */}
+        <Route path="/admin/institutions" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin/categories" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin/resolved" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin/contact-messages" element={<Navigate to="/admin" replace />} />
       </Routes>
 
       <Footer />

@@ -12,8 +12,12 @@ export default function Reports() {
 
   useEffect(() => {
     api
-      .get("/reports")
-      .then((res) => setReports(res.data))
+      .get("/reports?limit=100")
+      .then((res) => {
+        // Handle both old array format and new paginated format
+        const reportsData = Array.isArray(res.data) ? res.data : (res.data.data || []);
+        setReports(reportsData);
+      })
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -21,9 +25,9 @@ export default function Reports() {
     switch (status) {
       case "Pending":
         return <Badge variant="warning">Pending</Badge>;
-      case "SENT":
+      case "Sent":
         return <Badge variant="default">In Progress</Badge>;
-      case "FINISHED":
+      case "Finished":
         return <Badge variant="success">Resolved</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
@@ -103,7 +107,7 @@ export default function Reports() {
                 </CardContent>
                 <CardFooter className="pt-2">
                   <Button variant="outline" size="sm" asChild className="ml-auto">
-                    <Link to={`/report/${r.id}`}>
+                    <Link to={`/reports/${r.id}`}>
                       View Details
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>

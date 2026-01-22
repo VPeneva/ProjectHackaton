@@ -1,8 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api", // - за локално тестване
-  //baseURL: "http://172.20.10.3:5000/api" //- само за хотспот-а
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
 });
 
 // автоматично добавяне на token към заявките

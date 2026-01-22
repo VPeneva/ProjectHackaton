@@ -49,13 +49,13 @@ export default function Footer() {
           <div>
             <h4 className="font-medium mb-3">Product</h4>
             <nav className="flex flex-col gap-2">
-              <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Features
+              <Link to="/explore" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Explore Map
               </Link>
               <Link to="/reports" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Reports
+                My Reports
               </Link>
-              <Link to="/create" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/reports/new" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Create Report
               </Link>
             </nav>
@@ -70,10 +70,10 @@ export default function Footer() {
               <Link to="/contactus" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Contact
               </Link>
-              <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/legal" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Terms
               </Link>
-              <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/legal?tab=privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Privacy
               </Link>
             </nav>

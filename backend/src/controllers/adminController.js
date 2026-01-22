@@ -47,7 +47,7 @@ export const resolveReport = async (req, res) => {
   try {
     const updated = await prisma.report.update({
       where: { id: Number(id) },
-      data: { status: "FINISHED" },
+      data: { status: "Finished" },
     });
 
     res.json(updated);

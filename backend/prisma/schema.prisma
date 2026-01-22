@@ -46,9 +46,10 @@ model Report {
   id             Int         @id @default(autoincrement())
   title          String
   description    String?
+  address        String?
   lat            Float
   lng            Float
-  status         String     @default("Pending")// Pending / Sent / Resolved
+  status         String     @default("Pending") // Pending / Sent / Finished
   createdAt      DateTime    @default(now())
 
   // User

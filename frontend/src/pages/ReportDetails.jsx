@@ -23,9 +23,9 @@ export default function ReportDetails() {
     switch (status) {
       case "Pending":
         return <Badge variant="warning">Pending</Badge>;
-      case "SENT":
+      case "Sent":
         return <Badge variant="default">In Progress</Badge>;
-      case "FINISHED":
+      case "Finished":
         return <Badge variant="success">Resolved</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
@@ -121,9 +121,9 @@ export default function ReportDetails() {
                       <Image className="h-4 w-4" />
                       Photo
                     </h4>
-                    <a href={report.imageUrl} target="_blank" rel="noreferrer">
+                    <a href={report.imageUrl.startsWith("http") ? report.imageUrl : `${import.meta.env.VITE_API_BASE_URL?.replace("/api", "") || "http://localhost:5000"}${report.imageUrl}`} target="_blank" rel="noreferrer">
                       <img
-                        src={report.imageUrl}
+                        src={report.imageUrl.startsWith("http") ? report.imageUrl : `${import.meta.env.VITE_API_BASE_URL?.replace("/api", "") || "http://localhost:5000"}${report.imageUrl}`}
                         alt="Report"
                         className="w-full rounded-lg object-cover max-h-80 hover:opacity-90 transition-opacity"
                       />

@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { StepIndicator } from "@/components/reports/StepIndicator";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { Icon } from "leaflet";
 import {
@@ -23,7 +25,11 @@ import {
   MapPin,
   Building2,
   FileText,
-  Send,
+  Camera,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Navigation,
 } from "lucide-react";
 
 const markerIcon = new Icon({
@@ -32,6 +38,12 @@ const markerIcon = new Icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
+
+const STEPS = [
+  { id: "location", label: "Location" },
+  { id: "details", label: "Details" },
+  { id: "photo", label: "Photo" },
+];
 
 function MapClickHandler({ onMapClick }) {
   useMapEvents({
@@ -44,23 +56,26 @@ function MapClickHandler({ onMapClick }) {
 }
 
 export default function CreateReport() {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
+
+  // Form data
   const [institutions, setInstitutions] = useState([]);
   const [institutionId, setInstitutionId] = useState("");
   const [categories, setCategories] = useState([]);
   const [categoryId, setCategoryId] = useState("");
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [markerPosition, setMarkerPosition] = useState(null);
   const [address, setAddress] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   const mapRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -79,21 +94,6 @@ export default function CreateReport() {
       setCategoryId("");
     }
   }, [institutionId]);
-
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setLat(latitude.toFixed(6));
-        setLng(longitude.toFixed(6));
-        setMarkerPosition([latitude, longitude]);
-        reverseGeocode(latitude, longitude);
-      },
-      (err) => console.log("Geolocation denied:", err),
-      { enableHighAccuracy: true, timeout: 5000 }
-    );
-  }, []);
 
   useEffect(() => {
     if (mapRef.current && markerPosition) {
@@ -119,11 +119,7 @@ export default function CreateReport() {
     const parts = [];
     if (a.road) parts.push(a.road);
     if (a.house_number) parts.push(`#${a.house_number}`);
-    if (a.neighbourhood) parts.push(a.neighbourhood);
-    if (a.suburb) parts.push(a.suburb);
     if (a.city || a.town || a.village) parts.push(a.city || a.town || a.village);
-    if (a.postcode) parts.push(a.postcode);
-    if (a.country) parts.push(a.country);
     return parts.join(", ");
   };
 
@@ -173,6 +169,31 @@ export default function CreateReport() {
     reverseGeocode(latVal, lngVal);
   };
 
+  const useCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    setGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setLat(latitude.toFixed(6));
+        setLng(longitude.toFixed(6));
+        setMarkerPosition([latitude, longitude]);
+        reverseGeocode(latitude, longitude);
+        setGettingLocation(false);
+        toast.success("Location detected!");
+      },
+      (err) => {
+        console.log("Geolocation denied:", err);
+        toast.error("Could not get your location");
+        setGettingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  };
+
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -205,8 +226,7 @@ export default function CreateReport() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!institutionId || !categoryId || !title || !lat || !lng) {
       toast.error("Please fill in all required fields.");
       return;
@@ -226,249 +246,380 @@ export default function CreateReport() {
       });
 
       toast.success("Report created successfully!");
-      setTitle("");
-      setDescription("");
-      setLat("");
-      setLng("");
-      setInstitutionId("");
-      setCategoryId("");
-      setMarkerPosition(null);
-      setAddress("");
-      setSuggestions([]);
-      setPreviewUrl(null);
-      setUploadedImageUrl(null);
-    } catch (err) {
+      navigate("/reports");
+    } catch {
       toast.error("Failed to create report");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const canProceedFromStep = (step) => {
+    switch (step) {
+      case 0: // Location
+        return lat && lng;
+      case 1: // Details
+        return institutionId && categoryId && title.trim();
+      case 2: // Photo (always can proceed, photo is optional)
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  const nextStep = () => {
+    if (currentStep < STEPS.length - 1 && canProceedFromStep(currentStep)) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const getInstitutionName = () => {
+    const inst = institutions.find((i) => String(i.id) === institutionId);
+    return inst?.name || "";
+  };
+
+  const getCategoryName = () => {
+    const cat = categories.find((c) => String(c.id) === categoryId);
+    return cat?.name || "";
+  };
+
   return (
     <div className="min-h-[calc(100vh-8rem)] py-8 px-4">
-      <div className="container max-w-5xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <FileText className="h-6 w-6" />
-              Create Report
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit}>
-              <div className="grid gap-8 lg:grid-cols-2">
-                {/* Left Side - Form */}
-                <div className="space-y-6">
-                  {/* Institution */}
+      <div className="container max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+            Report an Issue
+          </h1>
+          <p className="text-muted-foreground">
+            Help improve your community in just 3 simple steps
+          </p>
+        </div>
+
+        {/* Progress */}
+        <div className="mb-8">
+          <StepIndicator steps={STEPS} currentStep={currentStep} />
+        </div>
+
+        {/* Step Content */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            {/* Step 1: Location */}
+            {currentStep === 0 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                    <MapPin className="h-6 w-6 text-primary" />
+                  </div>
+                  <h2 className="text-xl font-semibold">Where is the issue?</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Click on the map or search for an address
+                  </p>
+                </div>
+
+                {/* Address Search */}
+                <div className="relative">
+                  <Label>Search Address</Label>
+                  <div className="flex gap-2 mt-2">
+                    <div className="relative flex-1">
+                      <Input
+                        placeholder="Start typing an address..."
+                        value={address}
+                        onChange={handleAddressChange}
+                      />
+                      {suggestions.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-48 overflow-auto">
+                          {suggestions.map((s, idx) => (
+                            <div
+                              key={idx}
+                              className="px-3 py-2 text-sm cursor-pointer hover:bg-accent"
+                              onClick={() => selectSuggestion(s)}
+                            >
+                              {s.display}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={useCurrentLocation}
+                      disabled={gettingLocation}
+                    >
+                      {gettingLocation ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Navigation className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Map */}
+                <div className="rounded-lg overflow-hidden border h-[350px]">
+                  <MapContainer
+                    center={markerPosition || [42.6977, 23.3219]}
+                    zoom={13}
+                    ref={mapRef}
+                    style={{ height: "100%", width: "100%" }}
+                  >
+                    <TileLayer
+                      attribution="&copy; OpenStreetMap"
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {markerPosition && (
+                      <Marker
+                        draggable
+                        icon={markerIcon}
+                        position={markerPosition}
+                        eventHandlers={{
+                          dragend: (e) => {
+                            const pos = e.target.getLatLng();
+                            handleMapPositionChange(pos.lat, pos.lng);
+                          },
+                        }}
+                      />
+                    )}
+                    <MapClickHandler onMapClick={handleMapPositionChange} />
+                  </MapContainer>
+                </div>
+
+                {markerPosition && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 text-green-500" />
+                    Location selected: {lat}, {lng}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 2: Details */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                    <FileText className="h-6 w-6 text-primary" />
+                  </div>
+                  <h2 className="text-xl font-semibold">What did you find?</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Tell us about the issue
+                  </p>
+                </div>
+
+                {/* Institution */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    Institution *
+                  </Label>
+                  <Select
+                    value={institutionId}
+                    onValueChange={(v) => {
+                      setInstitutionId(v);
+                      setCategoryId("");
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select responsible institution" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {institutions.map((i) => (
+                        <SelectItem key={i.id} value={String(i.id)}>
+                          {i.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Category */}
+                {institutionId && (
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
-                      Institution *
-                    </Label>
-                    <Select value={institutionId} onValueChange={(v) => { setInstitutionId(v); setCategoryId(""); }}>
+                    <Label>Category *</Label>
+                    <Select value={categoryId} onValueChange={setCategoryId}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select institution" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {institutions.map((i) => (
-                          <SelectItem key={i.id} value={String(i.id)}>
-                            {i.name}
+                        {categories.map((c) => (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
+                )}
 
-                  {/* Category */}
-                  {institutionId && (
-                    <div className="space-y-2">
-                      <Label>Category *</Label>
-                      <Select value={categoryId} onValueChange={setCategoryId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((c) => (
-                            <SelectItem key={c.id} value={String(c.id)}>
-                              {c.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* Address */}
-                  <div className="space-y-2 relative">
-                    <Label className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      Address
-                    </Label>
-                    <Input
-                      placeholder="Start typing address..."
-                      value={address}
-                      onChange={handleAddressChange}
-                    />
-                    {suggestions.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-48 overflow-auto">
-                        {suggestions.map((s, idx) => (
-                          <div
-                            key={idx}
-                            className="px-3 py-2 text-sm cursor-pointer hover:bg-accent"
-                            onClick={() => selectSuggestion(s)}
-                          >
-                            {s.display}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Title */}
-                  <div className="space-y-2">
-                    <Label>Report Title *</Label>
-                    <Input
-                      required
-                      placeholder="Brief description of the issue"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea
-                      rows={4}
-                      placeholder="Provide more details about the issue..."
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                    />
-                  </div>
-
-                  {/* Photo Upload */}
-                  <div className="space-y-2">
-                    <Label>Photo (optional)</Label>
-                    {previewUrl ? (
-                      <div className="relative rounded-lg overflow-hidden border">
-                        <img
-                          src={previewUrl}
-                          alt="Preview"
-                          className="w-full h-48 object-cover"
-                        />
-                        {uploading && (
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                            <Loader2 className="h-6 w-6 animate-spin text-white" />
-                          </div>
-                        )}
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2"
-                          onClick={() => {
-                            setPreviewUrl(null);
-                            setUploadedImageUrl(null);
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                        <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                        <span className="text-sm text-muted-foreground">
-                          Click to upload or drag and drop
-                        </span>
-                        <span className="text-xs text-muted-foreground mt-1">
-                          Max 5MB
-                        </span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleFileChange}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Coordinates */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Latitude</Label>
-                      <Input
-                        value={lat}
-                        onChange={(e) => setLat(e.target.value)}
-                        placeholder="42.6977"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Longitude</Label>
-                      <Input
-                        value={lng}
-                        onChange={(e) => setLng(e.target.value)}
-                        placeholder="23.3219"
-                      />
-                    </div>
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="mr-2 h-4 w-4" />
-                        Submit Report
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                {/* Right Side - Map */}
-                <div className="space-y-4">
-                  <Label className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Choose location on map
-                  </Label>
-                  <div className="rounded-lg overflow-hidden border h-[500px]">
-                    <MapContainer
-                      center={markerPosition || [42.6977, 23.3219]}
-                      zoom={13}
-                      ref={mapRef}
-                      style={{ height: "100%", width: "100%" }}
-                    >
-                      <TileLayer
-                        attribution="&copy; OpenStreetMap"
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                      {markerPosition && (
-                        <Marker
-                          draggable
-                          icon={markerIcon}
-                          position={markerPosition}
-                          eventHandlers={{
-                            dragend: (e) => {
-                              const pos = e.target.getLatLng();
-                              handleMapPositionChange(pos.lat, pos.lng);
-                            },
-                          }}
-                        />
-                      )}
-                      <MapClickHandler onMapClick={handleMapPositionChange} />
-                    </MapContainer>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Click on the map or drag the marker to set the exact location
+                {/* Title */}
+                <div className="space-y-2">
+                  <Label>Brief Description *</Label>
+                  <Input
+                    placeholder="e.g., Pothole on Main Street"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    maxLength={100}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {title.length}/100 characters
                   </p>
                 </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label>Additional Details (optional)</Label>
+                  <Textarea
+                    rows={3}
+                    placeholder="Provide more details if needed..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </div>
               </div>
-            </form>
+            )}
+
+            {/* Step 3: Photo + Review */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                    <Camera className="h-6 w-6 text-primary" />
+                  </div>
+                  <h2 className="text-xl font-semibold">Add a Photo</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    A photo helps authorities understand the issue faster
+                  </p>
+                </div>
+
+                {/* Photo Upload */}
+                <div className="space-y-2">
+                  {previewUrl ? (
+                    <div className="relative rounded-lg overflow-hidden border">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-full h-48 object-cover"
+                      />
+                      {uploading && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-white" />
+                        </div>
+                      )}
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={() => {
+                          setPreviewUrl(null);
+                          setUploadedImageUrl(null);
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+                      <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                      <span className="text-sm font-medium">
+                        Click to upload a photo
+                      </span>
+                      <span className="text-xs text-muted-foreground mt-1">
+                        PNG, JPG up to 5MB
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Review Summary */}
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <h3 className="font-medium">Review Your Report</h3>
+                  <div className="grid gap-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Location:</span>
+                      <span className="text-right max-w-[200px] truncate">
+                        {address || `${lat}, ${lng}`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Institution:</span>
+                      <span>{getInstitutionName()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Category:</span>
+                      <span>{getCategoryName()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Title:</span>
+                      <span className="text-right max-w-[200px] truncate">
+                        {title}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Photo:</span>
+                      <span>
+                        {previewUrl ? (
+                          <Badge variant="success">Attached</Badge>
+                        ) : (
+                          <Badge variant="secondary">None</Badge>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={prevStep}
+            disabled={currentStep === 0}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+
+          {currentStep < STEPS.length - 1 ? (
+            <Button
+              onClick={nextStep}
+              disabled={!canProceedFromStep(currentStep)}
+            >
+              Continue
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} disabled={isSubmitting || uploading}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Submit Report
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

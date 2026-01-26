@@ -1,101 +1,105 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import NavBar from "./components/Navbar";
-import Footer from "./components/Footer";
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from '@/components/ui/sonner'
+import { AuthProvider } from '@/context/AuthContext'
+import { ThemeProvider } from '@/context/ThemeContext'
 
-import Landing from "./pages/LandingPage";
-import MapExplorer from "./pages/MapExplorer";
-import UserDashboard from "./pages/UserDashboard";
-import Reports from "./pages/Reports";
-import SignUp from "./pages/SignUp";
-import SignIn from "./pages/SignIn";
+// Layout components
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 
-import ProtectedRoute from "./components/ProtectedRoute";
-import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+// Route guards
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import AdminRoute from '@/components/auth/AdminRoute'
 
-import CreateReport from "./pages/CreateReport";
-import Admin from "./pages/Admin";
-import About from "./pages/AboutUs";
-import Legal from "./pages/Legal";
+// Public pages
+import Landing from '@/pages/public/Landing'
+import About from '@/pages/public/About'
+import Contact from '@/pages/public/Contact'
+import Legal from '@/pages/public/Legal'
+import NotFound from '@/pages/public/NotFound'
 
-import ReportDetails from "./pages/ReportDetails";
-import ContactUs from "./pages/ContactUs";
+// Auth pages
+import Login from '@/pages/auth/Login'
+import Register from '@/pages/auth/Register'
 
-export default function App() {
+// User pages
+import Dashboard from '@/pages/user/Dashboard'
+import Reports from '@/pages/user/Reports'
+import ReportDetail from '@/pages/user/ReportDetail'
+import CreateReport from '@/pages/user/CreateReport'
+import MyReports from '@/pages/user/MyReports'
+import MapExplorer from '@/pages/user/MapExplorer'
+
+// Admin pages
+import AdminDashboard from '@/pages/admin/AdminDashboard'
+import ManageReports from '@/pages/admin/ManageReports'
+import ResolvedReports from '@/pages/admin/ResolvedReports'
+import Institutions from '@/pages/admin/Institutions'
+import Categories from '@/pages/admin/Categories'
+import Messages from '@/pages/admin/Messages'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
+function App() {
   return (
-    <BrowserRouter>
-      <NavBar />
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="system" storageKey="civic-report-theme">
+        <AuthProvider>
+          <BrowserRouter>
+            <div className="min-h-screen flex flex-col bg-background text-foreground">
+              <Navbar />
+              <main className="flex-1">
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/legal" element={<Legal />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
 
-      <Routes>
-        {/* PUBLIC ROUTES */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/explore" element={<MapExplorer />} />
-        <Route path="/aboutus" element={<About />} />
-        <Route path="/legal" element={<Legal />} />
-        <Route path="/contactus" element={<ContactUs />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+                  {/* Public but show all reports */}
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/reports/:id" element={<ReportDetail />} />
+                  <Route path="/map" element={<MapExplorer />} />
 
-        {/* Redirects for old routes */}
-        <Route path="/terms" element={<Navigate to="/legal" replace />} />
-        <Route path="/privacy" element={<Navigate to="/legal" replace />} />
-        <Route path="/create" element={<Navigate to="/reports/new" replace />} />
+                  {/* Protected User Routes */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/my-reports" element={<MyReports />} />
+                    <Route path="/create-report" element={<CreateReport />} />
+                  </Route>
 
-        {/* PROTECTED USER ROUTES */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/reports"
-          element={
-            <ProtectedRoute>
-              <Reports />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/reports/new"
-          element={
-            <ProtectedRoute>
-              <CreateReport />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/reports/:id"
-          element={
-            <ProtectedRoute>
-              <ReportDetails />
-            </ProtectedRoute>
-          }
-        />
-        {/* Keep old route for backwards compatibility */}
-        <Route
-          path="/report/:id"
-          element={<Navigate to="/reports/:id" replace />}
-        />
+                  {/* Admin Routes */}
+                  <Route element={<AdminRoute />}>
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/reports" element={<ManageReports />} />
+                    <Route path="/admin/resolved" element={<ResolvedReports />} />
+                    <Route path="/admin/institutions" element={<Institutions />} />
+                    <Route path="/admin/categories" element={<Categories />} />
+                    <Route path="/admin/messages" element={<Messages />} />
+                  </Route>
 
-        {/* ADMIN ROUTES - Unified under /admin */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedAdminRoute>
-              <Admin />
-            </ProtectedAdminRoute>
-          }
-        />
-        {/* Redirects for old admin routes */}
-        <Route path="/admin/institutions" element={<Navigate to="/admin" replace />} />
-        <Route path="/admin/categories" element={<Navigate to="/admin" replace />} />
-        <Route path="/admin/resolved" element={<Navigate to="/admin" replace />} />
-        <Route path="/admin/contact-messages" element={<Navigate to="/admin" replace />} />
-      </Routes>
-
-      <Footer />
-    </BrowserRouter>
-  );
+                  {/* 404 */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+            <Toaster richColors position="top-right" />
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  )
 }
+
+export default App

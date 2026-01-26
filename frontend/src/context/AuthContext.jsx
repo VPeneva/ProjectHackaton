@@ -1,59 +1,76 @@
-import { createContext, useState, useEffect } from "react";
-import api from "../services/api";
+import { createContext, useContext, useState, useEffect } from 'react'
 
-export const AuthContext = createContext();
+const AuthContext = createContext(null)
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null)
+  const [token, setToken] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Зареждане на user от localStorage при refresh
+  // Initialize from localStorage
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    const savedToken = localStorage.getItem("token");
+    const storedToken = localStorage.getItem('token')
+    const storedUser = localStorage.getItem('user')
 
-    if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser));
+    if (storedToken && storedUser) {
+      try {
+        setToken(storedToken)
+        setUser(JSON.parse(storedUser))
+      } catch (error) {
+        // Invalid stored data, clear it
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+      }
     }
-  }, []);
+    setLoading(false)
+  }, [])
 
-  // LOGIN
-  const login = async (email, password) => {
-    const res = await api.post("/auth/login", { email, password });
+  const login = (userData, authToken) => {
+    localStorage.setItem('token', authToken)
+    localStorage.setItem('user', JSON.stringify(userData))
+    setToken(authToken)
+    setUser(userData)
+  }
 
-    const { user, token } = res.data;
-
-    setUser(user);
-    localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("token", token);
-  };
-
-  // REGISTER — след регистрация автоматично логва потребителя
-  const register = async (name, email, password, adminKey) => {
-    const res = await api.post("/auth/register", {
-      name,
-      email,
-      password,
-      adminKey
-    });
-
-    // 💡 backendът трябва да връща user + token (ще ти дам fix по-долу)
-    const { user, token } = res.data;
-
-    setUser(user);
-    localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("token", token);
-  };
-
-  // LOGOUT
   const logout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setUser(null);
-  };
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setToken(null)
+    setUser(null)
+  }
+
+  const updateUser = (userData) => {
+    localStorage.setItem('user', JSON.stringify(userData))
+    setUser(userData)
+  }
+
+  const isAuthenticated = !!token
+  const isAdmin = user?.role === 'ADMIN'
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        isAuthenticated,
+        isAdmin,
+        login,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
+
+export default AuthContext

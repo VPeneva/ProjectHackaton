@@ -7,6 +7,15 @@ import path from "path";
 
 const router = express.Router();
 
+// Shared user select to exclude password
+const userSelect = {
+  id: true,
+  email: true,
+  name: true,
+  role: true,
+  createdAt: true,
+};
+
 /**
  * GET /admin/reports
  * Всички НЕрешени репорти (Pending или Sent),
@@ -19,12 +28,12 @@ router.get("/reports", authMiddleware, isAdmin, async (req, res) => {
     const reports = await prisma.report.findMany({
       where: {
         AND: [
-          { status: { not: "FINISHED" } }, // ❗ показва само активни репорти
+          { status: { not: "Finished" } },
           institutionId ? { institutionId: Number(institutionId) } : {},
         ],
       },
       include: {
-        user: true,
+        user: { select: userSelect },
         institution: true,
         category: true,
       },
@@ -40,7 +49,7 @@ router.get("/reports", authMiddleware, isAdmin, async (req, res) => {
 
 /**
  * PATCH /admin/reports/:id/send
- * Изпраща репорт към институция + променя статус на "SENT"
+ * Изпраща репорт към институция + променя статус на "Sent"
  */
 router.patch("/reports/:id/send", authMiddleware, isAdmin, async (req, res) => {
   const { institutionId } = req.body;
@@ -53,11 +62,11 @@ router.patch("/reports/:id/send", authMiddleware, isAdmin, async (req, res) => {
     const updated = await prisma.report.update({
       where: { id: Number(req.params.id) },
       data: {
-        status: "SENT",
+        status: "Sent",
         institutionId: Number(institutionId),
       },
       include: {
-        user: true,
+        user: { select: userSelect },
         institution: true,
         category: true,
       },
@@ -82,9 +91,9 @@ router.patch(
     try {
       const updated = await prisma.report.update({
         where: { id: Number(req.params.id) },
-        data: { status: "FINISHED" },
+        data: { status: "Finished" },
         include: {
-          user: true,
+          user: { select: userSelect },
           institution: true,
           category: true,
         },
@@ -100,14 +109,14 @@ router.patch(
 
 /**
  * GET /admin/resolved
- * Всички репорти със статус FINISHED
+ * Всички репорти със статус Finished
  */
 router.get("/resolved", authMiddleware, isAdmin, async (req, res) => {
   try {
     const reports = await prisma.report.findMany({
-      where: { status: "FINISHED" },
+      where: { status: "Finished" },
       include: {
-        user: true,
+        user: { select: userSelect },
         institution: true,
         category: true,
       },
@@ -142,9 +151,14 @@ router.delete(
       try {
         const imgUrl = report.imageUrl;
         if (imgUrl.includes("/uploads/")) {
-          // extract pathname and basename
-          const parsed = new URL(imgUrl);
-          const filename = path.basename(parsed.pathname);
+          // Handle both full URLs and relative paths
+          let filename;
+          if (imgUrl.startsWith("http")) {
+            const parsed = new URL(imgUrl);
+            filename = path.basename(parsed.pathname);
+          } else {
+            filename = path.basename(imgUrl);
+          }
           const filePath = path.join(process.cwd(), "uploads", filename);
           if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
         }
@@ -155,7 +169,11 @@ router.delete(
       const updated = await prisma.report.update({
         where: { id },
         data: { imageUrl: null },
-        include: { user: true, institution: true, category: true },
+        include: {
+          user: { select: userSelect },
+          institution: true,
+          category: true,
+        },
       });
 
       res.json(updated);

@@ -41,5 +41,23 @@ backend/prisma/dev.db
 # OS
 Thumbs.db
 
+# Windows reserved names
+nul
+NUL
+con
+CON
+prn
+PRN
+aux
+AUX
+
 # Images
 backend/uploads/
+
+#claude
+
+.claude/settings.local.json
+CLAUDE.md
+DEVELOPMENT_REPORT.md
+FRONTEND_PLAN.md
+.claude*

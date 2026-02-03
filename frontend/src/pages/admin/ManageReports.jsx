@@ -30,12 +30,14 @@ import {
     MapPin,
     Loader2,
     FileText,
+    ThumbsUp,
+    ThumbsDown,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusConfig = {
-    PENDING: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    SENT: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+    Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
 }
 
 function ReportRow({ report, onSend, onResolve, institutions }) {
@@ -45,6 +47,18 @@ function ReportRow({ report, onSend, onResolve, institutions }) {
     const [resolving, setResolving] = useState(false)
 
     const status = statusConfig[report.status] || statusConfig.PENDING
+    const upvotes = report.upvotes ?? 0
+    const downvotes = report.downvotes ?? 0
+    const totalVotes = upvotes + downvotes
+    const ratio = totalVotes ? upvotes / totalVotes : 0
+    const communityBadge =
+        totalVotes === 0
+            ? { label: 'No votes yet', className: 'bg-muted text-muted-foreground border-border/60' }
+            : ratio >= 0.7
+                ? { label: 'Community validated', className: 'bg-green-500/10 text-green-600 border-green-500/20' }
+                : ratio <= 0.3
+                    ? { label: 'Needs review', className: 'bg-rose-500/10 text-rose-600 border-rose-500/20' }
+                    : { label: 'Mixed feedback', className: 'bg-amber-500/10 text-amber-600 border-amber-500/20' }
 
     const handleSend = async () => {
         if (!selectedInstitution) {
@@ -108,6 +122,19 @@ function ReportRow({ report, onSend, onResolve, institutions }) {
                                     {new Date(report.createdAt).toLocaleDateString()}
                                 </span>
                             </div>
+                            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1 text-emerald-600">
+                                    <ThumbsUp className="h-3 w-3" />
+                                    {upvotes}
+                                </span>
+                                <span className="flex items-center gap-1 text-rose-600">
+                                    <ThumbsDown className="h-3 w-3" />
+                                    {downvotes}
+                                </span>
+                                <Badge variant="outline" className={communityBadge.className}>
+                                    {communityBadge.label}
+                                </Badge>
+                            </div>
                         </div>
 
                         {/* Actions */}
@@ -119,14 +146,14 @@ function ReportRow({ report, onSend, onResolve, institutions }) {
                                 </Link>
                             </Button>
 
-                            {report.status === 'PENDING' && (
+                            {report.status === 'Pending' && (
                                 <Button size="sm" onClick={() => setSendDialogOpen(true)}>
                                     <Send className="h-4 w-4 mr-1" />
                                     Send
                                 </Button>
                             )}
 
-                            {report.status === 'SENT' && (
+                            {report.status === 'Sent' && (
                                 <Button
                                     size="sm"
                                     variant="success"
@@ -240,8 +267,8 @@ export default function ManageReports() {
         return report.status === filter
     }) || []
 
-    const pendingCount = reports?.filter(r => r.status === 'PENDING').length || 0
-    const sentCount = reports?.filter(r => r.status === 'SENT').length || 0
+    const pendingCount = reports?.filter(r => r.status === 'Pending').length || 0
+    const sentCount = reports?.filter(r => r.status === 'Sent').length || 0
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -262,15 +289,15 @@ export default function ManageReports() {
                         All ({(pendingCount + sentCount)})
                     </Button>
                     <Button
-                        variant={filter === 'PENDING' ? 'default' : 'outline'}
-                        onClick={() => setFilter('PENDING')}
+                        variant={filter === 'Pending' ? 'default' : 'outline'}
+                        onClick={() => setFilter('Pending')}
                         size="sm"
                     >
                         Pending ({pendingCount})
                     </Button>
                     <Button
-                        variant={filter === 'SENT' ? 'default' : 'outline'}
-                        onClick={() => setFilter('SENT')}
+                        variant={filter === 'Sent' ? 'default' : 'outline'}
+                        onClick={() => setFilter('Sent')}
                         size="sm"
                     >
                         In Progress ({sentCount})
@@ -301,7 +328,7 @@ export default function ManageReports() {
                         <p className="text-muted-foreground">
                             {filter === 'all'
                                 ? 'No pending or in-progress reports at the moment.'
-                                : `No ${filter === 'PENDING' ? 'pending' : 'in-progress'} reports.`}
+                                : `No ${filter === 'Pending' ? 'pending' : 'in-progress'} reports.`}
                         </p>
                     </CardContent>
                 </Card>

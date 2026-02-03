@@ -227,12 +227,12 @@ export default function Categories() {
 
             {/* Filter */}
             <div className="mb-6">
-                <Select value={filterInstitution} onValueChange={setFilterInstitution}>
+                <Select value={filterInstitution || "all"} onValueChange={(val) => setFilterInstitution(val === "all" ? "" : val)}>
                     <SelectTrigger className="w-full sm:w-64">
                         <SelectValue placeholder="Filter by institution" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">All Institutions</SelectItem>
+                        <SelectItem value="all">All Institutions</SelectItem>
                         {institutions?.map((inst) => (
                             <SelectItem key={inst.id} value={inst.id.toString()}>
                                 {inst.name}

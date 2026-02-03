@@ -17,6 +17,8 @@ import institutionRoutes from "./routes/institutions.js";
 import categoryRoutes from "./routes/categories.js";
 import contactRoutes from "./routes/contact.js";
 import uploadRoutes from "./routes/upload.js";
+import voteRoutes from "./routes/votes.js";
+import conversationRoutes from "./routes/conversations.js";
 
 const app = express();
 app.use(cors());
@@ -33,6 +35,8 @@ app.use("/api/institutions", institutionRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/votes", voteRoutes);
+app.use("/api/conversations", conversationRoutes);
 
 const PORT = process.env.PORT || 5000;
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useReports, useDeleteReport } from '@/hooks/useReports'
 import { useAuth } from '@/context/AuthContext'
+import { VoteButtons } from '@/components/reports/VoteButtons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -29,14 +30,21 @@ import {
 } from 'lucide-react'
 
 const statusConfig = {
-    PENDING: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    SENT: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-    FINISHED: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+    Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+    Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    Finished: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
 }
 
 function ReportRow({ report, onDelete }) {
     const status = statusConfig[report.status] || statusConfig.PENDING
     const [deleting, setDeleting] = useState(false)
+    const initialSummary = report?.upvotes !== undefined && report?.downvotes !== undefined
+        ? {
+            upvotes: report.upvotes ?? 0,
+            downvotes: report.downvotes ?? 0,
+            total: (report.upvotes ?? 0) + (report.downvotes ?? 0),
+        }
+        : undefined
 
     const handleDelete = async () => {
         setDeleting(true)
@@ -71,16 +79,24 @@ function ReportRow({ report, onDelete }) {
                             {report.description}
                         </p>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            {report.location && (
+                            {report.address && (
                                 <div className="flex items-center gap-1">
                                     <MapPin className="h-3 w-3" />
-                                    <span className="line-clamp-1">{report.location}</span>
+                                    <span className="line-clamp-1">{report.address}</span>
                                 </div>
                             )}
                             <div className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
                                 <span>{new Date(report.createdAt).toLocaleDateString()}</span>
                             </div>
+                        </div>
+                        <div className="mt-3">
+                            <VoteButtons
+                                reportId={report.id}
+                                status={report.status}
+                                compact
+                                initialSummary={initialSummary}
+                            />
                         </div>
                     </div>
 
@@ -152,13 +168,13 @@ export default function MyReports() {
     const { data, isLoading, isError } = useReports({
         page,
         limit: 10,
-        userId: user?.id,
+        mine: 'true',
     })
 
     const deleteReport = useDeleteReport()
 
-    const reports = data?.reports || []
-    const pagination = data?.pagination || { page: 1, pages: 1 }
+    const reports = data?.data || []
+    const pagination = data?.pagination || { page: 1, totalPages: 1 }
 
     const handleDelete = async (id) => {
         try {
@@ -226,7 +242,7 @@ export default function MyReports() {
                     </div>
 
                     {/* Pagination */}
-                    {pagination.pages > 1 && (
+                    {pagination.totalPages > 1 && (
                         <div className="flex items-center justify-center gap-4">
                             <Button
                                 variant="outline"
@@ -237,12 +253,12 @@ export default function MyReports() {
                                 Previous
                             </Button>
                             <span className="text-sm text-muted-foreground">
-                                Page {pagination.page} of {pagination.pages}
+                                Page {pagination.page} of {pagination.totalPages}
                             </span>
                             <Button
                                 variant="outline"
                                 onClick={() => setPage(page + 1)}
-                                disabled={page >= pagination.pages}
+                                disabled={page >= pagination.totalPages}
                             >
                                 Next
                                 <ChevronRight className="h-4 w-4 ml-1" />

@@ -28,8 +28,7 @@ export default function Login() {
         setLoading(true)
 
         try {
-            const response = await authService.login(email, password)
-            const { token, user } = response.data
+            const { token, user } = await authService.login(email, password)
             login(user, token)
             toast.success(`Welcome back, ${user.name}!`)
             navigate(from, { replace: true })

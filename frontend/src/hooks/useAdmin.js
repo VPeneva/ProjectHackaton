@@ -6,21 +6,21 @@ import { toast } from 'sonner'
 export function useAdminReports(institutionId) {
   return useQuery({
     queryKey: ['adminReports', institutionId],
-    queryFn: () => adminService.getReports(institutionId).then(r => r.data),
+    queryFn: () => adminService.getReports(institutionId),
   })
 }
 
 export function useAdmin(institutionId) {
   return useQuery({
     queryKey: ['adminReports', institutionId],
-    queryFn: () => adminService.getReports(institutionId).then(r => r.data),
+    queryFn: () => adminService.getReports(institutionId),
   })
 }
 
 export function useResolvedReports() {
   return useQuery({
     queryKey: ['resolvedReports'],
-    queryFn: () => adminService.getResolvedReports().then(r => r.data),
+    queryFn: () => adminService.getResolvedReports(),
   })
 }
 
@@ -78,6 +78,13 @@ export function useDeleteReportPhoto() {
 export function useContactMessages() {
   return useQuery({
     queryKey: ['contactMessages'],
-    queryFn: () => contactService.getAll().then(r => r.data),
+    queryFn: () => contactService.getAll(),
+  })
+}
+
+export function useVoteAnalytics() {
+  return useQuery({
+    queryKey: ['voteAnalytics'],
+    queryFn: () => adminService.getVoteAnalytics(),
   })
 }

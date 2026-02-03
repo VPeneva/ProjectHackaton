@@ -15,7 +15,10 @@ model User {
   role      String   @default("USER")
   createdAt DateTime @default(now())
 
-  reports   Report[]
+  reports       Report[]
+  votes         Vote[]
+  conversations Conversation[]
+  messages      Message[]
 }
 
 model Institution {
@@ -65,4 +68,50 @@ model Report {
   category       Category?    @relation(fields: [categoryId], references: [id])
   // Optional image URL for the report
   imageUrl       String?
+
+  votes          Vote[]
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  type      String   // "UP" or "DOWN"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  reportId  Int
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reportId]) // One vote per user per report
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  subject   String
+  status    String   @default("Open") // Open / Closed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User who started the conversation
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  messages  Message[]
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  content        String
+  isFromAdmin    Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  // Conversation this message belongs to
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // User who sent the message (can be the user or an admin)
+  senderId       Int
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }

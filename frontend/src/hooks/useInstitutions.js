@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 export function useInstitutions() {
   return useQuery({
     queryKey: ['institutions'],
-    queryFn: () => institutionsService.getAll().then(r => r.data),
+    queryFn: () => institutionsService.getAll(),
   })
 }
 

@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useReport, useDeleteReport } from '@/hooks/useReports'
 import { useAuth } from '@/context/AuthContext'
+import { VoteButtons } from '@/components/reports/VoteButtons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -147,6 +148,13 @@ export default function ReportDetail() {
     }
 
     const status = statusConfig[report.status] || statusConfig.PENDING
+    const initialSummary = report?.upvotes !== undefined && report?.downvotes !== undefined
+        ? {
+            upvotes: report.upvotes ?? 0,
+            downvotes: report.downvotes ?? 0,
+            total: (report.upvotes ?? 0) + (report.downvotes ?? 0),
+        }
+        : undefined
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -187,6 +195,13 @@ export default function ReportDetail() {
                             <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                 {report.description}
                             </p>
+                            <div className="mt-6 pt-4 border-t border-border/60">
+                                <VoteButtons
+                                    reportId={report.id}
+                                    status={report.status}
+                                    initialSummary={initialSummary}
+                                />
+                            </div>
                         </CardContent>
                     </Card>
 

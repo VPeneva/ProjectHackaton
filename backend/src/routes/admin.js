@@ -16,6 +16,30 @@ const userSelect = {
   createdAt: true,
 };
 
+const addVoteCounts = async (reports = []) => {
+  if (!reports.length) return reports;
+
+  const reportIds = reports.map((report) => report.id);
+  const groupedVotes = await prisma.vote.groupBy({
+    by: ["reportId", "type"],
+    where: { reportId: { in: reportIds } },
+    _count: { _all: true },
+  });
+
+  const countsByReport = new Map();
+  for (const row of groupedVotes) {
+    const current = countsByReport.get(row.reportId) || { upvotes: 0, downvotes: 0 };
+    if (row.type === "UP") current.upvotes = row._count._all;
+    if (row.type === "DOWN") current.downvotes = row._count._all;
+    countsByReport.set(row.reportId, current);
+  }
+
+  return reports.map((report) => {
+    const counts = countsByReport.get(report.id) || { upvotes: 0, downvotes: 0 };
+    return { ...report, ...counts };
+  });
+};
+
 /**
  * GET /admin/reports
  * Всички НЕрешени репорти (Pending или Sent),
@@ -40,7 +64,9 @@ router.get("/reports", authMiddleware, isAdmin, async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
 
-    res.json(reports);
+    const reportsWithVotes = await addVoteCounts(reports);
+
+    res.json(reportsWithVotes);
   } catch (err) {
     console.error("Error fetching admin reports:", err);
     res.status(500).json({ error: "Failed to fetch reports" });
@@ -123,7 +149,9 @@ router.get("/resolved", authMiddleware, isAdmin, async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
 
-    res.json(reports);
+    const reportsWithVotes = await addVoteCounts(reports);
+
+    res.json(reportsWithVotes);
   } catch (err) {
     console.error("Error fetching resolved reports:", err);
     res.status(500).json({ error: "Failed to fetch resolved reports" });
@@ -183,5 +211,64 @@ router.delete(
     }
   }
 );
+
+router.get("/vote-analytics", authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const openReports = await prisma.report.findMany({
+      where: { status: { in: ["Pending", "Sent"] } },
+      select: { id: true, title: true, status: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const finishedReports = await prisma.report.findMany({
+      where: { status: "Finished" },
+      select: { id: true, title: true, status: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const [openWithVotes, finishedWithVotes] = await Promise.all([
+      addVoteCounts(openReports),
+      addVoteCounts(finishedReports),
+    ]);
+
+    const topUpvotedOpen = [...openWithVotes]
+      .sort((a, b) => {
+        if (b.upvotes !== a.upvotes) return b.upvotes - a.upvotes;
+        return b.downvotes - a.downvotes;
+      })
+      .slice(0, 5);
+
+    const topDownvotedFinished = [...finishedWithVotes]
+      .sort((a, b) => {
+        if (b.downvotes !== a.downvotes) return b.downvotes - a.downvotes;
+        return b.upvotes - a.upvotes;
+      })
+      .slice(0, 5);
+
+    const statuses = ["Pending", "Sent", "Finished"];
+    const ratiosByStatus = await Promise.all(
+      statuses.map(async (status) => {
+        const [upvotes, downvotes] = await Promise.all([
+          prisma.vote.count({ where: { type: "UP", report: { status } } }),
+          prisma.vote.count({ where: { type: "DOWN", report: { status } } }),
+        ]);
+
+        const total = upvotes + downvotes;
+        return {
+          status,
+          upvotes,
+          downvotes,
+          total,
+          ratio: total ? upvotes / total : 0,
+        };
+      })
+    );
+
+    res.json({ topUpvotedOpen, topDownvotedFinished, ratiosByStatus });
+  } catch (err) {
+    console.error("Error fetching vote analytics:", err);
+    res.status(500).json({ error: "Failed to fetch vote analytics" });
+  }
+});
 
 export default router;

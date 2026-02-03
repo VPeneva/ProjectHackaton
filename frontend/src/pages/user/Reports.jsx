@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useReports } from '@/hooks/useReports'
 import { useCategories } from '@/hooks/useCategories'
+import { VoteButtons } from '@/components/reports/VoteButtons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
@@ -18,10 +19,8 @@ import {
     Search,
     MapPin,
     Clock,
-    Filter,
     ChevronLeft,
     ChevronRight,
-    Eye,
 } from 'lucide-react'
 
 const statusConfig = {
@@ -32,11 +31,18 @@ const statusConfig = {
 
 function ReportCard({ report }) {
     const status = statusConfig[report.status] || statusConfig.PENDING
+    const initialSummary = report?.upvotes !== undefined && report?.downvotes !== undefined
+        ? {
+            upvotes: report.upvotes ?? 0,
+            downvotes: report.downvotes ?? 0,
+            total: (report.upvotes ?? 0) + (report.downvotes ?? 0),
+        }
+        : undefined
 
     return (
-        <Link to={`/reports/${report.id}`}>
-            <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
-                {report.imageUrl && (
+        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+            {report.imageUrl && (
+                <Link to={`/reports/${report.id}`} className="block">
                     <div className="aspect-video overflow-hidden bg-muted">
                         <img
                             src={report.imageUrl}
@@ -44,32 +50,44 @@ function ReportCard({ report }) {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                     </div>
-                )}
-                <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
-                            {report.title}
-                        </h3>
-                        <Badge variant="outline" className={status.color}>
-                            {status.label}
-                        </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {report.description}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            <span className="line-clamp-1">{report.location || 'Location set'}</span>
+                </Link>
+            )}
+            <CardContent className="p-4">
+                <div className="space-y-3">
+                    <Link to={`/reports/${report.id}`} className="block">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                            <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
+                                {report.title}
+                            </h3>
+                            <Badge variant="outline" className={status.color}>
+                                {status.label}
+                            </Badge>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span>{new Date(report.createdAt).toLocaleDateString()}</span>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                            {report.description}
+                        </p>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                <span className="line-clamp-1">{report.location || 'Location set'}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                <span>{new Date(report.createdAt).toLocaleDateString()}</span>
+                            </div>
                         </div>
+                    </Link>
+                    <div className="pt-2 border-t border-border/60">
+                        <VoteButtons
+                            reportId={report.id}
+                            status={report.status}
+                            compact
+                            initialSummary={initialSummary}
+                        />
                     </div>
-                </CardContent>
-            </Card>
-        </Link>
+                </div>
+            </CardContent>
+        </Card>
     )
 }
 

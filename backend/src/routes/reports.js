@@ -4,6 +4,30 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+const addVoteCounts = async (reports = []) => {
+  if (!reports.length) return reports;
+
+  const reportIds = reports.map((report) => report.id);
+  const groupedVotes = await prisma.vote.groupBy({
+    by: ["reportId", "type"],
+    where: { reportId: { in: reportIds } },
+    _count: { _all: true },
+  });
+
+  const countsByReport = new Map();
+  for (const row of groupedVotes) {
+    const current = countsByReport.get(row.reportId) || { upvotes: 0, downvotes: 0 };
+    if (row.type === "UP") current.upvotes = row._count._all;
+    if (row.type === "DOWN") current.downvotes = row._count._all;
+    countsByReport.set(row.reportId, current);
+  }
+
+  return reports.map((report) => {
+    const counts = countsByReport.get(report.id) || { upvotes: 0, downvotes: 0 };
+    return { ...report, ...counts };
+  });
+};
+
 /**
  * GET всички репорти
  * Query params:
@@ -79,8 +103,10 @@ router.get("/", async (req, res) => {
       take: limitNum,
     });
 
+    const reportsWithVotes = await addVoteCounts(reports);
+
     res.json({
-      data: reports,
+      data: reportsWithVotes,
       pagination: {
         page: pageNum,
         limit: limitNum,
@@ -210,17 +236,38 @@ router.get("/map", async (req, res) => {
 });
 
 // GET /api/reports/stats
+// If authenticated, returns user-specific stats. Otherwise, returns global stats.
 router.get("/stats", async (req, res) => {
   try {
-    const total = await prisma.report.count();
-    const pending = await prisma.report.count({ where: { status: "Pending" } });
-    const sent = await prisma.report.count({ where: { status: "Sent" } });
-    const finished = await prisma.report.count({
-      where: { status: "Finished" },
-    });
+    // Try to get user from token if provided
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      try {
+        const jwt = await import("jsonwebtoken");
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.default.verify(token, process.env.JWT_SECRET || "secret");
+        userId = decoded.id;
+      } catch {
+        // Invalid token, return global stats
+      }
+    }
+
+    const where = userId ? { userId } : {};
+
+    const total = await prisma.report.count({ where });
+    const pending = await prisma.report.count({ where: { ...where, status: "Pending" } });
+    const sent = await prisma.report.count({ where: { ...where, status: "Sent" } });
+    const finished = await prisma.report.count({ where: { ...where, status: "Finished" } });
 
     res.json({
       total,
+      byStatus: {
+        PENDING: pending,
+        SENT: sent,
+        FINISHED: finished,
+      },
+      // Keep old format for backward compatibility
       pending,
       sent,
       finished,
@@ -257,7 +304,12 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Report not found" });
     }
 
-    res.json(report);
+    const [upvotes, downvotes] = await Promise.all([
+      prisma.vote.count({ where: { reportId: report.id, type: "UP" } }),
+      prisma.vote.count({ where: { reportId: report.id, type: "DOWN" } }),
+    ]);
+
+    res.json({ ...report, upvotes, downvotes });
   } catch (err) {
     console.error("Error fetching report:", err);
     res.status(500).json({ error: "Failed to fetch report" });

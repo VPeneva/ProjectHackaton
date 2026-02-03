@@ -12,9 +12,15 @@ import {
     MapPin,
     FileText,
     ArrowLeft,
+    ThumbsUp,
+    ThumbsDown,
 } from 'lucide-react'
 
 function ReportRow({ report }) {
+    const upvotes = report.upvotes ?? 0
+    const downvotes = report.downvotes ?? 0
+    const needsReview = downvotes >= 3 && downvotes > upvotes
+
     return (
         <Card className="border-0 shadow-md">
             <CardContent className="p-4">
@@ -59,6 +65,21 @@ function ReportRow({ report }) {
                                 <Clock className="h-3 w-3" />
                                 Resolved {new Date(report.updatedAt).toLocaleDateString()}
                             </span>
+                        </div>
+                        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1 text-emerald-600">
+                                <ThumbsUp className="h-3 w-3" />
+                                {upvotes}
+                            </span>
+                            <span className="flex items-center gap-1 text-rose-600">
+                                <ThumbsDown className="h-3 w-3" />
+                                {downvotes}
+                            </span>
+                            {needsReview && (
+                                <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20">
+                                    Needs review
+                                </Badge>
+                            )}
                         </div>
                     </div>
 

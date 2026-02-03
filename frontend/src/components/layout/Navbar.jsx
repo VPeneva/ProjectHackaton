@@ -24,6 +24,7 @@ import {
   Map,
   Plus,
   Shield,
+  MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -151,6 +152,12 @@ export default function Navbar() {
                       My Reports
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/messages" className="cursor-pointer">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Messages
+                    </Link>
+                  </DropdownMenuItem>
                   {isAdmin && (
                     <>
                       <DropdownMenuSeparator />
@@ -235,6 +242,14 @@ export default function Navbar() {
                     >
                       <FileText className="mr-2 h-5 w-5" />
                       My Reports
+                    </Link>
+                    <Link
+                      to="/messages"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center text-lg font-medium"
+                    >
+                      <MessageSquare className="mr-2 h-5 w-5" />
+                      Messages
                     </Link>
                     {isAdmin && (
                       <Link

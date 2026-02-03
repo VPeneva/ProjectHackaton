@@ -30,6 +30,7 @@ import ReportDetail from '@/pages/user/ReportDetail'
 import CreateReport from '@/pages/user/CreateReport'
 import MyReports from '@/pages/user/MyReports'
 import MapExplorer from '@/pages/user/MapExplorer'
+import UserMessages from '@/pages/user/Messages'
 
 // Admin pages
 import AdminDashboard from '@/pages/admin/AdminDashboard'
@@ -76,6 +77,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/my-reports" element={<MyReports />} />
                     <Route path="/create-report" element={<CreateReport />} />
+                    <Route path="/messages" element={<UserMessages />} />
                   </Route>
 
                   {/* Admin Routes */}

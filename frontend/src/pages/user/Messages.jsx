@@ -1,23 +1,30 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useConversations, useConversation, useSendMessage, useCloseConversation, useReopenConversation } from '@/hooks/useConversations'
+import { useConversations, useConversation, useSendMessage, useCreateConversation } from '@/hooks/useConversations'
 import { useAuth } from '@/context/AuthContext'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog'
+import {
     MessageSquare,
-    Mail,
-    User,
     Clock,
     ArrowLeft,
     Send,
-    X,
-    CheckCircle,
-    RefreshCw,
+    Plus,
     Loader2,
 } from 'lucide-react'
 
@@ -43,14 +50,9 @@ function ConversationItem({ conversation, isActive, onClick }) {
                     {isOpen ? 'Open' : 'Closed'}
                 </Badge>
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                <User className="h-3 w-3" />
-                <span>{conversation.user.name}</span>
-                <span>({conversation.user.email})</span>
-            </div>
             {lastMessage && (
                 <p className="text-sm text-muted-foreground line-clamp-1">
-                    {lastMessage.isFromAdmin ? 'You: ' : ''}{lastMessage.content}
+                    {lastMessage.isFromAdmin ? 'Admin: ' : 'You: '}{lastMessage.content}
                 </p>
             )}
             <div className="flex items-center justify-between mt-2">
@@ -67,11 +69,8 @@ function ConversationItem({ conversation, isActive, onClick }) {
 }
 
 function ChatView({ conversationId, onBack }) {
-    const { user } = useAuth()
     const { data: conversation, isLoading } = useConversation(conversationId)
     const sendMessage = useSendMessage()
-    const closeConversation = useCloseConversation()
-    const reopenConversation = useReopenConversation()
     const [message, setMessage] = useState('')
     const messagesEndRef = useRef(null)
 
@@ -92,14 +91,6 @@ function ChatView({ conversationId, onBack }) {
             content: message.trim(),
         })
         setMessage('')
-    }
-
-    const handleClose = () => {
-        closeConversation.mutate(conversationId)
-    }
-
-    const handleReopen = () => {
-        reopenConversation.mutate(conversationId)
     }
 
     if (isLoading) {
@@ -130,60 +121,20 @@ function ChatView({ conversationId, onBack }) {
                     </Button>
                     <div>
                         <h2 className="font-semibold">{conversation.subject}</h2>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <User className="h-3 w-3" />
-                            <span>{conversation.user.name}</span>
-                            <a href={`mailto:${conversation.user.email}`} className="text-primary hover:underline">
-                                ({conversation.user.email})
-                            </a>
-                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            Support conversation
+                        </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Badge
-                        variant="outline"
-                        className={isOpen
-                            ? 'bg-green-500/10 text-green-600 border-green-500/20'
-                            : 'bg-gray-500/10 text-gray-600 border-gray-500/20'
-                        }
-                    >
-                        {isOpen ? 'Open' : 'Closed'}
-                    </Badge>
-                    {isOpen ? (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleClose}
-                            disabled={closeConversation.isPending}
-                            className="text-destructive hover:text-destructive"
-                        >
-                            {closeConversation.isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <>
-                                    <X className="h-4 w-4 mr-1" />
-                                    Close
-                                </>
-                            )}
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleReopen}
-                            disabled={reopenConversation.isPending}
-                        >
-                            {reopenConversation.isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <>
-                                    <RefreshCw className="h-4 w-4 mr-1" />
-                                    Reopen
-                                </>
-                            )}
-                        </Button>
-                    )}
-                </div>
+                <Badge
+                    variant="outline"
+                    className={isOpen
+                        ? 'bg-green-500/10 text-green-600 border-green-500/20'
+                        : 'bg-gray-500/10 text-gray-600 border-gray-500/20'
+                    }
+                >
+                    {isOpen ? 'Open' : 'Closed'}
+                </Badge>
             </div>
 
             {/* Messages */}
@@ -192,17 +143,17 @@ function ChatView({ conversationId, onBack }) {
                     {conversation.messages.map((msg) => (
                         <div
                             key={msg.id}
-                            className={`flex ${msg.isFromAdmin ? 'justify-end' : 'justify-start'}`}
+                            className={`flex ${msg.isFromAdmin ? 'justify-start' : 'justify-end'}`}
                         >
                             <div
                                 className={`max-w-[80%] rounded-lg p-3 ${msg.isFromAdmin
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted'
+                                        ? 'bg-muted'
+                                        : 'bg-primary text-primary-foreground'
                                     }`}
                             >
                                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                <div className={`text-xs mt-1 ${msg.isFromAdmin ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                                    {msg.sender.name} - {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                <div className={`text-xs mt-1 ${msg.isFromAdmin ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
+                                    {msg.isFromAdmin ? 'Support' : 'You'} - {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             </div>
                         </div>
@@ -218,7 +169,7 @@ function ChatView({ conversationId, onBack }) {
                         <Input
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Type your reply..."
+                            placeholder="Type your message..."
                             disabled={sendMessage.isPending}
                         />
                         <Button type="submit" disabled={!message.trim() || sendMessage.isPending}>
@@ -233,7 +184,7 @@ function ChatView({ conversationId, onBack }) {
             ) : (
                 <div className="p-4 border-t bg-muted/50 text-center">
                     <p className="text-sm text-muted-foreground">
-                        This conversation is closed. Reopen it to send messages.
+                        This conversation has been closed by support.
                     </p>
                 </div>
             )}
@@ -241,39 +192,116 @@ function ChatView({ conversationId, onBack }) {
     )
 }
 
+function NewConversationDialog({ open, onOpenChange }) {
+    const createConversation = useCreateConversation()
+    const [subject, setSubject] = useState('')
+    const [message, setMessage] = useState('')
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        if (!subject.trim() || !message.trim()) return
+
+        await createConversation.mutateAsync({
+            subject: subject.trim(),
+            message: message.trim(),
+        })
+
+        setSubject('')
+        setMessage('')
+        onOpenChange(false)
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>New Conversation</DialogTitle>
+                    <DialogDescription>
+                        Start a new conversation with our support team.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit}>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="subject">Subject</Label>
+                            <Input
+                                id="subject"
+                                value={subject}
+                                onChange={(e) => setSubject(e.target.value)}
+                                placeholder="What is this about?"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="message">Message</Label>
+                            <Textarea
+                                id="message"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                placeholder="Describe your question or issue..."
+                                rows={4}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={!subject.trim() || !message.trim() || createConversation.isPending}
+                        >
+                            {createConversation.isPending ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                                <Send className="h-4 w-4 mr-2" />
+                            )}
+                            Send Message
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 function ConversationSkeleton() {
     return (
         <div className="p-4 border-b">
             <Skeleton className="h-5 w-3/4 mb-2" />
-            <Skeleton className="h-4 w-1/2 mb-2" />
-            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-3 w-1/2" />
         </div>
     )
 }
 
-export default function Messages() {
+export default function UserMessages() {
     const { data: conversations, isLoading, isError } = useConversations()
     const [selectedId, setSelectedId] = useState(null)
+    const [newDialogOpen, setNewDialogOpen] = useState(false)
 
     const openCount = conversations?.filter(c => c.status === 'Open').length || 0
-    const closedCount = conversations?.filter(c => c.status === 'Closed').length || 0
 
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col">
             {/* Header */}
             <div className="container mx-auto px-4 py-4 border-b">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/admin">
-                            <ArrowLeft className="h-5 w-5" />
-                        </Link>
-                    </Button>
-                    <div className="flex-1">
-                        <h1 className="text-2xl font-bold">Messages</h1>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold">My Messages</h1>
                         <p className="text-sm text-muted-foreground">
-                            {openCount} open, {closedCount} closed conversations
+                            {openCount} open conversation{openCount !== 1 ? 's' : ''}
                         </p>
                     </div>
+                    <Button onClick={() => setNewDialogOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        New Message
+                    </Button>
                 </div>
             </div>
 
@@ -284,7 +312,7 @@ export default function Messages() {
                     <ScrollArea className="flex-1">
                         {isLoading ? (
                             <>
-                                {[...Array(5)].map((_, i) => (
+                                {[...Array(3)].map((_, i) => (
                                     <ConversationSkeleton key={i} />
                                 ))}
                             </>
@@ -297,7 +325,11 @@ export default function Messages() {
                                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
                                     <MessageSquare className="h-6 w-6 text-muted-foreground" />
                                 </div>
-                                <p className="text-muted-foreground text-sm">No conversations yet</p>
+                                <p className="text-muted-foreground text-sm mb-4">No conversations yet</p>
+                                <Button size="sm" onClick={() => setNewDialogOpen(true)}>
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    Start a conversation
+                                </Button>
                             </div>
                         ) : (
                             conversations.map((conv) => (
@@ -325,13 +357,22 @@ export default function Messages() {
                                 <MessageSquare className="h-8 w-8 text-muted-foreground" />
                             </div>
                             <h3 className="text-lg font-semibold mb-1">Select a Conversation</h3>
-                            <p className="text-muted-foreground text-sm">
-                                Choose a conversation from the list to view and reply
+                            <p className="text-muted-foreground text-sm mb-4">
+                                Choose a conversation or start a new one
                             </p>
+                            <Button onClick={() => setNewDialogOpen(true)}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                New Message
+                            </Button>
                         </div>
                     </div>
                 )}
             </div>
+
+            <NewConversationDialog
+                open={newDialogOpen}
+                onOpenChange={setNewDialogOpen}
+            />
         </div>
     )
 }

@@ -31,6 +31,12 @@ export const adminService = {
     const response = await api.delete(`/admin/reports/${id}/photo`)
     return response.data
   },
+
+  // Vote analytics
+  getVoteAnalytics: async () => {
+    const response = await api.get('/admin/vote-analytics')
+    return response.data
+  },
 }
 
 export default adminService

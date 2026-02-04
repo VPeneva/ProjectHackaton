@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
+import { useI18n } from '@/context/I18nContext'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,35 +13,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import {
   Menu,
   Sun,
   Moon,
+  Accessibility,
   LogOut,
   User,
   LayoutDashboard,
   FileText,
-  Map,
   Plus,
   Shield,
+  Building2,
   MessageSquare,
   Bell,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const publicLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/reports', label: 'Reports' },
-  { href: '/map', label: 'Map' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-]
-
 export default function Navbar() {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth()
-  const { theme, toggleTheme } = useTheme()
+  const { user, isAuthenticated, isAdmin, isInstitution, logout } = useAuth()
+  const { theme, setTheme } = useTheme()
+  const { language, setLanguage, t } = useI18n()
   const { data: notifications = [] } = useNotifications(isAuthenticated)
   const location = useLocation()
   const navigate = useNavigate()
@@ -67,6 +69,15 @@ export default function Navbar() {
     if (path === '/') return location.pathname === '/'
     return location.pathname.startsWith(path)
   }
+
+  const publicLinks = [
+    { href: '/', label: t('nav.home') },
+    { href: '/reports', label: t('nav.reports') },
+    { href: '/map', label: t('nav.map') },
+    { href: '/leaderboard', label: t('nav.leaderboard') },
+    { href: '/about', label: t('nav.about') },
+    { href: '/contact', label: t('nav.contact') },
+  ]
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -99,20 +110,50 @@ export default function Navbar() {
 
         {/* Right side actions */}
         <div className="flex items-center space-x-2">
+          {/* Language selector */}
+          <Select value={language} onValueChange={setLanguage}>
+            <SelectTrigger className="hidden sm:flex w-[88px] h-9">
+              <SelectValue placeholder={t('nav.language')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">EN</SelectItem>
+              <SelectItem value="bg">BG</SelectItem>
+            </SelectContent>
+          </Select>
+
           {/* Theme toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="hidden sm:flex"
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden sm:flex"
+                aria-label={t('nav.lightMode')}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="h-5 w-5" />
+                ) : theme === 'high-contrast' ? (
+                  <Accessibility className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme('light')}>
+                <Sun className="mr-2 h-4 w-4" />
+                {t('nav.lightMode')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('dark')}>
+                <Moon className="mr-2 h-4 w-4" />
+                {t('nav.darkMode')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('high-contrast')}>
+                <Accessibility className="mr-2 h-4 w-4" />
+                {t('nav.highContrast')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {isAuthenticated ? (
             <>
@@ -120,7 +161,7 @@ export default function Navbar() {
               <Button asChild size="sm" className="hidden sm:flex">
                 <Link to="/create-report">
                   <Plus className="mr-2 h-4 w-4" />
-                  Report Issue
+                  {t('nav.reportIssue')}
                 </Link>
               </Button>
 
@@ -161,40 +202,48 @@ export default function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard" className="cursor-pointer">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
+                      {t('nav.dashboard')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to={`/users/${user?.id}`} className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
-                      My Profile
+                      {t('nav.myProfile')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/my-reports" className="cursor-pointer">
                       <FileText className="mr-2 h-4 w-4" />
-                      My Reports
+                      {t('nav.myReports')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/messages" className="cursor-pointer">
                       <MessageSquare className="mr-2 h-4 w-4" />
-                      Messages
+                      {t('nav.messages')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/notifications" className="cursor-pointer">
                       <Bell className="mr-2 h-4 w-4" />
-                      Notifications
+                      {t('nav.notifications')}
                     </Link>
                   </DropdownMenuItem>
+                  {isInstitution && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/institution" className="cursor-pointer">
+                        <Building2 className="mr-2 h-4 w-4" />
+                        {t('institution.title')}
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   {isAdmin && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="cursor-pointer">
                           <Shield className="mr-2 h-4 w-4" />
-                          Admin Panel
+                          {t('nav.adminPanel')}
                         </Link>
                       </DropdownMenuItem>
                     </>
@@ -202,7 +251,7 @@ export default function Navbar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Log out
+                    {t('nav.logOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -210,10 +259,10 @@ export default function Navbar() {
           ) : (
             <div className="hidden sm:flex items-center space-x-2">
               <Button variant="ghost" asChild>
-                <Link to="/login">Sign In</Link>
+                <Link to="/login">{t('nav.signIn')}</Link>
               </Button>
               <Button asChild>
-                <Link to="/register">Get Started</Link>
+                <Link to="/register">{t('nav.getStarted')}</Link>
               </Button>
             </div>
           )}
@@ -228,7 +277,7 @@ export default function Navbar() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
+                <SheetTitle>{t('nav.menu')}</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col space-y-4 mt-6">
                 {publicLinks.map((link) => (
@@ -254,7 +303,7 @@ export default function Navbar() {
                         className="flex items-center text-lg font-medium"
                       >
                         <Plus className="mr-2 h-5 w-5" />
-                        Report Issue
+                        {t('nav.reportIssue')}
                       </Link>
                     </div>
                     <Link
@@ -263,7 +312,7 @@ export default function Navbar() {
                       className="flex items-center text-lg font-medium"
                     >
                       <LayoutDashboard className="mr-2 h-5 w-5" />
-                      Dashboard
+                      {t('nav.dashboard')}
                     </Link>
                     <Link
                       to={`/users/${user?.id}`}
@@ -271,7 +320,7 @@ export default function Navbar() {
                       className="flex items-center text-lg font-medium"
                     >
                       <User className="mr-2 h-5 w-5" />
-                      My Profile
+                      {t('nav.myProfile')}
                     </Link>
                     <Link
                       to="/my-reports"
@@ -279,7 +328,7 @@ export default function Navbar() {
                       className="flex items-center text-lg font-medium"
                     >
                       <FileText className="mr-2 h-5 w-5" />
-                      My Reports
+                      {t('nav.myReports')}
                     </Link>
                     <Link
                       to="/messages"
@@ -287,7 +336,7 @@ export default function Navbar() {
                       className="flex items-center text-lg font-medium"
                     >
                       <MessageSquare className="mr-2 h-5 w-5" />
-                      Messages
+                      {t('nav.messages')}
                     </Link>
                     <Link
                       to="/notifications"
@@ -295,8 +344,18 @@ export default function Navbar() {
                       className="flex items-center text-lg font-medium"
                     >
                       <Bell className="mr-2 h-5 w-5" />
-                      Notifications
+                      {t('nav.notifications')}
                     </Link>
+                    {isInstitution && (
+                      <Link
+                        to="/institution"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center text-lg font-medium"
+                      >
+                        <Building2 className="mr-2 h-5 w-5" />
+                        {t('institution.title')}
+                      </Link>
+                    )}
                     {isAdmin && (
                       <Link
                         to="/admin"
@@ -304,7 +363,7 @@ export default function Navbar() {
                         className="flex items-center text-lg font-medium"
                       >
                         <Shield className="mr-2 h-5 w-5" />
-                        Admin Panel
+                        {t('nav.adminPanel')}
                       </Link>
                     )}
                     <button
@@ -315,7 +374,7 @@ export default function Navbar() {
                       className="flex items-center text-lg font-medium text-destructive"
                     >
                       <LogOut className="mr-2 h-5 w-5" />
-                      Log out
+                      {t('nav.logOut')}
                     </button>
                   </>
                 ) : (
@@ -325,35 +384,63 @@ export default function Navbar() {
                       onClick={() => setMobileOpen(false)}
                       className="block text-lg font-medium"
                     >
-                      Sign In
+                      {t('nav.signIn')}
                     </Link>
                     <Link
                       to="/register"
                       onClick={() => setMobileOpen(false)}
                       className="block text-lg font-medium text-primary"
                     >
-                      Get Started
+                      {t('nav.getStarted')}
                     </Link>
                   </div>
                 )}
 
+                <div className="border-t pt-4 space-y-2">
+                  <p className="text-sm text-muted-foreground">{t('nav.highContrast')}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant={theme === 'light' ? 'default' : 'outline'}
+                      onClick={() => setTheme('light')}
+                    >
+                      {t('nav.lightMode')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={theme === 'dark' ? 'default' : 'outline'}
+                      onClick={() => setTheme('dark')}
+                    >
+                      {t('nav.darkMode')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={theme === 'high-contrast' ? 'default' : 'outline'}
+                      onClick={() => setTheme('high-contrast')}
+                    >
+                      {t('nav.highContrast')}
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="border-t pt-4">
-                  <button
-                    onClick={toggleTheme}
-                    className="flex items-center text-lg font-medium"
-                  >
-                    {theme === 'dark' ? (
-                      <>
-                        <Sun className="mr-2 h-5 w-5" />
-                        Light Mode
-                      </>
-                    ) : (
-                      <>
-                        <Moon className="mr-2 h-5 w-5" />
-                        Dark Mode
-                      </>
-                    )}
-                  </button>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{t('nav.language')}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setLanguage('en')}
+                        className={`text-sm font-medium ${language === 'en' ? 'text-primary' : ''}`}
+                      >
+                        EN
+                      </button>
+                      <button
+                        onClick={() => setLanguage('bg')}
+                        className={`text-sm font-medium ${language === 'bg' ? 'text-primary' : ''}`}
+                      >
+                        BG
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </nav>
             </SheetContent>

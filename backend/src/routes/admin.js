@@ -5,6 +5,9 @@ import prisma from "../db/client.js";
 import fs from "fs";
 import path from "path";
 import { createNotifications } from "../utils/notifications.js";
+import { getVoteCutoff } from "../utils/votes.js";
+import { hashPassword } from "../utils/hash.js";
+import { sanitizeText } from "../utils/sanitize.js";
 
 const router = express.Router();
 
@@ -21,9 +24,10 @@ const addVoteCounts = async (reports = []) => {
   if (!reports.length) return reports;
 
   const reportIds = reports.map((report) => report.id);
+  const voteCutoff = getVoteCutoff();
   const groupedVotes = await prisma.vote.groupBy({
     by: ["reportId", "type"],
-    where: { reportId: { in: reportIds } },
+    where: { reportId: { in: reportIds }, createdAt: { gte: voteCutoff } },
     _count: { _all: true },
   });
 
@@ -196,6 +200,109 @@ router.get("/resolved", authMiddleware, isAdmin, async (req, res) => {
   } catch (err) {
     console.error("Error fetching resolved reports:", err);
     res.status(500).json({ error: "Failed to fetch resolved reports" });
+  }
+});
+
+/**
+ * GET /admin/institutions/:id/users
+ * List institution portal users for an institution.
+ */
+router.get("/institutions/:id/users", authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const institutionId = Number(req.params.id);
+    if (Number.isNaN(institutionId)) {
+      return res.status(400).json({ error: "Invalid institution ID" });
+    }
+
+    const users = await prisma.user.findMany({
+      where: { institutionId, role: "INSTITUTION" },
+      select: { id: true, name: true, email: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching institution users:", err);
+    res.status(500).json({ error: "Failed to load institution users" });
+  }
+});
+
+/**
+ * POST /admin/institutions/:id/users
+ * Create an institution portal account.
+ */
+router.post("/institutions/:id/users", authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const institutionId = Number(req.params.id);
+    if (Number.isNaN(institutionId)) {
+      return res.status(400).json({ error: "Invalid institution ID" });
+    }
+
+    const { name, email, password } = req.body;
+    const sanitizedName = sanitizeText(name);
+    if (!sanitizedName || !email || !password) {
+      return res.status(400).json({ error: "Name, email, and password are required" });
+    }
+
+    const institution = await prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { id: true },
+    });
+    if (!institution) {
+      return res.status(404).json({ error: "Institution not found" });
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      return res.status(400).json({ error: "Email already in use" });
+    }
+
+    const hashed = await hashPassword(password);
+
+    const user = await prisma.user.create({
+      data: {
+        name: sanitizedName,
+        email,
+        password: hashed,
+        role: "INSTITUTION",
+        institutionId,
+      },
+      select: { id: true, name: true, email: true, createdAt: true },
+    });
+
+    res.json(user);
+  } catch (err) {
+    console.error("Error creating institution user:", err);
+    res.status(500).json({ error: "Failed to create institution user" });
+  }
+});
+
+/**
+ * DELETE /admin/institutions/:id/users/:userId
+ * Remove an institution portal account.
+ */
+router.delete("/institutions/:id/users/:userId", authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const institutionId = Number(req.params.id);
+    const userId = Number(req.params.userId);
+    if (Number.isNaN(institutionId) || Number.isNaN(userId)) {
+      return res.status(400).json({ error: "Invalid institution or user ID" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, institutionId: true, role: true },
+    });
+
+    if (!user || user.role !== "INSTITUTION" || user.institutionId !== institutionId) {
+      return res.status(404).json({ error: "Institution user not found" });
+    }
+
+    await prisma.user.delete({ where: { id: userId } });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting institution user:", err);
+    res.status(500).json({ error: "Failed to delete institution user" });
   }
 });
 
@@ -399,6 +506,122 @@ router.post("/reports/bulk-resolve", authMiddleware, isAdmin, async (req, res) =
   }
 });
 
+/**
+ * POST /admin/reports/merge
+ * Merge duplicate reports by moving data from sourceId into targetId.
+ */
+router.post("/reports/merge", authMiddleware, isAdmin, async (req, res) => {
+  const { sourceId, targetId } = req.body;
+  const sourceReportId = Number(sourceId);
+  const targetReportId = Number(targetId);
+
+  if (Number.isNaN(sourceReportId) || Number.isNaN(targetReportId)) {
+    return res.status(400).json({ error: "Invalid report IDs" });
+  }
+
+  if (sourceReportId === targetReportId) {
+    return res.status(400).json({ error: "Source and target must be different" });
+  }
+
+  try {
+    const reports = await prisma.report.findMany({
+      where: { id: { in: [sourceReportId, targetReportId] } },
+      include: { images: true },
+    });
+
+    const source = reports.find((report) => report.id === sourceReportId);
+    const target = reports.find((report) => report.id === targetReportId);
+
+    if (!source || !target) {
+      return res.status(404).json({ error: "Report not found" });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const targetVoteUsers = await tx.vote.findMany({
+        where: { reportId: targetReportId },
+        select: { userId: true },
+      });
+      const voteUserIds = targetVoteUsers.map((vote) => vote.userId);
+
+      await tx.vote.updateMany({
+        where: { reportId: sourceReportId, userId: { notIn: voteUserIds } },
+        data: { reportId: targetReportId },
+      });
+      if (voteUserIds.length) {
+        await tx.vote.deleteMany({
+          where: { reportId: sourceReportId, userId: { in: voteUserIds } },
+        });
+      }
+
+      const targetSubUsers = await tx.subscription.findMany({
+        where: { reportId: targetReportId },
+        select: { userId: true },
+      });
+      const subUserIds = targetSubUsers.map((sub) => sub.userId);
+
+      await tx.subscription.updateMany({
+        where: { reportId: sourceReportId, userId: { notIn: subUserIds } },
+        data: { reportId: targetReportId },
+      });
+      if (subUserIds.length) {
+        await tx.subscription.deleteMany({
+          where: { reportId: sourceReportId, userId: { in: subUserIds } },
+        });
+      }
+
+      await tx.comment.updateMany({
+        where: { reportId: sourceReportId },
+        data: { reportId: targetReportId },
+      });
+
+      await tx.reportImage.updateMany({
+        where: { reportId: sourceReportId },
+        data: { reportId: targetReportId },
+      });
+
+      await tx.notification.updateMany({
+        where: { reportId: sourceReportId },
+        data: { reportId: targetReportId },
+      });
+
+      const patch = {};
+      if (!target.description && source.description) patch.description = source.description;
+      if (!target.address && source.address) patch.address = source.address;
+      if (target.lat === null && source.lat !== null) patch.lat = source.lat;
+      if (target.lng === null && source.lng !== null) patch.lng = source.lng;
+      if (!target.imageUrl && source.imageUrl) patch.imageUrl = source.imageUrl;
+      if (!target.categoryId && source.categoryId) patch.categoryId = source.categoryId;
+      if (!target.institutionId && source.institutionId)
+        patch.institutionId = source.institutionId;
+
+      if (Object.keys(patch).length) {
+        await tx.report.update({
+          where: { id: targetReportId },
+          data: patch,
+        });
+      }
+
+      await tx.report.delete({ where: { id: sourceReportId } });
+
+      return tx.report.findUnique({
+        where: { id: targetReportId },
+        include: {
+          user: { select: userSelect },
+          institution: true,
+          category: true,
+          images: { orderBy: { createdAt: "asc" } },
+        },
+      });
+    });
+
+    const [withVotes] = await addVoteCounts([updated]);
+    res.json(withVotes);
+  } catch (err) {
+    console.error("Error merging reports:", err);
+    res.status(500).json({ error: "Failed to merge reports" });
+  }
+});
+
 router.get("/vote-analytics", authMiddleware, isAdmin, async (req, res) => {
   try {
     const openReports = await prisma.report.findMany({
@@ -433,11 +656,16 @@ router.get("/vote-analytics", authMiddleware, isAdmin, async (req, res) => {
       .slice(0, 5);
 
     const statuses = ["Pending", "Sent", "Finished"];
+    const voteCutoff = getVoteCutoff();
     const ratiosByStatus = await Promise.all(
       statuses.map(async (status) => {
         const [upvotes, downvotes] = await Promise.all([
-          prisma.vote.count({ where: { type: "UP", report: { status } } }),
-          prisma.vote.count({ where: { type: "DOWN", report: { status } } }),
+          prisma.vote.count({
+            where: { type: "UP", report: { status }, createdAt: { gte: voteCutoff } },
+          }),
+          prisma.vote.count({
+            where: { type: "DOWN", report: { status }, createdAt: { gte: voteCutoff } },
+          }),
         ]);
 
         const total = upvotes + downvotes;

@@ -124,6 +124,62 @@ export function useBulkResolveReports() {
   })
 }
 
+export function useMergeReports() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ sourceId, targetId }) => adminService.mergeReports(sourceId, targetId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminReports'] })
+      queryClient.invalidateQueries({ queryKey: ['resolvedReports'] })
+      queryClient.invalidateQueries({ queryKey: ['reports'] })
+      queryClient.invalidateQueries({ queryKey: ['reportStats'] })
+      toast.success('Reports merged successfully')
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.error || 'Failed to merge reports')
+    },
+  })
+}
+
+export function useInstitutionUsers(institutionId) {
+  return useQuery({
+    queryKey: ['institutionUsers', institutionId],
+    queryFn: () => adminService.getInstitutionUsers(institutionId),
+    enabled: !!institutionId,
+  })
+}
+
+export function useCreateInstitutionUser(institutionId) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload) => adminService.createInstitutionUser(institutionId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['institutionUsers', institutionId] })
+      toast.success('Institution user created')
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.error || 'Failed to create institution user')
+    },
+  })
+}
+
+export function useDeleteInstitutionUser(institutionId) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (userId) => adminService.deleteInstitutionUser(institutionId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['institutionUsers', institutionId] })
+      toast.success('Institution user deleted')
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.error || 'Failed to delete institution user')
+    },
+  })
+}
+
 export function useAdminAnalytics(days) {
   return useQuery({
     queryKey: ['adminAnalytics', days],

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useReports } from '@/hooks/useReports'
 import { useCategories } from '@/hooks/useCategories'
+import { useI18n } from '@/context/I18nContext'
 import { VoteButtons } from '@/components/reports/VoteButtons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,12 +26,13 @@ import {
 } from 'lucide-react'
 
 const statusConfig = {
-    Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-    Finished: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+    Pending: { key: 'statuses.pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+    Sent: { key: 'statuses.sent', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    Finished: { key: 'statuses.finished', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
 }
 
 function ReportCard({ report }) {
+    const { t } = useI18n()
     const status = statusConfig[report.status] || statusConfig.Pending
     const imageUrl = report.images?.[0]?.url || report.imageUrl
     const initialSummary = report?.upvotes !== undefined && report?.downvotes !== undefined
@@ -62,7 +64,7 @@ function ReportCard({ report }) {
                                 {report.title}
                             </h3>
                             <Badge variant="outline" className={status.color}>
-                                {status.label}
+                                {t(status.key)}
                             </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
@@ -111,6 +113,7 @@ function ReportSkeleton() {
 }
 
 export default function Reports() {
+    const { t } = useI18n()
     const [page, setPage] = useState(1)
     const [search, setSearch] = useState('')
     const [status, setStatus] = useState('all')
@@ -169,9 +172,9 @@ export default function Reports() {
         <div className="container mx-auto px-4 py-8">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">Browse Reports</h1>
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('reports.title')}</h1>
                 <p className="text-muted-foreground text-lg">
-                    Explore infrastructure issues reported by the community.
+                    {t('reports.subtitle')}
                 </p>
             </div>
 
@@ -181,7 +184,7 @@ export default function Reports() {
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search reports..."
+                            placeholder={t('reports.searchPlaceholder')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-10"
@@ -189,21 +192,21 @@ export default function Reports() {
                     </div>
                     <Select value={status} onValueChange={setStatus}>
                         <SelectTrigger className="w-full md:w-40">
-                            <SelectValue placeholder="Status" />
+                            <SelectValue placeholder={t('reports.status')} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Status</SelectItem>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                            <SelectItem value="Sent">In Progress</SelectItem>
-                            <SelectItem value="Finished">Resolved</SelectItem>
+                            <SelectItem value="all">{t('reports.status')}</SelectItem>
+                            <SelectItem value="Pending">{t('statuses.pending')}</SelectItem>
+                            <SelectItem value="Sent">{t('statuses.sent')}</SelectItem>
+                            <SelectItem value="Finished">{t('statuses.finished')}</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={categoryId} onValueChange={setCategoryId}>
                         <SelectTrigger className="w-full md:w-48">
-                            <SelectValue placeholder="Category" />
+                            <SelectValue placeholder={t('reports.category')} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Categories</SelectItem>
+                            <SelectItem value="all">{t('reports.category')}</SelectItem>
                             {categories?.map((cat) => (
                                 <SelectItem key={cat.id} value={cat.id.toString()}>
                                     {cat.name}
@@ -213,7 +216,7 @@ export default function Reports() {
                     </Select>
                     <Select value={sort} onValueChange={setSort}>
                         <SelectTrigger className="w-full md:w-40">
-                            <SelectValue placeholder="Sort" />
+                            <SelectValue placeholder={t('reports.sort')} />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="newest">Newest</SelectItem>
@@ -224,7 +227,7 @@ export default function Reports() {
                     <Button variant="outline" asChild>
                         <Link to="/map">
                             <MapPin className="mr-2 h-4 w-4" />
-                            Map View
+                            {t('reports.mapView')}
                         </Link>
                     </Button>
                 </div>
@@ -234,19 +237,19 @@ export default function Reports() {
                         type="date"
                         value={dateFrom}
                         onChange={(e) => setDateFrom(e.target.value)}
-                        placeholder="From date"
+                        placeholder={t('reports.fromDate')}
                     />
                     <Input
                         type="date"
                         value={dateTo}
                         onChange={(e) => setDateTo(e.target.value)}
-                        placeholder="To date"
+                        placeholder={t('reports.toDate')}
                     />
                     <Button
                         variant={hasLocationOnly ? 'default' : 'outline'}
                         onClick={() => setHasLocationOnly((prev) => !prev)}
                     >
-                        {hasLocationOnly ? 'Only With Location' : 'All Locations'}
+                        {hasLocationOnly ? t('reports.onlyWithLocation') : t('reports.allLocations')}
                     </Button>
                 </div>
 
@@ -254,27 +257,27 @@ export default function Reports() {
                     <Input
                         type="number"
                         step="any"
-                        placeholder="Near latitude"
+                        placeholder={t('reports.nearLat')}
                         value={nearLat}
                         onChange={(e) => setNearLat(e.target.value)}
                     />
                     <Input
                         type="number"
                         step="any"
-                        placeholder="Near longitude"
+                        placeholder={t('reports.nearLng')}
                         value={nearLng}
                         onChange={(e) => setNearLng(e.target.value)}
                     />
                     <Input
                         type="number"
                         min="1"
-                        placeholder="Radius km"
+                        placeholder={t('reports.radiusKm')}
                         value={radiusKm}
                         onChange={(e) => setRadiusKm(e.target.value)}
                     />
                     <Button variant="outline" onClick={handleUseLocation}>
                         <Locate className="mr-2 h-4 w-4" />
-                        Use My Location
+                        {t('reports.useMyLocation')}
                     </Button>
                 </div>
             </div>
@@ -298,11 +301,11 @@ export default function Reports() {
                         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                             <Search className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">No Reports Found</h3>
+                        <h3 className="text-lg font-semibold mb-2">{t('reports.noReportsTitle')}</h3>
                         <p className="text-muted-foreground">
                             {search || status !== 'all' || categoryId !== 'all'
-                                ? 'Try adjusting your filters or search terms.'
-                                : 'Be the first to submit a report!'}
+                                ? t('reports.noReportsFiltered')
+                                : t('reports.noReportsDefault')}
                         </p>
                     </CardContent>
                 </Card>
@@ -323,7 +326,7 @@ export default function Reports() {
                                 disabled={page <= 1}
                             >
                                 <ChevronLeft className="h-4 w-4 mr-1" />
-                                Previous
+                                {t('reports.previous')}
                             </Button>
                             <span className="text-sm text-muted-foreground">
                                 Page {pagination.page} of {pagination.totalPages}
@@ -333,7 +336,7 @@ export default function Reports() {
                                 onClick={() => setPage(page + 1)}
                                 disabled={page >= pagination.totalPages}
                             >
-                                Next
+                                {t('reports.next')}
                                 <ChevronRight className="h-4 w-4 ml-1" />
                             </Button>
                         </div>

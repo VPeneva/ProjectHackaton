@@ -1,10 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
 import { useUserProfile } from '@/hooks/useUsers'
+import { useI18n } from '@/context/I18nContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { FileText, Clock, CheckCircle, Send, User } from 'lucide-react'
+import { FileText, Clock, CheckCircle, Send, User, Trophy } from 'lucide-react'
 
 const statusConfig = {
   Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
@@ -60,6 +61,7 @@ function ReportCard({ report }) {
 export default function UserProfile() {
   const { id } = useParams()
   const { data, isLoading, isError, error } = useUserProfile(id)
+  const { t } = useI18n()
 
   if (isLoading) {
     return (
@@ -96,7 +98,7 @@ export default function UserProfile() {
     )
   }
 
-  const { user, stats, reports } = data
+  const { user, stats, reports, gamification } = data
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -118,6 +120,38 @@ export default function UserProfile() {
         <StatCard title="In Progress" value={stats.sent} icon={Send} />
         <StatCard title="Resolved" value={stats.finished} icon={CheckCircle} />
       </div>
+
+      {gamification && (
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
+          <Card className="border-0 shadow-md">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">{t('gamification.points')}</p>
+                <p className="text-2xl font-bold">{gamification.points}</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                <Trophy className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-md">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground mb-2">{t('gamification.badges')}</p>
+              <div className="flex flex-wrap gap-2">
+                {gamification.badges?.length ? (
+                  gamification.badges.map((badge) => (
+                    <Badge key={badge.key} variant="outline">
+                      {badge.label}
+                    </Badge>
+                  ))
+                ) : (
+                  <Badge variant="outline">{t('gamification.badges')}</Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <div className="mb-4">
         <h2 className="text-xl font-semibold">Recent Reports</h2>

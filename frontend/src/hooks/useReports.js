@@ -22,6 +22,15 @@ export function useReport(id) {
   })
 }
 
+export function useSimilarReports(id, limit = 4, enabled = true) {
+  return useQuery({
+    queryKey: ['similarReports', id, limit],
+    queryFn: () => reportsService.getSimilarReports(id, limit),
+    enabled: !!id && enabled,
+    staleTime: REPORT_REFRESH_INTERVAL,
+  })
+}
+
 export function useReportStats() {
   return useQuery({
     queryKey: ['reportStats'],

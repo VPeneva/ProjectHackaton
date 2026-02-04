@@ -9,14 +9,17 @@ import {
     useSubscription,
     useSubscribe,
     useUnsubscribe,
+    useSimilarReports,
 } from '@/hooks/useReports'
 import { useAuth } from '@/context/AuthContext'
 import { VoteButtons } from '@/components/reports/VoteButtons'
+import SharePanel from '@/components/reports/SharePanel'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
+import { useI18n } from '@/context/I18nContext'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -45,26 +48,26 @@ import {
 
 const statusConfig = {
     Pending: {
-        label: 'Pending',
+        labelKey: 'statuses.pending',
         color: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
         icon: Clock,
-        description: 'Awaiting review by administrators',
+        descriptionKey: 'reportDetail.pendingDesc',
     },
     Sent: {
-        label: 'In Progress',
+        labelKey: 'statuses.sent',
         color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
         icon: Send,
-        description: 'Forwarded to the responsible institution',
+        descriptionKey: 'reportDetail.sentDesc',
     },
     Finished: {
-        label: 'Resolved',
+        labelKey: 'statuses.finished',
         color: 'bg-green-500/10 text-green-600 border-green-500/20',
         icon: CheckCircle,
-        description: 'Issue has been addressed',
+        descriptionKey: 'reportDetail.finishedDesc',
     },
 }
 
-function StatusTimeline({ status }) {
+function StatusTimeline({ status, t }) {
     const statuses = ['Pending', 'Sent', 'Finished']
     const currentIndex = statuses.indexOf(status)
 
@@ -89,7 +92,7 @@ function StatusTimeline({ status }) {
                                 <config.icon className="h-5 w-5" />
                             </div>
                             <span className={`text-xs mt-2 ${isActive ? 'font-medium' : 'text-muted-foreground'}`}>
-                                {config.label}
+                                {t(config.labelKey)}
                             </span>
                         </div>
                         {index < statuses.length - 1 && (
@@ -109,8 +112,10 @@ export default function ReportDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
     const { user, isAdmin } = useAuth()
+    const { t } = useI18n()
     const { data: report, isLoading, isError } = useReport(id)
     const { data: comments = [] } = useComments(id)
+    const { data: similarReports = [] } = useSimilarReports(id, 4)
     const addComment = useAddComment(id)
     const deleteComment = useDeleteComment(id)
     const { data: subscription } = useSubscription(id, !!user)
@@ -191,6 +196,8 @@ export default function ReportDetail() {
     }
 
     const status = statusConfig[report.status] || statusConfig.Pending
+    const statusLabel = t(status.labelKey)
+    const statusDescription = t(status.descriptionKey)
     const initialSummary = report?.upvotes !== undefined && report?.downvotes !== undefined
         ? {
             upvotes: report.upvotes ?? 0,
@@ -212,7 +219,7 @@ export default function ReportDetail() {
             <Button variant="ghost" asChild className="mb-6">
                 <Link to="/reports">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Reports
+                    {t('reportDetail.back')}
                 </Link>
             </Button>
 
@@ -259,7 +266,7 @@ export default function ReportDetail() {
                                 <CardTitle className="text-2xl">{report.title}</CardTitle>
                                 <Badge variant="outline" className={status.color}>
                                     <status.icon className="h-3 w-3 mr-1" />
-                                    {status.label}
+                                    {statusLabel}
                                 </Badge>
                             </div>
                         </CardHeader>
@@ -280,12 +287,12 @@ export default function ReportDetail() {
                     {/* Status Timeline */}
                     <Card className="border-0 shadow-lg">
                         <CardHeader>
-                            <CardTitle className="text-lg">Report Status</CardTitle>
+                            <CardTitle className="text-lg">{t('reportDetail.reportStatus')}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <StatusTimeline status={report.status} />
+                            <StatusTimeline status={report.status} t={t} />
                             <p className="text-sm text-muted-foreground text-center mt-4">
-                                {status.description}
+                                {statusDescription}
                             </p>
                         </CardContent>
                     </Card>
@@ -295,7 +302,7 @@ export default function ReportDetail() {
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <MessageSquare className="h-4 w-4" />
-                                Comments
+                                {t('reportDetail.comments')}
                                 <Badge variant="outline" className="ml-2">
                                     {comments.length}
                                 </Badge>
@@ -304,7 +311,7 @@ export default function ReportDetail() {
                         <CardContent className="space-y-4">
                             {comments.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">
-                                    No comments yet. Be the first to comment.
+                                    {t('reportDetail.noComments')}
                                 </p>
                             ) : (
                                 <div className="space-y-4">
@@ -319,12 +326,18 @@ export default function ReportDetail() {
                                                         <p className="text-xs text-muted-foreground">
                                                             {new Date(comment.createdAt).toLocaleString()}
                                                         </p>
+                                                        {comment.user?.role === 'INSTITUTION' && (
+                                                            <Badge variant="outline" className="mt-1 text-xs">
+                                                                {t('reportDetail.institutionResponse')}
+                                                            </Badge>
+                                                        )}
                                                     </div>
                                                     {canDeleteComment && (
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
                                                             onClick={() => handleDeleteComment(comment.id)}
+                                                            aria-label="Delete comment"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
@@ -349,15 +362,15 @@ export default function ReportDetail() {
                                         disabled={addComment.isPending}
                                     />
                                     <Button type="submit" disabled={!commentText.trim() || addComment.isPending}>
-                                        {addComment.isPending ? 'Posting...' : 'Post Comment'}
+                                        {addComment.isPending ? 'Posting...' : t('reportDetail.postComment')}
                                     </Button>
                                 </form>
                             ) : (
                                 <p className="text-sm text-muted-foreground">
                                     <Link to="/login" className="text-primary hover:underline">
-                                        Sign in
+                                        {t('nav.signIn')}
                                     </Link>{' '}
-                                    to join the discussion.
+                                    {t('reportDetail.signInToComment')}
                                 </p>
                             )}
                         </CardContent>
@@ -369,7 +382,7 @@ export default function ReportDetail() {
                     {/* Details */}
                     <Card className="border-0 shadow-lg">
                         <CardHeader>
-                            <CardTitle className="text-lg">Details</CardTitle>
+                            <CardTitle className="text-lg">{t('reportDetail.details')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center gap-3">
@@ -377,7 +390,7 @@ export default function ReportDetail() {
                                     <Clock className="h-4 w-4 text-muted-foreground" />
                                 </div>
                                 <div>
-                                    <div className="text-xs text-muted-foreground">Submitted</div>
+                                    <div className="text-xs text-muted-foreground">{t('reportDetail.submitted')}</div>
                                     <div className="text-sm font-medium">
                                         {new Date(report.createdAt).toLocaleDateString('en-US', {
                                             year: 'numeric',
@@ -394,7 +407,7 @@ export default function ReportDetail() {
                                         <Tag className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-muted-foreground">Category</div>
+                                        <div className="text-xs text-muted-foreground">{t('reportDetail.category')}</div>
                                         <div className="text-sm font-medium">{report.category.name}</div>
                                     </div>
                                 </div>
@@ -406,7 +419,7 @@ export default function ReportDetail() {
                                         <Building2 className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-muted-foreground">Institution</div>
+                                        <div className="text-xs text-muted-foreground">{t('reportDetail.institution')}</div>
                                         <div className="text-sm font-medium">{report.institution.name}</div>
                                     </div>
                                 </div>
@@ -418,7 +431,7 @@ export default function ReportDetail() {
                                         <MapPin className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-muted-foreground">Location</div>
+                                        <div className="text-xs text-muted-foreground">{t('reportDetail.location')}</div>
                                         <div className="text-sm font-medium">{report.address}</div>
                                     </div>
                                 </div>
@@ -430,7 +443,7 @@ export default function ReportDetail() {
                                         <User className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-muted-foreground">Reported by</div>
+                                        <div className="text-xs text-muted-foreground">{t('reportDetail.reportedBy')}</div>
                                         <Link to={`/users/${report.user.id}`} className="text-sm font-medium text-primary hover:underline">
                                             {report.user.name}
                                         </Link>
@@ -444,7 +457,7 @@ export default function ReportDetail() {
                     {user && (
                         <Card className="border-0 shadow-lg">
                             <CardHeader>
-                                <CardTitle className="text-lg">Stay Updated</CardTitle>
+                                <CardTitle className="text-lg">{t('reportDetail.stayUpdated')}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <p className="text-sm text-muted-foreground">
@@ -457,7 +470,7 @@ export default function ReportDetail() {
                                     disabled={subscribe.isPending || unsubscribe.isPending}
                                 >
                                     <Bell className="mr-2 h-4 w-4" />
-                                    {subscription?.subscribed ? 'Subscribed' : 'Subscribe'}
+                                    {subscription?.subscribed ? t('reportDetail.subscribed') : t('reportDetail.subscribe')}
                                 </Button>
                                 <p className="text-xs text-muted-foreground">
                                     {report.subscriptionsCount || 0} watcher{(report.subscriptionsCount || 0) !== 1 ? 's' : ''}
@@ -466,34 +479,69 @@ export default function ReportDetail() {
                         </Card>
                     )}
 
+                    {/* Share */}
+                    <SharePanel report={report} statusLabel={statusLabel} />
+
+                    {/* Similar Reports */}
+                    <Card className="border-0 shadow-lg">
+                        <CardHeader>
+                            <CardTitle className="text-lg">{t('reportDetail.similarReports')}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {similarReports.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    {t('reportDetail.noSimilar')}
+                                </p>
+                            ) : (
+                                similarReports.map((item) => (
+                                    <Link
+                                        key={item.id}
+                                        to={`/reports/${item.id}`}
+                                        className="block border border-border/60 rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                                    >
+                                        <div className="flex items-center justify-between gap-2 mb-1">
+                                            <p className="text-sm font-medium line-clamp-1">{item.title}</p>
+                                            <Badge variant="outline" className={statusConfig[item.status]?.color || status.color}>
+                                                {t(statusConfig[item.status]?.labelKey || status.labelKey)}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground line-clamp-2">
+                                            {item.description}
+                                        </p>
+                                    </Link>
+                                ))
+                            )}
+                        </CardContent>
+                    </Card>
+
                     {/* Actions */}
                     {canDelete && (
                         <Card className="border-0 shadow-lg">
                             <CardHeader>
-                                <CardTitle className="text-lg">Actions</CardTitle>
+                                <CardTitle className="text-lg">{t('reportDetail.actions')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button variant="destructive" className="w-full">
                                             <Trash2 className="mr-2 h-4 w-4" />
-                                            Delete Report
+                                            {t('reportDetail.deleteReport')}
                                         </Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>Delete Report</AlertDialogTitle>
+                                            <AlertDialogTitle>{t('reportDetail.deleteReport')}</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                Are you sure you want to delete this report? This action cannot be undone.
+                                                {t('reportDetail.deleteConfirm')}
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogCancel>{t('reportDetail.cancel')}</AlertDialogCancel>
                                             <AlertDialogAction
                                                 onClick={handleDelete}
                                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                             >
-                                                Delete
+                                                {t('reportDetail.delete')}
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>

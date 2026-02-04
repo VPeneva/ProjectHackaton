@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { useMapReports } from '@/hooks/useReports'
+import { useI18n } from '@/context/I18nContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -17,12 +18,13 @@ L.Icon.Default.mergeOptions({
 })
 
 const statusConfig = {
-    Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-    Finished: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+    Pending: { key: 'statuses.pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+    Sent: { key: 'statuses.sent', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    Finished: { key: 'statuses.finished', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
 }
 
 function ReportListItem({ report }) {
+    const { t } = useI18n()
     const status = statusConfig[report.status] || statusConfig.Pending
 
     return (
@@ -31,7 +33,7 @@ function ReportListItem({ report }) {
                 <div className="flex items-start justify-between gap-2 mb-1">
                     <h3 className="font-medium line-clamp-1">{report.title}</h3>
                     <Badge variant="outline" className={`shrink-0 text-xs ${status.color}`}>
-                        {status.label}
+                        {t(status.key)}
                     </Badge>
                 </div>
                 {report.address && (
@@ -51,6 +53,7 @@ const DEFAULT_ZOOM = 7
 
 export default function MapExplorer() {
     const { data: reports, isLoading, isError, error } = useMapReports()
+    const { t } = useI18n()
     const [showList, setShowList] = useState(false)
     const errorMessage =
         error?.response?.data?.error ||
@@ -79,20 +82,20 @@ export default function MapExplorer() {
             {/* Header */}
             <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold">Map Explorer</h1>
+                    <h1 className="text-2xl font-bold">{t('reports.mapView')}</h1>
                     <p className="text-sm text-muted-foreground">
-                        View all active reports on the map
+                        {t('reports.subtitle')}
                     </p>
                 </div>
-                <Button
-                    variant="outline"
-                    onClick={() => setShowList(!showList)}
-                    className="md:hidden"
-                >
-                    <List className="h-4 w-4 mr-2" />
-                    {showList ? 'Show Map' : 'Show List'}
-                </Button>
-            </div>
+                    <Button
+                        variant="outline"
+                        onClick={() => setShowList(!showList)}
+                        className="md:hidden"
+                    >
+                        <List className="h-4 w-4 mr-2" />
+                        {showList ? 'Show Map' : 'Show List'}
+                    </Button>
+                </div>
 
             {/* Main Content */}
             <div className="flex-1 flex overflow-hidden">
@@ -134,7 +137,7 @@ export default function MapExplorer() {
                                                 variant="outline"
                                                 className={`mb-2 text-xs ${statusConfig[report.status]?.color || ''}`}
                                             >
-                                                {statusConfig[report.status]?.label || report.status}
+                                                {t(statusConfig[report.status]?.key || report.status)}
                                             </Badge>
                                             {report.address && (
                                                 <p className="text-xs text-muted-foreground mb-2">

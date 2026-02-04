@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAdmin, useSendReport, useResolveReport, useBulkSendReports, useBulkResolveReports } from '@/hooks/useAdmin'
+import { useAdmin, useSendReport, useResolveReport, useBulkSendReports, useBulkResolveReports, useMergeReports } from '@/hooks/useAdmin'
 import { useInstitutions } from '@/hooks/useInstitutions'
+import { useSimilarReports } from '@/hooks/useReports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Input } from '@/components/ui/input'
 import {
     Select,
     SelectContent,
@@ -32,6 +34,7 @@ import {
     FileText,
     ThumbsUp,
     ThumbsDown,
+    GitMerge,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -40,7 +43,7 @@ const statusConfig = {
     Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
 }
 
-function ReportRow({ report, onSend, onResolve, institutions, selected, onToggleSelect }) {
+function ReportRow({ report, onSend, onResolve, institutions, selected, onToggleSelect, onMerge }) {
     const [sendDialogOpen, setSendDialogOpen] = useState(false)
     const [selectedInstitution, setSelectedInstitution] = useState('')
     const [sending, setSending] = useState(false)
@@ -155,6 +158,11 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                                 </Link>
                             </Button>
 
+                            <Button variant="outline" size="sm" onClick={() => onMerge(report)}>
+                                <GitMerge className="h-4 w-4 mr-1" />
+                                Merge
+                            </Button>
+
                             {report.status === 'Pending' && (
                                 <Button size="sm" onClick={() => setSendDialogOpen(true)}>
                                     <Send className="h-4 w-4 mr-1" />
@@ -253,6 +261,9 @@ export default function ManageReports() {
     const [selectedIds, setSelectedIds] = useState([])
     const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
     const [bulkInstitution, setBulkInstitution] = useState('')
+    const [mergeDialogOpen, setMergeDialogOpen] = useState(false)
+    const [mergeSource, setMergeSource] = useState(null)
+    const [mergeTargetId, setMergeTargetId] = useState('')
     const { data: reports, isLoading, isError, error } = useAdmin()
     const errorMessage =
         error?.response?.data?.error ||
@@ -263,6 +274,13 @@ export default function ManageReports() {
     const resolveReport = useResolveReport()
     const bulkSend = useBulkSendReports()
     const bulkResolve = useBulkResolveReports()
+    const mergeReports = useMergeReports()
+
+    const { data: similarReports = [] } = useSimilarReports(
+        mergeSource?.id,
+        6,
+        mergeDialogOpen
+    )
 
     const handleSend = async (id, institutionId) => {
         try {
@@ -318,6 +336,28 @@ export default function ManageReports() {
     const handleBulkResolve = async () => {
         await bulkResolve.mutateAsync({ ids: selectedIds })
         setSelectedIds([])
+    }
+
+    const handleOpenMerge = (report) => {
+        setMergeSource(report)
+        setMergeTargetId('')
+        setMergeDialogOpen(true)
+    }
+
+    const handleMerge = async () => {
+        if (!mergeSource || !mergeTargetId) {
+            toast.error('Select a target report to merge into')
+            return
+        }
+
+        await mergeReports.mutateAsync({
+            sourceId: mergeSource.id,
+            targetId: parseInt(mergeTargetId, 10),
+        })
+
+        setMergeDialogOpen(false)
+        setMergeSource(null)
+        setMergeTargetId('')
     }
 
     const pendingCount = reports?.filter(r => r.status === 'Pending').length || 0
@@ -439,6 +479,7 @@ export default function ManageReports() {
                             institutions={institutions}
                             selected={selectedIds.includes(report.id)}
                             onToggleSelect={toggleSelect}
+                            onMerge={handleOpenMerge}
                         />
                     ))}
                 </div>
@@ -478,6 +519,86 @@ export default function ManageReports() {
                                 <Send className="h-4 w-4 mr-2" />
                             )}
                             Send Reports
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Merge Dialog */}
+            <Dialog
+                open={mergeDialogOpen}
+                onOpenChange={(open) => {
+                    setMergeDialogOpen(open)
+                    if (!open) {
+                        setMergeSource(null)
+                        setMergeTargetId('')
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Merge Duplicate Reports</DialogTitle>
+                        <DialogDescription>
+                            Merge "{mergeSource?.title}" into another report. The source report will be removed,
+                            while votes, comments, and subscriptions will be moved to the target.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Select a target report</p>
+                            {similarReports.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    No similar reports found. Enter a target report ID below.
+                                </p>
+                            ) : (
+                                <div className="space-y-2 max-h-48 overflow-y-auto">
+                                    {similarReports.map((item) => (
+                                        <button
+                                            key={item.id}
+                                            type="button"
+                                            onClick={() => setMergeTargetId(item.id.toString())}
+                                            className={`w-full text-left p-2 rounded-md border ${
+                                                mergeTargetId === item.id.toString()
+                                                    ? 'border-primary bg-primary/5'
+                                                    : 'border-border/60'
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium line-clamp-1">
+                                                    {item.title}
+                                                </span>
+                                                <Badge variant="outline" className={statusConfig[item.status]?.color || ''}>
+                                                    {statusConfig[item.status]?.label || item.status}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground line-clamp-2">
+                                                {item.description}
+                                            </p>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Target report ID (optional)</p>
+                            <Input
+                                placeholder="Enter report ID"
+                                value={mergeTargetId}
+                                onChange={(e) => setMergeTargetId(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setMergeDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleMerge} disabled={mergeReports.isPending}>
+                            {mergeReports.isPending ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                                <GitMerge className="h-4 w-4 mr-2" />
+                            )}
+                            Merge Reports
                         </Button>
                     </DialogFooter>
                 </DialogContent>

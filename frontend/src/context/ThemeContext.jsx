@@ -13,7 +13,7 @@ export function ThemeProvider({ children, defaultTheme = 'system', storageKey = 
   useEffect(() => {
     const root = document.documentElement
 
-    root.classList.remove('light', 'dark')
+    root.classList.remove('light', 'dark', 'high-contrast')
 
     if (theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -34,6 +34,11 @@ export function ThemeProvider({ children, defaultTheme = 'system', storageKey = 
     const currentActual = theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : theme
+
+    if (currentActual === 'high-contrast') {
+      setThemeValue('light')
+      return
+    }
 
     setThemeValue(currentActual === 'light' ? 'dark' : 'light')
   }

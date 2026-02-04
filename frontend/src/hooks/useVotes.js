@@ -27,8 +27,9 @@ export function useVote() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ reportId, type }) => votesService.voteOnReport(reportId, type),
-    onMutate: async ({ reportId, type }) => {
+    mutationFn: ({ reportId, type, reason }) =>
+      votesService.voteOnReport(reportId, type, reason),
+    onMutate: async ({ reportId, type, reason }) => {
       await Promise.all([
         queryClient.cancelQueries({ queryKey: ['voteSummary', reportId] }),
         queryClient.cancelQueries({ queryKey: ['myVote', reportId] }),
@@ -52,7 +53,7 @@ export function useVote() {
         downvotes,
         total: upvotes + downvotes,
       })
-      queryClient.setQueryData(['myVote', reportId], { type })
+      queryClient.setQueryData(['myVote', reportId], { type, reason })
 
       return { previousSummary, previousVote }
     },

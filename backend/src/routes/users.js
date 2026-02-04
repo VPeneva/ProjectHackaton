@@ -1,6 +1,7 @@
 import express from "express";
 import prisma from "../db/client.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
+import { getUserStatsMap } from "../utils/gamification.js";
 
 const router = express.Router();
 
@@ -27,6 +28,52 @@ router.get("/me/subscriptions", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("Error fetching subscriptions:", err);
     res.status(500).json({ error: "Failed to load subscriptions" });
+  }
+});
+
+/**
+ * GET /api/users/leaderboard
+ * Public leaderboard of top contributors.
+ */
+router.get("/leaderboard", async (req, res) => {
+  try {
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
+
+    const users = await prisma.user.findMany({
+      where: { role: "USER" },
+      select: { id: true, name: true, createdAt: true },
+    });
+
+    const statsMap = await getUserStatsMap(
+      prisma,
+      users.map((user) => user.id)
+    );
+
+    const leaderboard = users
+      .map((user) => {
+        const data = statsMap.get(user.id) || {
+          stats: { reports: 0, resolved: 0, comments: 0, votes: 0 },
+          points: 0,
+          badges: [],
+        };
+        return {
+          user: {
+            id: user.id,
+            name: user.name,
+            createdAt: user.createdAt,
+          },
+          points: data.points,
+          badges: data.badges,
+          stats: data.stats,
+        };
+      })
+      .sort((a, b) => b.points - a.points)
+      .slice(0, limit);
+
+    res.json(leaderboard);
+  } catch (err) {
+    console.error("Error fetching leaderboard:", err);
+    res.status(500).json({ error: "Failed to load leaderboard" });
   }
 });
 
@@ -62,6 +109,14 @@ router.get("/:id", async (req, res) => {
       prisma.report.count({ where: { userId, status: "Finished" } }),
     ]);
 
+    const statsMap = await getUserStatsMap(prisma, [userId]);
+    const gamification = statsMap.get(userId) || {
+      stats: { reports: total, resolved: finished, comments: 0, votes: 0 },
+      points: 0,
+      badges: [],
+      weight: 1,
+    };
+
     const reports = await prisma.report.findMany({
       where: { userId },
       include: {
@@ -80,6 +135,12 @@ router.get("/:id", async (req, res) => {
         pending,
         sent,
         finished,
+      },
+      gamification: {
+        points: gamification.points,
+        badges: gamification.badges,
+        weight: gamification.weight,
+        stats: gamification.stats,
       },
       reports,
     });

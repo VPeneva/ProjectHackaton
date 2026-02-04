@@ -1,8 +1,10 @@
 import api from './api'
 
 export const votesService = {
-  voteOnReport: async (reportId, type) => {
-    const response = await api.post(`/votes/reports/${reportId}`, { type })
+  voteOnReport: async (reportId, type, reason) => {
+    const payload = { type }
+    if (reason) payload.reason = reason
+    const response = await api.post(`/votes/reports/${reportId}`, payload)
     return response.data
   },
 

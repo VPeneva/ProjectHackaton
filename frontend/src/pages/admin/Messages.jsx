@@ -26,9 +26,10 @@ function ConversationItem({ conversation, isActive, onClick }) {
     const lastMessage = conversation.lastMessage
 
     return (
-        <div
+        <button
+            type="button"
             onClick={onClick}
-            className={`p-4 cursor-pointer border-b transition-colors hover:bg-muted/50 ${isActive ? 'bg-primary/10 border-l-2 border-l-primary' : ''
+            className={`w-full text-left p-4 cursor-pointer border-b transition-colors hover:bg-muted/50 ${isActive ? 'bg-primary/10 border-l-2 border-l-primary' : ''
                 }`}
         >
             <div className="flex items-start justify-between gap-2 mb-1">
@@ -62,7 +63,7 @@ function ConversationItem({ conversation, isActive, onClick }) {
                     {new Date(conversation.updatedAt).toLocaleDateString()}
                 </span>
             </div>
-        </div>
+        </button>
     )
 }
 

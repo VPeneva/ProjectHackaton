@@ -8,7 +8,16 @@ const router = express.Router();
 // Връща всички институции
 router.get("/", async (req, res) => {
   try {
-    const institutions = await prisma.institution.findMany();
+    const institutions = await prisma.institution.findMany({
+      include: {
+        _count: {
+          select: {
+            categories: true,
+            users: true,
+          },
+        },
+      },
+    });
     res.json(institutions);
   } catch (err) {
     console.error("Error fetching institutions:", err);
@@ -59,6 +68,17 @@ router.delete("/:id", authMiddleware, isAdmin, async (req, res) => {
     if (categoryCount > 0) {
       return res.status(400).json({
         error: `Cannot delete institution with ${categoryCount} existing category(ies). Please delete the categories first.`,
+      });
+    }
+
+    // Check if institution has portal users
+    const userCount = await prisma.user.count({
+      where: { institutionId },
+    });
+
+    if (userCount > 0) {
+      return res.status(400).json({
+        error: `Cannot delete institution with ${userCount} portal user(s). Please remove them first.`,
       });
     }
 

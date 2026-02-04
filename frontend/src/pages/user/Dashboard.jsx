@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useReportStats } from '@/hooks/useReports'
+import { useLeaderboard } from '@/hooks/useUsers'
+import { useI18n } from '@/context/I18nContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -13,11 +15,14 @@ import {
     ArrowRight,
     MapPin,
     TrendingUp,
+    Trophy,
 } from 'lucide-react'
 
 export default function Dashboard() {
     const { user } = useAuth()
+    const { t } = useI18n()
     const { data: stats, isLoading } = useReportStats()
+    const { data: leaderboard = [] } = useLeaderboard(3)
 
     const quickActions = [
         {
@@ -79,7 +84,7 @@ export default function Dashboard() {
             {/* Welcome Header */}
             <div className="mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                    Welcome back, {user?.name?.split(' ')[0] || 'there'}! 👋
+                    Welcome back, {user?.name?.split(' ')[0] || 'there'}!
                 </h1>
                 <p className="text-muted-foreground text-lg">
                     Here's what's happening with your reports and the community.
@@ -164,6 +169,43 @@ export default function Dashboard() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Community Leaders */}
+            <div className="mt-8">
+                <Card className="border-0 shadow-lg">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Trophy className="h-5 w-5 text-primary" />
+                            {t('leaderboard.title')}
+                        </CardTitle>
+                        <CardDescription>{t('leaderboard.subtitle')}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {leaderboard.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No contributors yet.</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {leaderboard.map((entry, index) => (
+                                    <div
+                                        key={entry.user.id}
+                                        className="flex items-center justify-between text-sm"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
+                                                {index + 1}
+                                            </span>
+                                            <span className="font-medium">{entry.user.name}</span>
+                                        </div>
+                                        <span className="text-muted-foreground">
+                                            {entry.points} {t('gamification.points')}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     )
 }

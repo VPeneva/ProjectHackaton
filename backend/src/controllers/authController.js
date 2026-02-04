@@ -25,7 +25,12 @@ export const register = async (req, res) => {
 
     // 🔥 създаваме token веднага, както при login:
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        institutionId: user.institutionId || null,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -54,9 +59,10 @@ export const login = async (req, res) => {
 
     const token = jwt.sign(
       { 
-        id: user.id, 
+        id: user.id,
         email: user.email,
-        role: user.role   
+        role: user.role,
+        institutionId: user.institutionId || null,
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -152,4 +158,3 @@ export const resetPassword = async (req, res) => {
     return res.status(500).json({ error: "Server error", message: err.message });
   }
 };
-

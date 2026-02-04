@@ -21,6 +21,7 @@ import voteRoutes from "./routes/votes.js";
 import conversationRoutes from "./routes/conversations.js";
 import notificationRoutes from "./routes/notifications.js";
 import userRoutes from "./routes/users.js";
+import institutionPortalRoutes from "./routes/institution.js";
 
 const app = express();
 app.use(cors());
@@ -41,6 +42,7 @@ app.use("/api/votes", voteRoutes);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/institution", institutionPortalRoutes);
 
 const PORT = process.env.PORT || 5000;
 

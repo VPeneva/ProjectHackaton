@@ -15,3 +15,10 @@ export function useMySubscriptions() {
     queryFn: () => usersService.getMySubscriptions(),
   })
 }
+
+export function useLeaderboard(limit) {
+  return useQuery({
+    queryKey: ['leaderboard', limit],
+    queryFn: () => usersService.getLeaderboard(limit),
+  })
+}

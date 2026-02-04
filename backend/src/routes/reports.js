@@ -3,6 +3,7 @@ import prisma from "../db/client.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { sanitizeText } from "../utils/sanitize.js";
 import { createNotifications } from "../utils/notifications.js";
+import { getVoteCutoff } from "../utils/votes.js";
 
 const router = express.Router();
 const DUPLICATE_LOOKBACK_DAYS = 30;
@@ -15,13 +16,54 @@ const normalizeText = (value) =>
     .replace(/\s+/g, " ")
     .trim();
 
+const tokenizeText = (value) =>
+  normalizeText(value)
+    .split(" ")
+    .filter((word) => word.length > 2);
+
+const computeSimilarityScore = (baseReport, candidate) => {
+  const baseTokens = new Set(
+    tokenizeText(`${baseReport.title} ${baseReport.description || ""} ${baseReport.address || ""}`)
+  );
+  if (baseTokens.size === 0) return 0;
+
+  const candidateTokens = new Set(
+    tokenizeText(`${candidate.title} ${candidate.description || ""} ${candidate.address || ""}`)
+  );
+
+  let overlap = 0;
+  baseTokens.forEach((token) => {
+    if (candidateTokens.has(token)) overlap += 1;
+  });
+
+  const sameCategory =
+    baseReport.categoryId && candidate.categoryId === baseReport.categoryId ? 3 : 0;
+  const sameInstitution =
+    baseReport.institutionId && candidate.institutionId === baseReport.institutionId ? 2 : 0;
+
+  let proximity = 0;
+  if (
+    baseReport.lat !== null &&
+    baseReport.lng !== null &&
+    candidate.lat !== null &&
+    candidate.lng !== null
+  ) {
+    const latDiff = Math.abs(baseReport.lat - candidate.lat);
+    const lngDiff = Math.abs(baseReport.lng - candidate.lng);
+    if (latDiff <= 0.01 && lngDiff <= 0.01) proximity = 2;
+  }
+
+  return overlap + sameCategory + sameInstitution + proximity;
+};
+
 const addVoteCounts = async (reports = []) => {
   if (!reports.length) return reports;
 
   const reportIds = reports.map((report) => report.id);
+  const voteCutoff = getVoteCutoff();
   const groupedVotes = await prisma.vote.groupBy({
     by: ["reportId", "type"],
-    where: { reportId: { in: reportIds } },
+    where: { reportId: { in: reportIds }, createdAt: { gte: voteCutoff } },
     _count: { _all: true },
   });
 
@@ -474,6 +516,86 @@ router.get("/stats", async (req, res) => {
 });
 
 /**
+ * GET /api/reports/:id/similar
+ * Returns similar reports based on category, institution, text overlap, and proximity.
+ */
+router.get("/:id/similar", async (req, res) => {
+  try {
+    const reportId = Number(req.params.id);
+    if (Number.isNaN(reportId)) {
+      return res.status(400).json({ error: "Invalid report ID" });
+    }
+
+    const limit = Math.min(10, Math.max(1, Number(req.query.limit) || 4));
+
+    const baseReport = await prisma.report.findUnique({
+      where: { id: reportId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        address: true,
+        lat: true,
+        lng: true,
+        categoryId: true,
+        institutionId: true,
+      },
+    });
+
+    if (!baseReport) {
+      return res.status(404).json({ error: "Report not found" });
+    }
+
+    const orFilters = [];
+    if (baseReport.categoryId) {
+      orFilters.push({ categoryId: baseReport.categoryId });
+    }
+    if (baseReport.institutionId) {
+      orFilters.push({ institutionId: baseReport.institutionId });
+    }
+
+    const addressTokens = tokenizeText(baseReport.address).slice(0, 3);
+    addressTokens.forEach((token) => {
+      orFilters.push({ address: { contains: token, mode: "insensitive" } });
+    });
+
+    const candidates = await prisma.report.findMany({
+      where: {
+        id: { not: reportId },
+        ...(orFilters.length ? { OR: orFilters } : {}),
+      },
+      include: {
+        institution: true,
+        category: true,
+        images: { orderBy: { createdAt: "asc" } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 25,
+    });
+
+    const scored = candidates
+      .map((candidate) => ({
+        report: candidate,
+        score: computeSimilarityScore(baseReport, candidate),
+      }))
+      .filter((item) => item.score > 0 || !orFilters.length)
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return new Date(b.report.createdAt) - new Date(a.report.createdAt);
+      })
+      .slice(0, limit)
+      .map((item) => item.report);
+
+    const scoredWithVotes = await addVoteCounts(scored);
+
+    res.json(scoredWithVotes);
+  } catch (err) {
+    console.error("Error fetching similar reports:", err);
+    res.status(500).json({ error: "Failed to load similar reports" });
+  }
+});
+
+/**
  * PATCH update report (owner/admin, pending only)
  */
 router.patch("/:id", authMiddleware, async (req, res) => {
@@ -701,11 +823,28 @@ router.post("/:id/comments", authMiddleware, async (req, res) => {
 
     const report = await prisma.report.findUnique({
       where: { id: reportId },
-      select: { id: true, title: true, userId: true },
+      select: { id: true, title: true, userId: true, institutionId: true },
     });
 
     if (!report) {
       return res.status(404).json({ error: "Report not found" });
+    }
+
+    if (req.user.role === "INSTITUTION") {
+      let institutionId = req.user.institutionId;
+      if (!institutionId) {
+        const institutionUser = await prisma.user.findUnique({
+          where: { id: req.user.id },
+          select: { institutionId: true },
+        });
+        institutionId = institutionUser?.institutionId || null;
+      }
+
+      if (!institutionId || report.institutionId !== institutionId) {
+        return res
+          .status(403)
+          .json({ error: "Institutions can only respond to their own reports" });
+      }
     }
 
     const comment = await prisma.comment.create({
@@ -903,9 +1042,14 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Report not found" });
     }
 
+    const voteCutoff = getVoteCutoff();
     const [upvotes, downvotes] = await Promise.all([
-      prisma.vote.count({ where: { reportId: report.id, type: "UP" } }),
-      prisma.vote.count({ where: { reportId: report.id, type: "DOWN" } }),
+      prisma.vote.count({
+        where: { reportId: report.id, type: "UP", createdAt: { gte: voteCutoff } },
+      }),
+      prisma.vote.count({
+        where: { reportId: report.id, type: "DOWN", createdAt: { gte: voteCutoff } },
+      }),
     ]);
 
     res.json({

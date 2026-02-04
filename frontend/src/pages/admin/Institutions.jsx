@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useInstitutions, useCreateInstitution, useDeleteInstitution } from '@/hooks/useInstitutions'
+import { useInstitutionUsers, useCreateInstitutionUser, useDeleteInstitutionUser } from '@/hooks/useAdmin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,10 +33,11 @@ import {
     ArrowLeft,
     Loader2,
     Tag,
+    Users,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-function InstitutionRow({ institution, onDelete }) {
+function InstitutionRow({ institution, onDelete, onManageUsers }) {
     const [deleting, setDeleting] = useState(false)
 
     const handleDelete = async () => {
@@ -56,6 +58,9 @@ function InstitutionRow({ institution, onDelete }) {
                         <p className="text-xs text-muted-foreground">
                             {institution._count?.categories || 0} categories
                         </p>
+                        <p className="text-xs text-muted-foreground">
+                            {institution._count?.users || 0} portal users
+                        </p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -66,9 +71,22 @@ function InstitutionRow({ institution, onDelete }) {
                         <Tag className="h-4 w-4 inline mr-1" />
                         Manage Categories
                     </Link>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onManageUsers(institution)}
+                    >
+                        <Users className="h-4 w-4 mr-1" />
+                        Portal Users
+                    </Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="icon" className="text-destructive hover:text-destructive">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                aria-label="Delete institution"
+                            >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </AlertDialogTrigger>
@@ -100,10 +118,18 @@ function InstitutionRow({ institution, onDelete }) {
 export default function Institutions() {
     const [dialogOpen, setDialogOpen] = useState(false)
     const [newName, setNewName] = useState('')
+    const [manageDialogOpen, setManageDialogOpen] = useState(false)
+    const [selectedInstitution, setSelectedInstitution] = useState(null)
+    const [newUserName, setNewUserName] = useState('')
+    const [newUserEmail, setNewUserEmail] = useState('')
+    const [newUserPassword, setNewUserPassword] = useState('')
 
     const { data: institutions, isLoading, isError, error } = useInstitutions()
     const createInstitution = useCreateInstitution()
     const deleteInstitution = useDeleteInstitution()
+    const { data: institutionUsers = [] } = useInstitutionUsers(selectedInstitution?.id)
+    const createInstitutionUser = useCreateInstitutionUser(selectedInstitution?.id)
+    const deleteInstitutionUser = useDeleteInstitutionUser(selectedInstitution?.id)
 
     const handleCreate = async () => {
         if (!newName.trim()) {
@@ -128,6 +154,32 @@ export default function Institutions() {
         }
     }
 
+    const handleOpenUsers = (institution) => {
+        setSelectedInstitution(institution)
+        setManageDialogOpen(true)
+    }
+
+    const handleCreateInstitutionUser = async () => {
+        if (!newUserName.trim() || !newUserEmail.trim() || !newUserPassword) {
+            toast.error('Name, email, and password are required')
+            return
+        }
+
+        await createInstitutionUser.mutateAsync({
+            name: newUserName.trim(),
+            email: newUserEmail.trim(),
+            password: newUserPassword,
+        })
+
+        setNewUserName('')
+        setNewUserEmail('')
+        setNewUserPassword('')
+    }
+
+    const handleDeleteInstitutionUser = async (userId) => {
+        await deleteInstitutionUser.mutateAsync(userId)
+    }
+
     const errorMessage =
         error?.response?.data?.error ||
         error?.message ||
@@ -139,7 +191,7 @@ export default function Institutions() {
             <div className="flex items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" asChild>
-                        <Link to="/admin">
+                        <Link to="/admin" aria-label="Back to admin">
                             <ArrowLeft className="h-5 w-5" />
                         </Link>
                     </Button>
@@ -233,10 +285,89 @@ export default function Institutions() {
                             key={institution.id}
                             institution={institution}
                             onDelete={handleDelete}
+                            onManageUsers={handleOpenUsers}
                         />
                     ))}
                 </div>
             )}
+
+            {/* Institution Users Dialog */}
+            <Dialog open={manageDialogOpen} onOpenChange={setManageDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Institution Portal Users</DialogTitle>
+                        <DialogDescription>
+                            Manage accounts that can access the institution portal.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Create new account</p>
+                            <Input
+                                placeholder="Name"
+                                value={newUserName}
+                                onChange={(e) => setNewUserName(e.target.value)}
+                            />
+                            <Input
+                                placeholder="Email"
+                                value={newUserEmail}
+                                onChange={(e) => setNewUserEmail(e.target.value)}
+                            />
+                            <Input
+                                type="password"
+                                placeholder="Temporary password"
+                                value={newUserPassword}
+                                onChange={(e) => setNewUserPassword(e.target.value)}
+                            />
+                            <Button
+                                onClick={handleCreateInstitutionUser}
+                                disabled={createInstitutionUser.isPending}
+                            >
+                                {createInstitutionUser.isPending ? (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Users className="h-4 w-4 mr-2" />
+                                )}
+                                Create Portal User
+                            </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Existing accounts</p>
+                            {institutionUsers.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">No portal users yet.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {institutionUsers.map((user) => (
+                                        <div
+                                            key={user.id}
+                                            className="flex items-center justify-between border border-border/60 rounded-md p-2"
+                                        >
+                                            <div>
+                                                <p className="text-sm font-medium">{user.name}</p>
+                                                <p className="text-xs text-muted-foreground">{user.email}</p>
+                                            </div>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                aria-label="Delete portal user"
+                                                onClick={() => handleDeleteInstitutionUser(user.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setManageDialogOpen(false)}>
+                            Close
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

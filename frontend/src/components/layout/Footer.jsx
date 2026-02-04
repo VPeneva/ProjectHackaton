@@ -1,23 +1,26 @@
 import { Link } from 'react-router-dom'
 import { Separator } from '@/components/ui/separator'
-
-const footerLinks = {
-  product: [
-    { href: '/reports', label: 'Browse Reports' },
-    { href: '/map', label: 'Map Explorer' },
-    { href: '/create-report', label: 'Submit Report' },
-  ],
-  company: [
-    { href: '/about', label: 'About Us' },
-    { href: '/contact', label: 'Contact' },
-  ],
-  legal: [
-    { href: '/legal', label: 'Terms of Service' },
-    { href: '/legal', label: 'Privacy Policy' },
-  ],
-}
+import { useI18n } from '@/context/I18nContext'
 
 export default function Footer() {
+  const { t } = useI18n()
+
+  const footerLinks = {
+    product: [
+      { href: '/reports', label: t('nav.reports') },
+      { href: '/map', label: t('nav.map') },
+      { href: '/create-report', label: t('nav.reportIssue') },
+    ],
+    company: [
+      { href: '/about', label: t('nav.about') },
+      { href: '/contact', label: t('nav.contact') },
+    ],
+    legal: [
+      { href: '/legal', label: 'Terms of Service' },
+      { href: '/legal', label: 'Privacy Policy' },
+    ],
+  }
+
   return (
     <footer className="border-t bg-background">
       <div className="container mx-auto px-4 py-12">
@@ -31,13 +34,13 @@ export default function Footer() {
               <span className="font-bold">CivicReport</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
-              Empowering citizens to improve their communities through collaborative infrastructure reporting.
+              {t('footer.tagline')}
             </p>
           </div>
 
           {/* Product Links */}
           <div>
-            <h3 className="font-semibold mb-4">Product</h3>
+            <h3 className="font-semibold mb-4">{t('footer.quickLinks')}</h3>
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
                 <li key={link.href + link.label}>
@@ -54,7 +57,7 @@ export default function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="font-semibold mb-4">Company</h3>
+            <h3 className="font-semibold mb-4">{t('footer.resources')}</h3>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.href + link.label}>
@@ -71,7 +74,7 @@ export default function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
+            <h3 className="font-semibold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link, index) => (
                 <li key={index}>
@@ -90,7 +93,9 @@ export default function Footer() {
         <Separator className="my-8" />
 
         <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} CivicReport. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} CivicReport. {t('footer.rights')}
+          </p>
           <p className="mt-2 sm:mt-0">Made with care for our communities</p>
         </div>
       </div>

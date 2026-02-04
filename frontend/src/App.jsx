@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
+import { I18nProvider } from '@/context/I18nContext'
 
 // Layout components
 import Navbar from '@/components/layout/Navbar'
@@ -11,6 +12,7 @@ import Footer from '@/components/layout/Footer'
 // Route guards
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import AdminRoute from '@/components/auth/AdminRoute'
+import InstitutionRoute from '@/components/auth/InstitutionRoute'
 
 // Public pages
 import Landing from '@/pages/public/Landing'
@@ -19,6 +21,7 @@ import Contact from '@/pages/public/Contact'
 import Legal from '@/pages/public/Legal'
 import NotFound from '@/pages/public/NotFound'
 import UserProfile from '@/pages/public/UserProfile'
+import Leaderboard from '@/pages/public/Leaderboard'
 
 // Auth pages
 import Login from '@/pages/auth/Login'
@@ -45,6 +48,7 @@ import Institutions from '@/pages/admin/Institutions'
 import Categories from '@/pages/admin/Categories'
 import Messages from '@/pages/admin/Messages'
 import Analytics from '@/pages/admin/Analytics'
+import InstitutionDashboard from '@/pages/institution/InstitutionDashboard'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,17 +63,19 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="civic-report-theme">
-        <AuthProvider>
-          <BrowserRouter>
-            <div className="min-h-screen flex flex-col bg-background text-foreground">
-              <Navbar />
-              <main className="flex-1">
-                <Routes>
+        <I18nProvider defaultLanguage="en" storageKey="civic-report-language">
+          <AuthProvider>
+            <BrowserRouter>
+              <div className="min-h-screen flex flex-col bg-background text-foreground">
+                <Navbar />
+                <main className="flex-1">
+                  <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Landing />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/legal" element={<Legal />} />
+                  <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -100,17 +106,23 @@ function App() {
                   <Route path="/admin/categories" element={<Categories />} />
                   <Route path="/admin/messages" element={<Messages />} />
                   <Route path="/admin/analytics" element={<Analytics />} />
-                </Route>
+                  </Route>
+
+                  {/* Institution Routes */}
+                  <Route element={<InstitutionRoute />}>
+                    <Route path="/institution" element={<InstitutionDashboard />} />
+                  </Route>
 
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
-            <Toaster richColors position="top-right" />
-          </BrowserRouter>
-        </AuthProvider>
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+              <Toaster richColors position="top-right" />
+            </BrowserRouter>
+          </AuthProvider>
+        </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )

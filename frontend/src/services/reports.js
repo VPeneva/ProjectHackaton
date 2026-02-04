@@ -13,6 +13,12 @@ export const reportsService = {
     return response.data
   },
 
+  getSimilarReports: async (id, limit) => {
+    const params = limit ? { limit } : {}
+    const response = await api.get(`/reports/${id}/similar`, { params })
+    return response.data
+  },
+
   // Get active reports (Pending or Sent)
   getActiveReports: async () => {
     const response = await api.get('/reports/active')

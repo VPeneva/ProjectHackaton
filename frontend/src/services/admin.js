@@ -50,6 +50,26 @@ export const adminService = {
     return response.data
   },
 
+  // Merge duplicate reports
+  mergeReports: async (sourceId, targetId) => {
+    const response = await api.post('/admin/reports/merge', { sourceId, targetId })
+    return response.data
+  },
+
+  // Institution portal users
+  getInstitutionUsers: async (institutionId) => {
+    const response = await api.get(`/admin/institutions/${institutionId}/users`)
+    return response.data
+  },
+  createInstitutionUser: async (institutionId, payload) => {
+    const response = await api.post(`/admin/institutions/${institutionId}/users`, payload)
+    return response.data
+  },
+  deleteInstitutionUser: async (institutionId, userId) => {
+    const response = await api.delete(`/admin/institutions/${institutionId}/users/${userId}`)
+    return response.data
+  },
+
   // Report analytics
   getAnalytics: async (days) => {
     const params = days ? { days } : {}

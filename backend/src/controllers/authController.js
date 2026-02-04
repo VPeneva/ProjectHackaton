@@ -1,6 +1,9 @@
 import prisma from "../db/client.js";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { hashPassword, comparePassword } from "../utils/hash.js";
+
+const RESET_TOKEN_TTL_MINUTES = parseInt(process.env.RESET_TOKEN_TTL_MINUTES || "60", 10);
 
 export const register = async (req, res) => {
   const { email, password, name, adminKey } = req.body;
@@ -70,7 +73,7 @@ export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
   // SECURITY: Always return success to avoid email enumeration
-  const fakeSuccessMessage = {
+  const responseMessage = {
     message: "If this email exists, a reset link has been sent."
   };
 
@@ -78,15 +81,75 @@ export const forgotPassword = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email } });
 
     // Prevent attackers from checking which emails are valid
-    if (!user) return res.json(fakeSuccessMessage);
+    if (!user) return res.json(responseMessage);
 
-    // TODO: send email here — for now we just simulate
-    console.log("Password reset requested for:", email);
+    await prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id },
+    });
 
-    return res.json(fakeSuccessMessage);
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MINUTES * 60 * 1000);
+
+    await prisma.passwordResetToken.create({
+      data: { userId: user.id, tokenHash, expiresAt },
+    });
+
+    const shouldExposeToken = process.env.EXPOSE_RESET_TOKEN === "true" || process.env.NODE_ENV !== "production";
+    if (shouldExposeToken) {
+      return res.json({
+        ...responseMessage,
+        resetToken: rawToken,
+        resetUrl: `/reset-password?token=${rawToken}`,
+      });
+    }
+
+    return res.json(responseMessage);
   } catch (err) {
     console.error(err);
-    return res.json(fakeSuccessMessage); // still fake-success
+    return res.json(responseMessage); // still fake-success
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+
+  if (!token || !password) {
+    return res.status(400).json({ error: "Token and new password are required" });
+  }
+
+  try {
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const resetToken = await prisma.passwordResetToken.findUnique({
+      where: { tokenHash },
+    });
+
+    if (!resetToken) {
+      return res.status(400).json({ error: "Invalid or expired reset token" });
+    }
+
+    if (resetToken.expiresAt < new Date()) {
+      await prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
+      return res.status(400).json({ error: "Invalid or expired reset token" });
+    }
+
+    const hashed = await hashPassword(password);
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: resetToken.userId },
+        data: { password: hashed },
+      }),
+      prisma.passwordResetToken.deleteMany({
+        where: { userId: resetToken.userId },
+      }),
+    ]);
+
+    return res.json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Server error", message: err.message });
   }
 };
 

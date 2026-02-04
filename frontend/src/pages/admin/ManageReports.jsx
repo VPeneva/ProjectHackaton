@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAdmin, useSendReport, useResolveReport } from '@/hooks/useAdmin'
+import { useAdmin, useSendReport, useResolveReport, useBulkSendReports, useBulkResolveReports } from '@/hooks/useAdmin'
 import { useInstitutions } from '@/hooks/useInstitutions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,21 +30,36 @@ import {
     MapPin,
     Loader2,
     FileText,
+    ThumbsUp,
+    ThumbsDown,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusConfig = {
-    PENDING: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    SENT: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+    Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
 }
 
-function ReportRow({ report, onSend, onResolve, institutions }) {
+function ReportRow({ report, onSend, onResolve, institutions, selected, onToggleSelect }) {
     const [sendDialogOpen, setSendDialogOpen] = useState(false)
     const [selectedInstitution, setSelectedInstitution] = useState('')
     const [sending, setSending] = useState(false)
     const [resolving, setResolving] = useState(false)
 
-    const status = statusConfig[report.status] || statusConfig.PENDING
+    const status = statusConfig[report.status] || statusConfig.Pending
+    const imageUrl = report.images?.[0]?.url || report.imageUrl
+    const upvotes = report.upvotes ?? 0
+    const downvotes = report.downvotes ?? 0
+    const totalVotes = upvotes + downvotes
+    const ratio = totalVotes ? upvotes / totalVotes : 0
+    const communityBadge =
+        totalVotes === 0
+            ? { label: 'No votes yet', className: 'bg-muted text-muted-foreground border-border/60' }
+            : ratio >= 0.7
+                ? { label: 'Community validated', className: 'bg-green-500/10 text-green-600 border-green-500/20' }
+                : ratio <= 0.3
+                    ? { label: 'Needs review', className: 'bg-rose-500/10 text-rose-600 border-rose-500/20' }
+                    : { label: 'Mixed feedback', className: 'bg-amber-500/10 text-amber-600 border-amber-500/20' }
 
     const handleSend = async () => {
         if (!selectedInstitution) {
@@ -68,11 +83,19 @@ function ReportRow({ report, onSend, onResolve, institutions }) {
             <Card className="border-0 shadow-md">
                 <CardContent className="p-4">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                        <div className="flex items-start">
+                            <input
+                                type="checkbox"
+                                checked={selected}
+                                onChange={() => onToggleSelect(report.id)}
+                                className="mt-1 h-4 w-4 accent-primary"
+                            />
+                        </div>
                         {/* Image */}
-                        {report.imageUrl && (
+                        {imageUrl && (
                             <div className="w-full lg:w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
                                 <img
-                                    src={report.imageUrl}
+                                    src={imageUrl}
                                     alt={report.title}
                                     className="w-full h-full object-cover"
                                 />
@@ -97,16 +120,29 @@ function ReportRow({ report, onSend, onResolve, institutions }) {
                                         {report.category.name}
                                     </span>
                                 )}
-                                {report.location && (
+                                {report.address && (
                                     <span className="flex items-center gap-1">
                                         <MapPin className="h-3 w-3" />
-                                        {report.location}
+                                        {report.address}
                                     </span>
                                 )}
                                 <span className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
                                     {new Date(report.createdAt).toLocaleDateString()}
                                 </span>
+                            </div>
+                            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1 text-emerald-600">
+                                    <ThumbsUp className="h-3 w-3" />
+                                    {upvotes}
+                                </span>
+                                <span className="flex items-center gap-1 text-rose-600">
+                                    <ThumbsDown className="h-3 w-3" />
+                                    {downvotes}
+                                </span>
+                                <Badge variant="outline" className={communityBadge.className}>
+                                    {communityBadge.label}
+                                </Badge>
                             </div>
                         </div>
 
@@ -119,14 +155,14 @@ function ReportRow({ report, onSend, onResolve, institutions }) {
                                 </Link>
                             </Button>
 
-                            {report.status === 'PENDING' && (
+                            {report.status === 'Pending' && (
                                 <Button size="sm" onClick={() => setSendDialogOpen(true)}>
                                     <Send className="h-4 w-4 mr-1" />
                                     Send
                                 </Button>
                             )}
 
-                            {report.status === 'SENT' && (
+                            {report.status === 'Sent' && (
                                 <Button
                                     size="sm"
                                     variant="success"
@@ -214,10 +250,19 @@ function ReportSkeleton() {
 
 export default function ManageReports() {
     const [filter, setFilter] = useState('all')
-    const { data: reports, isLoading, isError } = useAdmin()
+    const [selectedIds, setSelectedIds] = useState([])
+    const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
+    const [bulkInstitution, setBulkInstitution] = useState('')
+    const { data: reports, isLoading, isError, error } = useAdmin()
+    const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to load reports. Please try again.'
     const { data: institutions } = useInstitutions()
     const sendReport = useSendReport()
     const resolveReport = useResolveReport()
+    const bulkSend = useBulkSendReports()
+    const bulkResolve = useBulkResolveReports()
 
     const handleSend = async (id, institutionId) => {
         try {
@@ -240,8 +285,47 @@ export default function ManageReports() {
         return report.status === filter
     }) || []
 
-    const pendingCount = reports?.filter(r => r.status === 'PENDING').length || 0
-    const sentCount = reports?.filter(r => r.status === 'SENT').length || 0
+    const allSelected = filteredReports.length > 0 && selectedIds.length === filteredReports.length
+
+    const toggleSelect = (id) => {
+        setSelectedIds((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        )
+    }
+
+    const toggleSelectAll = () => {
+        if (allSelected) {
+            setSelectedIds([])
+        } else {
+            setSelectedIds(filteredReports.map((report) => report.id))
+        }
+    }
+
+    const handleBulkSend = async () => {
+        if (!bulkInstitution) {
+            toast.error('Please select an institution')
+            return
+        }
+        await bulkSend.mutateAsync({
+            ids: selectedIds,
+            institutionId: parseInt(bulkInstitution, 10),
+        })
+        setSelectedIds([])
+        setBulkDialogOpen(false)
+        setBulkInstitution('')
+    }
+
+    const handleBulkResolve = async () => {
+        await bulkResolve.mutateAsync({ ids: selectedIds })
+        setSelectedIds([])
+    }
+
+    const pendingCount = reports?.filter(r => r.status === 'Pending').length || 0
+    const sentCount = reports?.filter(r => r.status === 'Sent').length || 0
+
+    useEffect(() => {
+        setSelectedIds([])
+    }, [filter, reports])
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -253,7 +337,16 @@ export default function ManageReports() {
                         Review, forward, and resolve submitted reports.
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <input
+                            type="checkbox"
+                            checked={allSelected}
+                            onChange={toggleSelectAll}
+                            className="h-4 w-4 accent-primary"
+                        />
+                        Select all
+                    </label>
                     <Button
                         variant={filter === 'all' ? 'default' : 'outline'}
                         onClick={() => setFilter('all')}
@@ -262,21 +355,51 @@ export default function ManageReports() {
                         All ({(pendingCount + sentCount)})
                     </Button>
                     <Button
-                        variant={filter === 'PENDING' ? 'default' : 'outline'}
-                        onClick={() => setFilter('PENDING')}
+                        variant={filter === 'Pending' ? 'default' : 'outline'}
+                        onClick={() => setFilter('Pending')}
                         size="sm"
                     >
                         Pending ({pendingCount})
                     </Button>
                     <Button
-                        variant={filter === 'SENT' ? 'default' : 'outline'}
-                        onClick={() => setFilter('SENT')}
+                        variant={filter === 'Sent' ? 'default' : 'outline'}
+                        onClick={() => setFilter('Sent')}
                         size="sm"
                     >
                         In Progress ({sentCount})
                     </Button>
                 </div>
             </div>
+
+            {selectedIds.length > 0 && (
+                <Card className="border-0 shadow-lg mb-6">
+                    <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div className="text-sm text-muted-foreground">
+                            {selectedIds.length} report{selectedIds.length !== 1 ? 's' : ''} selected
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <Button
+                                size="sm"
+                                onClick={() => setBulkDialogOpen(true)}
+                                disabled={bulkSend.isPending}
+                            >
+                                <Send className="h-4 w-4 mr-1" />
+                                Bulk Send
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="success"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                onClick={handleBulkResolve}
+                                disabled={bulkResolve.isPending}
+                            >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Bulk Resolve
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Reports List */}
             {isLoading ? (
@@ -288,7 +411,7 @@ export default function ManageReports() {
             ) : isError ? (
                 <Card className="border-0 shadow-lg">
                     <CardContent className="p-12 text-center">
-                        <p className="text-muted-foreground">Failed to load reports. Please try again.</p>
+                        <p className="text-muted-foreground">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : filteredReports.length === 0 ? (
@@ -301,7 +424,7 @@ export default function ManageReports() {
                         <p className="text-muted-foreground">
                             {filter === 'all'
                                 ? 'No pending or in-progress reports at the moment.'
-                                : `No ${filter === 'PENDING' ? 'pending' : 'in-progress'} reports.`}
+                                : `No ${filter === 'Pending' ? 'pending' : 'in-progress'} reports.`}
                         </p>
                     </CardContent>
                 </Card>
@@ -314,10 +437,51 @@ export default function ManageReports() {
                             onSend={handleSend}
                             onResolve={handleResolve}
                             institutions={institutions}
+                            selected={selectedIds.includes(report.id)}
+                            onToggleSelect={toggleSelect}
                         />
                     ))}
                 </div>
             )}
+
+            {/* Bulk Send Dialog */}
+            <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Send Reports to Institution</DialogTitle>
+                        <DialogDescription>
+                            Select the institution responsible for the selected reports.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Select value={bulkInstitution} onValueChange={setBulkInstitution}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select institution" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {institutions?.map((inst) => (
+                                    <SelectItem key={inst.id} value={inst.id.toString()}>
+                                        {inst.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleBulkSend} disabled={bulkSend.isPending || !bulkInstitution}>
+                            {bulkSend.isPending ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                                <Send className="h-4 w-4 mr-2" />
+                            )}
+                            Send Reports
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

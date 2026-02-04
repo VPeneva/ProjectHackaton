@@ -15,7 +15,26 @@ model User {
   role      String   @default("USER")
   createdAt DateTime @default(now())
 
-  reports   Report[]
+  reports              Report[]
+  votes                Vote[]
+  conversations        Conversation[]
+  messages             Message[]
+  comments             Comment[]
+  subscriptions        Subscription[]
+  notifications        Notification[]
+  passwordResetTokens  PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Institution {
@@ -47,10 +66,11 @@ model Report {
   title          String
   description    String?
   address        String?
-  lat            Float
-  lng            Float
+  lat            Float?
+  lng            Float?
   status         String     @default("Pending") // Pending / Sent / Finished
   createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   // User
   userId         Int
@@ -65,4 +85,113 @@ model Report {
   category       Category?    @relation(fields: [categoryId], references: [id])
   // Optional image URL for the report
   imageUrl       String?
+
+  votes          Vote[]
+  images         ReportImage[]
+  comments       Comment[]
+  subscriptions  Subscription[]
+  notifications  Notification[]
+}
+
+model ReportImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  createdAt DateTime @default(now())
+
+  reportId  Int
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  type      String   // "UP" or "DOWN"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  reportId  Int
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reportId]) // One vote per user per report
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reportId  Int
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@index([userId])
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  reportId  Int
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reportId])
+  @@index([reportId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String?
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  reportId  Int?
+  report    Report?  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([reportId])
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  subject   String
+  status    String   @default("Open") // Open / Closed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User who started the conversation
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  messages  Message[]
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  content        String
+  isFromAdmin    Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  // Conversation this message belongs to
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // User who sent the message (can be the user or an admin)
+  senderId       Int
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }

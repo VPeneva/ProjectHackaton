@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useReportStats } from '@/hooks/useReports'
-import { useAdmin } from '@/hooks/useAdmin'
+import { useAdmin, useVoteAnalytics } from '@/hooks/useAdmin'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +16,8 @@ import {
     MessageSquare,
     ArrowRight,
     AlertCircle,
+    ThumbsUp,
+    ThumbsDown,
 } from 'lucide-react'
 
 function StatCard({ title, value, icon: Icon, color, href, isLoading }) {
@@ -71,9 +73,21 @@ function QuickActionCard({ title, description, icon: Icon, href, count }) {
     )
 }
 
+const statusLabels = {
+    PENDING: 'Pending',
+    SENT: 'In Progress',
+    FINISHED: 'Resolved',
+}
+
+const formatStatusLabel = (status) => {
+    const normalized = (status || '').toString().toUpperCase()
+    return statusLabels[normalized] || status || 'Unknown'
+}
+
 export default function AdminDashboard() {
     const { data: stats, isLoading: statsLoading } = useReportStats()
     const { data: pendingReports, isLoading: reportsLoading } = useAdmin()
+    const { data: voteAnalytics, isLoading: analyticsLoading } = useVoteAnalytics()
 
     const pendingCount = pendingReports?.filter(r => r.status === 'PENDING').length || 0
     const sentCount = pendingReports?.filter(r => r.status === 'SENT').length || 0
@@ -141,6 +155,12 @@ export default function AdminDashboard() {
             icon: MessageSquare,
             href: '/admin/messages',
         },
+        {
+            title: 'Analytics',
+            description: 'Trends and resolution insights',
+            icon: ThumbsUp,
+            href: '/admin/analytics',
+        },
     ]
 
     return (
@@ -184,6 +204,140 @@ export default function AdminDashboard() {
                     {quickActions.map((action, index) => (
                         <QuickActionCard key={index} {...action} />
                     ))}
+                </div>
+            </div>
+
+            {/* Community Feedback */}
+            <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Community Feedback</h2>
+                <div className="grid lg:grid-cols-3 gap-4">
+                    <Card className="border-0 shadow-lg">
+                        <CardHeader>
+                            <CardTitle>Validated Issues</CardTitle>
+                            <CardDescription>Most upvoted open reports</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {analyticsLoading ? (
+                                <div className="space-y-3">
+                                    {[...Array(3)].map((_, i) => (
+                                        <Skeleton key={i} className="h-4 w-full" />
+                                    ))}
+                                </div>
+                            ) : voteAnalytics?.topUpvotedOpen?.length ? (
+                                <div className="space-y-2">
+                                    {voteAnalytics.topUpvotedOpen.map((report) => (
+                                        <Link
+                                            key={report.id}
+                                            to={`/reports/${report.id}`}
+                                            className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium line-clamp-1">
+                                                    {report.title}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {formatStatusLabel(report.status)}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs">
+                                                <span className="flex items-center gap-1 text-emerald-600">
+                                                    <ThumbsUp className="h-3 w-3" />
+                                                    {report.upvotes ?? 0}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-rose-600">
+                                                    <ThumbsDown className="h-3 w-3" />
+                                                    {report.downvotes ?? 0}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">No votes yet.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-lg">
+                        <CardHeader>
+                            <CardTitle>Unresolved Signals</CardTitle>
+                            <CardDescription>Most downvoted resolved reports</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {analyticsLoading ? (
+                                <div className="space-y-3">
+                                    {[...Array(3)].map((_, i) => (
+                                        <Skeleton key={i} className="h-4 w-full" />
+                                    ))}
+                                </div>
+                            ) : voteAnalytics?.topDownvotedFinished?.length ? (
+                                <div className="space-y-2">
+                                    {voteAnalytics.topDownvotedFinished.map((report) => (
+                                        <Link
+                                            key={report.id}
+                                            to={`/reports/${report.id}`}
+                                            className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium line-clamp-1">
+                                                    {report.title}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {formatStatusLabel(report.status)}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs">
+                                                <span className="flex items-center gap-1 text-emerald-600">
+                                                    <ThumbsUp className="h-3 w-3" />
+                                                    {report.upvotes ?? 0}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-rose-600">
+                                                    <ThumbsDown className="h-3 w-3" />
+                                                    {report.downvotes ?? 0}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">No feedback yet.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-lg">
+                        <CardHeader>
+                            <CardTitle>Vote Ratio</CardTitle>
+                            <CardDescription>Upvote share by status</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {analyticsLoading ? (
+                                <div className="space-y-3">
+                                    {[...Array(3)].map((_, i) => (
+                                        <Skeleton key={i} className="h-4 w-full" />
+                                    ))}
+                                </div>
+                            ) : voteAnalytics?.ratiosByStatus?.length ? (
+                                <div className="space-y-3">
+                                    {voteAnalytics.ratiosByStatus.map((row) => (
+                                        <div
+                                            key={row.status}
+                                            className="flex items-center justify-between text-sm"
+                                        >
+                                            <span>{formatStatusLabel(row.status)}</span>
+                                            <span className="font-medium">
+                                                {row.total
+                                                    ? `${Math.round(row.ratio * 100)}% up`
+                                                    : 'No votes'}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">No votes yet.</p>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
 

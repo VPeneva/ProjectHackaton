@@ -17,13 +17,13 @@ L.Icon.Default.mergeOptions({
 })
 
 const statusConfig = {
-    PENDING: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    SENT: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-    FINISHED: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+    Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+    Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    Finished: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
 }
 
 function ReportListItem({ report }) {
-    const status = statusConfig[report.status] || statusConfig.PENDING
+    const status = statusConfig[report.status] || statusConfig.Pending
 
     return (
         <Link to={`/reports/${report.id}`} className="block">
@@ -34,10 +34,10 @@ function ReportListItem({ report }) {
                         {status.label}
                     </Badge>
                 </div>
-                {report.location && (
+                {report.address && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
-                        <span className="line-clamp-1">{report.location}</span>
+                        <span className="line-clamp-1">{report.address}</span>
                     </div>
                 )}
             </div>
@@ -50,12 +50,16 @@ const DEFAULT_CENTER = [42.7339, 25.4858]
 const DEFAULT_ZOOM = 7
 
 export default function MapExplorer() {
-    const { data: reports, isLoading, isError } = useMapReports()
+    const { data: reports, isLoading, isError, error } = useMapReports()
     const [showList, setShowList] = useState(false)
+    const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to load map data.'
 
     // Filter reports that have coordinates
     const mapReports = useMemo(
-        () => reports?.filter((r) => r.latitude && r.longitude) || [],
+        () => reports?.filter((r) => r.lat && r.lng) || [],
         [reports]
     )
     const allReports = reports || []
@@ -63,8 +67,8 @@ export default function MapExplorer() {
     // Calculate map center based on reports
     const mapCenter = useMemo(() => {
         if (mapReports.length > 0) {
-            const avgLat = mapReports.reduce((sum, r) => sum + r.latitude, 0) / mapReports.length
-            const avgLng = mapReports.reduce((sum, r) => sum + r.longitude, 0) / mapReports.length
+            const avgLat = mapReports.reduce((sum, r) => sum + r.lat, 0) / mapReports.length
+            const avgLng = mapReports.reduce((sum, r) => sum + r.lng, 0) / mapReports.length
             return [avgLat, avgLng]
         }
         return DEFAULT_CENTER
@@ -104,7 +108,7 @@ export default function MapExplorer() {
                     ) : isError ? (
                         <div className="absolute inset-0 flex items-center justify-center bg-muted">
                             <div className="text-center">
-                                <p className="text-muted-foreground">Failed to load map data</p>
+                                <p className="text-muted-foreground">{errorMessage}</p>
                             </div>
                         </div>
                     ) : (
@@ -121,7 +125,7 @@ export default function MapExplorer() {
                             {mapReports.map((report) => (
                                 <Marker
                                     key={report.id}
-                                    position={[report.latitude, report.longitude]}
+                                    position={[report.lat, report.lng]}
                                 >
                                     <Popup>
                                         <div className="min-w-[200px]">
@@ -132,9 +136,9 @@ export default function MapExplorer() {
                                             >
                                                 {statusConfig[report.status]?.label || report.status}
                                             </Badge>
-                                            {report.location && (
+                                            {report.address && (
                                                 <p className="text-xs text-muted-foreground mb-2">
-                                                    {report.location}
+                                                    {report.address}
                                                 </p>
                                             )}
                                             <Link
@@ -147,14 +151,6 @@ export default function MapExplorer() {
                                     </Popup>
                                 </Marker>
                             ))}
-                            {mapReports.length === 0 && (
-                                <div className="absolute inset-0 z-[1000] flex items-center justify-center pointer-events-none">
-                                    <div className="bg-background/80 backdrop-blur-sm rounded-lg p-6 text-center pointer-events-auto">
-                                        <MapPin className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-                                        <p className="text-muted-foreground">No reports with location data yet</p>
-                                    </div>
-                                </div>
-                            )}
                         </MapContainer>
                     )}
                 </div>

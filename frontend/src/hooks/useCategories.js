@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 export function useCategories(institutionId) {
   return useQuery({
     queryKey: ['categories', institutionId],
-    queryFn: () => categoriesService.getAll(institutionId).then(r => r.data),
+    queryFn: () => categoriesService.getAll(institutionId),
   })
 }
 

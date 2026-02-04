@@ -56,8 +56,9 @@ backend/uploads/
 
 #claude
 
-.claude/settings.local.json
 CLAUDE.md
 DEVELOPMENT_REPORT.md
 FRONTEND_PLAN.md
 .claude*
+REPORT.md
+.claude/settings.local.json

@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
+import { useCreateConversation } from '@/hooks/useConversations'
 import { contactService } from '@/services/contact'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,10 +18,17 @@ import {
     Loader2,
     CheckCircle,
     AlertCircle,
+    MessageSquare,
+    LogIn,
 } from 'lucide-react'
 
 export default function Contact() {
+    const { user, isAuthenticated } = useAuth()
+    const navigate = useNavigate()
+    const createConversation = useCreateConversation()
+
     const [formData, setFormData] = useState({
+        subject: '',
         name: '',
         email: '',
         message: '',
@@ -38,10 +48,25 @@ export default function Contact() {
         setLoading(true)
 
         try {
-            await contactService.submit(formData)
-            setSuccess(true)
-            setFormData({ name: '', email: '', message: '' })
-            toast.success('Message sent successfully!')
+            if (isAuthenticated) {
+                // Create a conversation for logged-in users
+                await createConversation.mutateAsync({
+                    subject: formData.subject,
+                    message: formData.message,
+                })
+                setSuccess(true)
+                setFormData({ subject: '', name: '', email: '', message: '' })
+            } else {
+                // Fall back to contact message for guests
+                await contactService.submit({
+                    name: formData.name,
+                    email: formData.email,
+                    message: formData.message,
+                })
+                setSuccess(true)
+                setFormData({ subject: '', name: '', email: '', message: '' })
+                toast.success('Message sent successfully!')
+            }
         } catch (err) {
             const message = err.response?.data?.error || 'Failed to send message. Please try again.'
             setError(message)
@@ -127,15 +152,45 @@ export default function Contact() {
                                 </Card>
                             ))}
                         </div>
+
+                        {/* Sign in prompt for guests */}
+                        {!isAuthenticated && (
+                            <Card className="border-0 shadow-md bg-primary/5">
+                                <CardContent className="p-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                            <MessageSquare className="h-5 w-5 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-medium mb-1">Want live chat support?</h3>
+                                            <p className="text-sm text-muted-foreground mb-3">
+                                                Sign in to chat directly with our support team and track your conversations.
+                                            </p>
+                                            <Button size="sm" asChild>
+                                                <Link to="/login">
+                                                    <LogIn className="h-4 w-4 mr-2" />
+                                                    Sign In
+                                                </Link>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
 
                     {/* Contact Form */}
                     <div className="md:col-span-2">
                         <Card className="border-0 shadow-xl">
                             <CardHeader>
-                                <CardTitle>Send a Message</CardTitle>
+                                <CardTitle>
+                                    {isAuthenticated ? 'Start a Conversation' : 'Send a Message'}
+                                </CardTitle>
                                 <CardDescription>
-                                    Fill out the form below and we'll get back to you within 24 hours.
+                                    {isAuthenticated
+                                        ? 'Start a conversation with our support team. You can track and continue the conversation from your messages.'
+                                        : 'Fill out the form below and we\'ll get back to you within 24 hours.'
+                                    }
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -146,11 +201,26 @@ export default function Contact() {
                                         </div>
                                         <h3 className="text-xl font-semibold mb-2">Message Sent!</h3>
                                         <p className="text-muted-foreground mb-6">
-                                            Thank you for reaching out. We'll respond to your message as soon as possible.
+                                            {isAuthenticated
+                                                ? 'Your conversation has been started. You can continue the conversation from your messages.'
+                                                : 'Thank you for reaching out. We\'ll respond to your message as soon as possible.'
+                                            }
                                         </p>
-                                        <Button variant="outline" onClick={() => setSuccess(false)}>
-                                            Send Another Message
-                                        </Button>
+                                        {isAuthenticated ? (
+                                            <div className="flex gap-3 justify-center">
+                                                <Button variant="outline" onClick={() => setSuccess(false)}>
+                                                    Send Another
+                                                </Button>
+                                                <Button onClick={() => navigate('/messages')}>
+                                                    <MessageSquare className="h-4 w-4 mr-2" />
+                                                    View Messages
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <Button variant="outline" onClick={() => setSuccess(false)}>
+                                                Send Another Message
+                                            </Button>
+                                        )}
                                     </div>
                                 ) : (
                                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -161,47 +231,82 @@ export default function Contact() {
                                             </Alert>
                                         )}
 
-                                        <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="name">Name</Label>
-                                                <Input
-                                                    id="name"
-                                                    name="name"
-                                                    placeholder="Your name"
-                                                    value={formData.name}
-                                                    onChange={handleChange}
-                                                    required
-                                                    disabled={loading}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="email">Email</Label>
-                                                <Input
-                                                    id="email"
-                                                    name="email"
-                                                    type="email"
-                                                    placeholder="you@example.com"
-                                                    value={formData.email}
-                                                    onChange={handleChange}
-                                                    required
-                                                    disabled={loading}
-                                                />
-                                            </div>
-                                        </div>
+                                        {isAuthenticated ? (
+                                            // Logged-in user form
+                                            <>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="subject">Subject</Label>
+                                                    <Input
+                                                        id="subject"
+                                                        name="subject"
+                                                        placeholder="What is this about?"
+                                                        value={formData.subject}
+                                                        onChange={handleChange}
+                                                        required
+                                                        disabled={loading}
+                                                    />
+                                                </div>
 
-                                        <div className="space-y-2">
-                                            <Label htmlFor="message">Message</Label>
-                                            <Textarea
-                                                id="message"
-                                                name="message"
-                                                placeholder="How can we help you?"
-                                                rows={6}
-                                                value={formData.message}
-                                                onChange={handleChange}
-                                                required
-                                                disabled={loading}
-                                            />
-                                        </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="message">Message</Label>
+                                                    <Textarea
+                                                        id="message"
+                                                        name="message"
+                                                        placeholder="Describe your question or issue..."
+                                                        rows={6}
+                                                        value={formData.message}
+                                                        onChange={handleChange}
+                                                        required
+                                                        disabled={loading}
+                                                    />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            // Guest form
+                                            <>
+                                                <div className="grid sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="name">Name</Label>
+                                                        <Input
+                                                            id="name"
+                                                            name="name"
+                                                            placeholder="Your name"
+                                                            value={formData.name}
+                                                            onChange={handleChange}
+                                                            required
+                                                            disabled={loading}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="email">Email</Label>
+                                                        <Input
+                                                            id="email"
+                                                            name="email"
+                                                            type="email"
+                                                            placeholder="you@example.com"
+                                                            value={formData.email}
+                                                            onChange={handleChange}
+                                                            required
+                                                            disabled={loading}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="message">Message</Label>
+                                                    <Textarea
+                                                        id="message"
+                                                        name="message"
+                                                        placeholder="How can we help you?"
+                                                        rows={6}
+                                                        value={formData.message}
+                                                        onChange={handleChange}
+                                                        required
+                                                        disabled={loading}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
 
                                         <Button type="submit" className="w-full" disabled={loading}>
                                             {loading ? (
@@ -212,7 +317,7 @@ export default function Contact() {
                                             ) : (
                                                 <>
                                                     <Send className="mr-2 h-4 w-4" />
-                                                    Send Message
+                                                    {isAuthenticated ? 'Start Conversation' : 'Send Message'}
                                                 </>
                                             )}
                                         </Button>

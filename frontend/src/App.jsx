@@ -18,18 +18,24 @@ import About from '@/pages/public/About'
 import Contact from '@/pages/public/Contact'
 import Legal from '@/pages/public/Legal'
 import NotFound from '@/pages/public/NotFound'
+import UserProfile from '@/pages/public/UserProfile'
 
 // Auth pages
 import Login from '@/pages/auth/Login'
 import Register from '@/pages/auth/Register'
+import ForgotPassword from '@/pages/auth/ForgotPassword'
+import ResetPassword from '@/pages/auth/ResetPassword'
 
 // User pages
 import Dashboard from '@/pages/user/Dashboard'
 import Reports from '@/pages/user/Reports'
 import ReportDetail from '@/pages/user/ReportDetail'
 import CreateReport from '@/pages/user/CreateReport'
+import EditReport from '@/pages/user/EditReport'
 import MyReports from '@/pages/user/MyReports'
 import MapExplorer from '@/pages/user/MapExplorer'
+import UserMessages from '@/pages/user/Messages'
+import Notifications from '@/pages/user/Notifications'
 
 // Admin pages
 import AdminDashboard from '@/pages/admin/AdminDashboard'
@@ -38,6 +44,7 @@ import ResolvedReports from '@/pages/admin/ResolvedReports'
 import Institutions from '@/pages/admin/Institutions'
 import Categories from '@/pages/admin/Categories'
 import Messages from '@/pages/admin/Messages'
+import Analytics from '@/pages/admin/Analytics'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,28 +72,35 @@ function App() {
                   <Route path="/legal" element={<Legal />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
 
                   {/* Public but show all reports */}
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/reports/:id" element={<ReportDetail />} />
+                  <Route path="/users/:id" element={<UserProfile />} />
                   <Route path="/map" element={<MapExplorer />} />
 
                   {/* Protected User Routes */}
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/my-reports" element={<MyReports />} />
-                    <Route path="/create-report" element={<CreateReport />} />
-                  </Route>
+                  <Route path="/create-report" element={<CreateReport />} />
+                  <Route path="/reports/:id/edit" element={<EditReport />} />
+                  <Route path="/messages" element={<UserMessages />} />
+                  <Route path="/notifications" element={<Notifications />} />
+                </Route>
 
                   {/* Admin Routes */}
                   <Route element={<AdminRoute />}>
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/admin/reports" element={<ManageReports />} />
                     <Route path="/admin/resolved" element={<ResolvedReports />} />
-                    <Route path="/admin/institutions" element={<Institutions />} />
-                    <Route path="/admin/categories" element={<Categories />} />
-                    <Route path="/admin/messages" element={<Messages />} />
-                  </Route>
+                  <Route path="/admin/institutions" element={<Institutions />} />
+                  <Route path="/admin/categories" element={<Categories />} />
+                  <Route path="/admin/messages" element={<Messages />} />
+                  <Route path="/admin/analytics" element={<Analytics />} />
+                </Route>
 
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />

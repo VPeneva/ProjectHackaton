@@ -31,6 +31,31 @@ export const adminService = {
     const response = await api.delete(`/admin/reports/${id}/photo`)
     return response.data
   },
+
+  // Vote analytics
+  getVoteAnalytics: async () => {
+    const response = await api.get('/admin/vote-analytics')
+    return response.data
+  },
+
+  // Bulk send reports
+  bulkSendReports: async (ids, institutionId) => {
+    const response = await api.post('/admin/reports/bulk-send', { ids, institutionId })
+    return response.data
+  },
+
+  // Bulk resolve reports
+  bulkResolveReports: async (ids) => {
+    const response = await api.post('/admin/reports/bulk-resolve', { ids })
+    return response.data
+  },
+
+  // Report analytics
+  getAnalytics: async (days) => {
+    const params = days ? { days } : {}
+    const response = await api.get('/admin/analytics', { params })
+    return response.data
+  },
 }
 
 export default adminService

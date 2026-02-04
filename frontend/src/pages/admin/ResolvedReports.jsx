@@ -20,16 +20,17 @@ function ReportRow({ report }) {
     const upvotes = report.upvotes ?? 0
     const downvotes = report.downvotes ?? 0
     const needsReview = downvotes >= 3 && downvotes > upvotes
+    const imageUrl = report.images?.[0]?.url || report.imageUrl
 
     return (
         <Card className="border-0 shadow-md">
             <CardContent className="p-4">
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                     {/* Image */}
-                    {report.imageUrl && (
+                    {imageUrl && (
                         <div className="w-full lg:w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
                             <img
-                                src={report.imageUrl}
+                                src={imageUrl}
                                 alt={report.title}
                                 className="w-full h-full object-cover"
                             />
@@ -55,10 +56,10 @@ function ReportRow({ report }) {
                                     {report.institution.name}
                                 </span>
                             )}
-                            {report.location && (
+                            {report.address && (
                                 <span className="flex items-center gap-1">
                                     <MapPin className="h-3 w-3" />
-                                    {report.location}
+                                    {report.address}
                                 </span>
                             )}
                             <span className="flex items-center gap-1">
@@ -117,7 +118,11 @@ function ReportSkeleton() {
 }
 
 export default function ResolvedReports() {
-    const { data: reports, isLoading, isError } = useResolvedReports()
+    const { data: reports, isLoading, isError, error } = useResolvedReports()
+    const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to load reports. Please try again.'
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -159,7 +164,7 @@ export default function ResolvedReports() {
             ) : isError ? (
                 <Card className="border-0 shadow-lg">
                     <CardContent className="p-12 text-center">
-                        <p className="text-muted-foreground">Failed to load reports. Please try again.</p>
+                        <p className="text-muted-foreground">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : reports?.length === 0 ? (

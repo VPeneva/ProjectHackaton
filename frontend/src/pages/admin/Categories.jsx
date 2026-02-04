@@ -110,7 +110,7 @@ export default function Categories() {
     const [filterInstitution, setFilterInstitution] = useState(preselectedInstitution)
 
     const { data: institutions } = useInstitutions()
-    const { data: categories, isLoading, isError } = useCategories(filterInstitution || undefined)
+    const { data: categories, isLoading, isError, error } = useCategories(filterInstitution || undefined)
     const createCategory = useCreateCategory()
     const deleteCategory = useDeleteCategory()
 
@@ -150,6 +150,11 @@ export default function Categories() {
             // Error handled by mutation
         }
     }
+
+    const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to load categories. Please try again.'
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -260,7 +265,7 @@ export default function Categories() {
             ) : isError ? (
                 <Card className="border-0 shadow-lg">
                     <CardContent className="p-12 text-center">
-                        <p className="text-muted-foreground">Failed to load categories. Please try again.</p>
+                        <p className="text-muted-foreground">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : categories?.length === 0 ? (

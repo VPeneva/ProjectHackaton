@@ -2,6 +2,7 @@ import express from "express";
 import prisma from "../db/client.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/isAdmin.js";
+import { createNotification, notifyAdmins } from "../utils/notifications.js";
 
 const router = express.Router();
 
@@ -156,6 +157,12 @@ router.post("/", authMiddleware, async (req, res) => {
       },
     });
 
+    await notifyAdmins({
+      title: "New support conversation",
+      body: subject,
+      type: "MESSAGE",
+    });
+
     res.json(conversation);
   } catch (err) {
     console.error("Error creating conversation:", err);
@@ -218,6 +225,21 @@ router.post("/:id/messages", authMiddleware, async (req, res) => {
       data: { updatedAt: new Date() },
     });
 
+    if (isAdminUser) {
+      await createNotification({
+        userId: conversation.userId,
+        title: "New reply from support",
+        body: conversation.subject,
+        type: "MESSAGE",
+      });
+    } else {
+      await notifyAdmins({
+        title: "New message from user",
+        body: conversation.subject,
+        type: "MESSAGE",
+      });
+    }
+
     res.json(message);
   } catch (err) {
     console.error("Error sending message:", err);
@@ -226,13 +248,30 @@ router.post("/:id/messages", authMiddleware, async (req, res) => {
 });
 
 /**
- * PATCH close a conversation (admin only)
+ * PATCH close a conversation (admin or owner)
  */
-router.patch("/:id/close", authMiddleware, isAdmin, async (req, res) => {
+router.patch("/:id/close", authMiddleware, async (req, res) => {
   try {
     const conversationId = Number(req.params.id);
+    const isAdminUser = req.user.role === "ADMIN";
 
-    const conversation = await prisma.conversation.update({
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+
+    if (!isAdminUser && conversation.userId !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    if (conversation.status === "Closed") {
+      return res.json(conversation);
+    }
+
+    const updated = await prisma.conversation.update({
       where: { id: conversationId },
       data: { status: "Closed" },
       include: {
@@ -246,7 +285,7 @@ router.patch("/:id/close", authMiddleware, isAdmin, async (req, res) => {
       },
     });
 
-    res.json(conversation);
+    res.json(updated);
   } catch (err) {
     console.error("Error closing conversation:", err);
     res.status(500).json({ error: "Failed to close conversation" });

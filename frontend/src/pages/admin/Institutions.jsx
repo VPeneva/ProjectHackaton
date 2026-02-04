@@ -101,7 +101,7 @@ export default function Institutions() {
     const [dialogOpen, setDialogOpen] = useState(false)
     const [newName, setNewName] = useState('')
 
-    const { data: institutions, isLoading, isError } = useInstitutions()
+    const { data: institutions, isLoading, isError, error } = useInstitutions()
     const createInstitution = useCreateInstitution()
     const deleteInstitution = useDeleteInstitution()
 
@@ -127,6 +127,11 @@ export default function Institutions() {
             // Error handled by mutation
         }
     }
+
+    const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to load institutions. Please try again.'
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -202,7 +207,7 @@ export default function Institutions() {
             ) : isError ? (
                 <Card className="border-0 shadow-lg">
                     <CardContent className="p-12 text-center">
-                        <p className="text-muted-foreground">Failed to load institutions. Please try again.</p>
+                        <p className="text-muted-foreground">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : institutions?.length === 0 ? (

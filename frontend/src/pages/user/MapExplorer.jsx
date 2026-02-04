@@ -23,7 +23,7 @@ const statusConfig = {
 }
 
 function ReportListItem({ report }) {
-    const status = statusConfig[report.status] || statusConfig.PENDING
+    const status = statusConfig[report.status] || statusConfig.Pending
 
     return (
         <Link to={`/reports/${report.id}`} className="block">
@@ -50,8 +50,12 @@ const DEFAULT_CENTER = [42.7339, 25.4858]
 const DEFAULT_ZOOM = 7
 
 export default function MapExplorer() {
-    const { data: reports, isLoading, isError } = useMapReports()
+    const { data: reports, isLoading, isError, error } = useMapReports()
     const [showList, setShowList] = useState(false)
+    const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to load map data.'
 
     // Filter reports that have coordinates
     const mapReports = useMemo(
@@ -104,7 +108,7 @@ export default function MapExplorer() {
                     ) : isError ? (
                         <div className="absolute inset-0 flex items-center justify-center bg-muted">
                             <div className="text-center">
-                                <p className="text-muted-foreground">Failed to load map data</p>
+                                <p className="text-muted-foreground">{errorMessage}</p>
                             </div>
                         </div>
                     ) : (

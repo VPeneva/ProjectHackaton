@@ -19,6 +19,8 @@ import contactRoutes from "./routes/contact.js";
 import uploadRoutes from "./routes/upload.js";
 import voteRoutes from "./routes/votes.js";
 import conversationRoutes from "./routes/conversations.js";
+import notificationRoutes from "./routes/notifications.js";
+import userRoutes from "./routes/users.js";
 
 const app = express();
 app.use(cors());
@@ -37,6 +39,8 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/votes", voteRoutes);
 app.use("/api/conversations", conversationRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/users", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 

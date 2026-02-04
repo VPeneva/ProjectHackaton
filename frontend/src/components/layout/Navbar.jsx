@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
+import { useNotifications } from '@/hooks/useNotifications'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -25,6 +26,7 @@ import {
   Plus,
   Shield,
   MessageSquare,
+  Bell,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -39,9 +41,12 @@ const publicLinks = [
 export default function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const { data: notifications = [] } = useNotifications(isAuthenticated)
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const unreadCount = notifications.filter((notification) => !notification.isRead).length
 
   const handleLogout = () => {
     logout()
@@ -119,6 +124,19 @@ export default function Navbar() {
                 </Link>
               </Button>
 
+              {/* Notifications */}
+              <Button variant="ghost" size="icon" asChild className="relative">
+                <Link to="/notifications">
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 min-w-[1.25rem] rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground flex items-center justify-center px-1">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                  <span className="sr-only">Notifications</span>
+                </Link>
+              </Button>
+
               {/* User dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -147,6 +165,12 @@ export default function Navbar() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to={`/users/${user?.id}`} className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      My Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/my-reports" className="cursor-pointer">
                       <FileText className="mr-2 h-4 w-4" />
                       My Reports
@@ -156,6 +180,12 @@ export default function Navbar() {
                     <Link to="/messages" className="cursor-pointer">
                       <MessageSquare className="mr-2 h-4 w-4" />
                       Messages
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/notifications" className="cursor-pointer">
+                      <Bell className="mr-2 h-4 w-4" />
+                      Notifications
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
@@ -236,6 +266,14 @@ export default function Navbar() {
                       Dashboard
                     </Link>
                     <Link
+                      to={`/users/${user?.id}`}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center text-lg font-medium"
+                    >
+                      <User className="mr-2 h-5 w-5" />
+                      My Profile
+                    </Link>
+                    <Link
                       to="/my-reports"
                       onClick={() => setMobileOpen(false)}
                       className="flex items-center text-lg font-medium"
@@ -250,6 +288,14 @@ export default function Navbar() {
                     >
                       <MessageSquare className="mr-2 h-5 w-5" />
                       Messages
+                    </Link>
+                    <Link
+                      to="/notifications"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center text-lg font-medium"
+                    >
+                      <Bell className="mr-2 h-5 w-5" />
+                      Notifications
                     </Link>
                     {isAdmin && (
                       <Link

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useConversations, useConversation, useSendMessage, useCloseConversation, useReopenConversation } from '@/hooks/useConversations'
+import { useContactMessages } from '@/hooks/useAdmin'
 import { useAuth } from '@/context/AuthContext'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -16,7 +17,6 @@ import {
     ArrowLeft,
     Send,
     X,
-    CheckCircle,
     RefreshCw,
     Loader2,
 } from 'lucide-react'
@@ -251,12 +251,62 @@ function ConversationSkeleton() {
     )
 }
 
+function ContactMessageCard({ message }) {
+    return (
+        <Card className="border-0 shadow-md">
+            <CardContent className="p-4 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span>{message.name}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {new Date(message.createdAt).toLocaleDateString()}
+                    </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Mail className="h-4 w-4" />
+                    <a href={`mailto:${message.email}`} className="hover:underline">
+                        {message.email}
+                    </a>
+                </div>
+                <p className="text-sm whitespace-pre-wrap">{message.message}</p>
+            </CardContent>
+        </Card>
+    )
+}
+
+function ContactMessageSkeleton() {
+    return (
+        <Card className="border-0 shadow-md">
+            <CardContent className="p-4">
+                <Skeleton className="h-4 w-1/3 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-3" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6 mt-1" />
+            </CardContent>
+        </Card>
+    )
+}
+
 export default function Messages() {
-    const { data: conversations, isLoading, isError } = useConversations()
+    const { data: conversations, isLoading, isError, error } = useConversations()
+    const { data: contactMessages, isLoading: contactLoading, isError: contactError, error: contactLoadError } = useContactMessages()
+    const [activeTab, setActiveTab] = useState('conversations')
     const [selectedId, setSelectedId] = useState(null)
 
     const openCount = conversations?.filter(c => c.status === 'Open').length || 0
     const closedCount = conversations?.filter(c => c.status === 'Closed').length || 0
+    const contactCount = contactMessages?.length || 0
+    const conversationErrorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to load conversations.'
+    const contactErrorMessage =
+        contactLoadError?.response?.data?.error ||
+        contactLoadError?.message ||
+        'Failed to load contact messages.'
 
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col">
@@ -271,64 +321,119 @@ export default function Messages() {
                     <div className="flex-1">
                         <h1 className="text-2xl font-bold">Messages</h1>
                         <p className="text-sm text-muted-foreground">
-                            {openCount} open, {closedCount} closed conversations
+                            {openCount} open, {closedCount} closed conversations · {contactCount} contact messages
                         </p>
                     </div>
                 </div>
             </div>
 
+            <div className="container mx-auto px-4 py-3 border-b">
+                <div className="flex flex-wrap gap-2">
+                    <Button
+                        size="sm"
+                        variant={activeTab === 'conversations' ? 'default' : 'outline'}
+                        onClick={() => setActiveTab('conversations')}
+                    >
+                        Conversations
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant={activeTab === 'contact' ? 'default' : 'outline'}
+                        onClick={() => {
+                            setSelectedId(null)
+                            setActiveTab('contact')
+                        }}
+                    >
+                        Contact Form
+                    </Button>
+                </div>
+            </div>
+
             {/* Main Content */}
             <div className="flex-1 flex overflow-hidden">
-                {/* Conversations List */}
-                <div className={`w-full md:w-80 border-r bg-card flex flex-col ${selectedId ? 'hidden md:flex' : ''}`}>
-                    <ScrollArea className="flex-1">
-                        {isLoading ? (
-                            <>
-                                {[...Array(5)].map((_, i) => (
-                                    <ConversationSkeleton key={i} />
-                                ))}
-                            </>
-                        ) : isError ? (
-                            <div className="p-8 text-center">
-                                <p className="text-muted-foreground">Failed to load conversations</p>
-                            </div>
-                        ) : conversations?.length === 0 ? (
-                            <div className="p-8 text-center">
-                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                                    <MessageSquare className="h-6 w-6 text-muted-foreground" />
-                                </div>
-                                <p className="text-muted-foreground text-sm">No conversations yet</p>
-                            </div>
-                        ) : (
-                            conversations.map((conv) => (
-                                <ConversationItem
-                                    key={conv.id}
-                                    conversation={conv}
-                                    isActive={conv.id === selectedId}
-                                    onClick={() => setSelectedId(conv.id)}
-                                />
-                            ))
-                        )}
-                    </ScrollArea>
-                </div>
-
-                {/* Chat View */}
-                {selectedId ? (
-                    <ChatView
-                        conversationId={selectedId}
-                        onBack={() => setSelectedId(null)}
-                    />
-                ) : (
-                    <div className="hidden md:flex flex-1 items-center justify-center bg-muted/20">
-                        <div className="text-center">
-                            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                                <MessageSquare className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                            <h3 className="text-lg font-semibold mb-1">Select a Conversation</h3>
-                            <p className="text-muted-foreground text-sm">
-                                Choose a conversation from the list to view and reply
-                            </p>
+                {activeTab === 'conversations' ? (
+                    <>
+                        {/* Conversations List */}
+                        <div className={`w-full md:w-80 border-r bg-card flex flex-col ${selectedId ? 'hidden md:flex' : ''}`}>
+                            <ScrollArea className="flex-1">
+                                {isLoading ? (
+                                    <>
+                                        {[...Array(5)].map((_, i) => (
+                                            <ConversationSkeleton key={i} />
+                                        ))}
+                                    </>
+                                ) : isError ? (
+                                    <div className="p-8 text-center">
+                                        <p className="text-muted-foreground">{conversationErrorMessage}</p>
+                                    </div>
+                                ) : conversations?.length === 0 ? (
+                                    <div className="p-8 text-center">
+                                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+                                            <MessageSquare className="h-6 w-6 text-muted-foreground" />
+                                        </div>
+                                        <p className="text-muted-foreground text-sm">No conversations yet</p>
+                                    </div>
+                                ) : (
+                                    conversations.map((conv) => (
+                                        <ConversationItem
+                                            key={conv.id}
+                                            conversation={conv}
+                                            isActive={conv.id === selectedId}
+                                            onClick={() => setSelectedId(conv.id)}
+                                        />
+                                    ))
+                                )}
+                            </ScrollArea>
                         </div>
+
+                        {/* Chat View */}
+                        {selectedId ? (
+                            <ChatView
+                                conversationId={selectedId}
+                                onBack={() => setSelectedId(null)}
+                            />
+                        ) : (
+                            <div className="hidden md:flex flex-1 items-center justify-center bg-muted/20">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                                        <MessageSquare className="h-8 w-8 text-muted-foreground" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold mb-1">Select a Conversation</h3>
+                                    <p className="text-muted-foreground text-sm">
+                                        Choose a conversation from the list to view and reply
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <div className="flex-1 flex flex-col bg-muted/20">
+                        <ScrollArea className="flex-1 p-4">
+                            {contactLoading ? (
+                                <div className="space-y-4">
+                                    {[...Array(4)].map((_, i) => (
+                                        <ContactMessageSkeleton key={i} />
+                                    ))}
+                                </div>
+                            ) : contactError ? (
+                                <div className="p-8 text-center">
+                                    <p className="text-muted-foreground">{contactErrorMessage}</p>
+                                </div>
+                            ) : contactMessages?.length === 0 ? (
+                                <div className="p-8 text-center">
+                                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+                                        <Mail className="h-6 w-6 text-muted-foreground" />
+                                    </div>
+                                    <p className="text-muted-foreground text-sm">No contact messages yet</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {contactMessages.map((message) => (
+                                        <ContactMessageCard key={message.id} message={message} />
+                                    ))}
+                                </div>
+                            )}
+                        </ScrollArea>
                     </div>
                 )}
             </div>

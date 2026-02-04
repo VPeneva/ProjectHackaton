@@ -25,6 +25,7 @@ import {
     Eye,
     Trash2,
     FileText,
+    Pencil,
     ChevronLeft,
     ChevronRight,
 } from 'lucide-react'
@@ -36,7 +37,8 @@ const statusConfig = {
 }
 
 function ReportRow({ report, onDelete }) {
-    const status = statusConfig[report.status] || statusConfig.PENDING
+    const status = statusConfig[report.status] || statusConfig.Pending
+    const imageUrl = report.images?.[0]?.url || report.imageUrl
     const [deleting, setDeleting] = useState(false)
     const initialSummary = report?.upvotes !== undefined && report?.downvotes !== undefined
         ? {
@@ -57,10 +59,10 @@ function ReportRow({ report, onDelete }) {
             <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                     {/* Image thumbnail */}
-                    {report.imageUrl && (
+                    {imageUrl && (
                         <div className="w-full md:w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0">
                             <img
-                                src={report.imageUrl}
+                                src={imageUrl}
                                 alt={report.title}
                                 className="w-full h-full object-cover"
                             />
@@ -102,6 +104,14 @@ function ReportRow({ report, onDelete }) {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 shrink-0">
+                        {report.status === 'Pending' && (
+                            <Button variant="outline" size="sm" asChild>
+                                <Link to={`/reports/${report.id}/edit`}>
+                                    <Pencil className="h-4 w-4 mr-1" />
+                                    Edit
+                                </Link>
+                            </Button>
+                        )}
                         <Button variant="outline" size="sm" asChild>
                             <Link to={`/reports/${report.id}`}>
                                 <Eye className="h-4 w-4 mr-1" />
@@ -165,7 +175,7 @@ export default function MyReports() {
     const { user } = useAuth()
     const [page, setPage] = useState(1)
 
-    const { data, isLoading, isError } = useReports({
+    const { data, isLoading, isError, error } = useReports({
         page,
         limit: 10,
         mine: 'true',
@@ -175,6 +185,10 @@ export default function MyReports() {
 
     const reports = data?.data || []
     const pagination = data?.pagination || { page: 1, totalPages: 1 }
+    const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to load your reports. Please try again.'
 
     const handleDelete = async (id) => {
         try {
@@ -212,7 +226,7 @@ export default function MyReports() {
             ) : isError ? (
                 <Card className="border-0 shadow-lg">
                     <CardContent className="p-12 text-center">
-                        <p className="text-muted-foreground">Failed to load your reports. Please try again.</p>
+                        <p className="text-muted-foreground">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : reports.length === 0 ? (

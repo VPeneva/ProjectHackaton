@@ -2,12 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { votesService } from '@/services/votes'
 import { toast } from 'sonner'
 
+const VOTE_REFRESH_INTERVAL = 1000 * 30
+
 export function useVoteSummary(reportId, initialData) {
   return useQuery({
     queryKey: ['voteSummary', reportId],
     queryFn: () => votesService.getVoteSummary(reportId),
     enabled: !!reportId,
     initialData,
+    staleTime: VOTE_REFRESH_INTERVAL,
+    refetchInterval: VOTE_REFRESH_INTERVAL,
   })
 }
 

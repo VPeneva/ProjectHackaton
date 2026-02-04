@@ -37,9 +37,47 @@ export const reportsService = {
     return response.data
   },
 
+  // Update report
+  updateReport: async (id, data) => {
+    const response = await api.patch(`/reports/${id}`, data)
+    return response.data
+  },
+
   // Delete report
   deleteReport: async (id) => {
     const response = await api.delete(`/reports/${id}`)
+    return response.data
+  },
+
+  // Comments
+  getComments: async (id) => {
+    const response = await api.get(`/reports/${id}/comments`)
+    return response.data
+  },
+
+  addComment: async (id, content) => {
+    const response = await api.post(`/reports/${id}/comments`, { content })
+    return response.data
+  },
+
+  deleteComment: async (commentId) => {
+    const response = await api.delete(`/reports/comments/${commentId}`)
+    return response.data
+  },
+
+  // Subscriptions
+  getSubscription: async (id) => {
+    const response = await api.get(`/reports/${id}/subscription`)
+    return response.data
+  },
+
+  subscribe: async (id) => {
+    const response = await api.post(`/reports/${id}/subscribe`)
+    return response.data
+  },
+
+  unsubscribe: async (id) => {
+    const response = await api.delete(`/reports/${id}/subscribe`)
     return response.data
   },
 }

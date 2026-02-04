@@ -155,6 +155,12 @@ export default function AdminDashboard() {
             icon: MessageSquare,
             href: '/admin/messages',
         },
+        {
+            title: 'Analytics',
+            description: 'Trends and resolution insights',
+            icon: ThumbsUp,
+            href: '/admin/analytics',
+        },
     ]
 
     return (

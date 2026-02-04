@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useConversations, useConversation, useSendMessage, useCreateConversation } from '@/hooks/useConversations'
+import { useConversations, useConversation, useSendMessage, useCreateConversation, useCloseConversation } from '@/hooks/useConversations'
 import { useAuth } from '@/context/AuthContext'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -71,6 +71,7 @@ function ConversationItem({ conversation, isActive, onClick }) {
 function ChatView({ conversationId, onBack }) {
     const { data: conversation, isLoading } = useConversation(conversationId)
     const sendMessage = useSendMessage()
+    const closeConversation = useCloseConversation()
     const [message, setMessage] = useState('')
     const messagesEndRef = useRef(null)
 
@@ -91,6 +92,10 @@ function ChatView({ conversationId, onBack }) {
             content: message.trim(),
         })
         setMessage('')
+    }
+
+    const handleClose = () => {
+        closeConversation.mutate(conversationId)
     }
 
     if (isLoading) {
@@ -135,6 +140,21 @@ function ChatView({ conversationId, onBack }) {
                 >
                     {isOpen ? 'Open' : 'Closed'}
                 </Badge>
+                {isOpen && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleClose}
+                        disabled={closeConversation.isPending}
+                        className="text-destructive hover:text-destructive"
+                    >
+                        {closeConversation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            'Close'
+                        )}
+                    </Button>
+                )}
             </div>
 
             {/* Messages */}
@@ -281,11 +301,15 @@ function ConversationSkeleton() {
 }
 
 export default function UserMessages() {
-    const { data: conversations, isLoading, isError } = useConversations()
+    const { data: conversations, isLoading, isError, error } = useConversations()
     const [selectedId, setSelectedId] = useState(null)
     const [newDialogOpen, setNewDialogOpen] = useState(false)
 
     const openCount = conversations?.filter(c => c.status === 'Open').length || 0
+    const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to load conversations.'
 
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col">
@@ -318,7 +342,7 @@ export default function UserMessages() {
                             </>
                         ) : isError ? (
                             <div className="p-8 text-center">
-                                <p className="text-muted-foreground">Failed to load conversations</p>
+                                <p className="text-muted-foreground">{errorMessage}</p>
                             </div>
                         ) : conversations?.length === 0 ? (
                             <div className="p-8 text-center">

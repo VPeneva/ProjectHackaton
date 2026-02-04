@@ -1,12 +1,22 @@
+import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useReport, useDeleteReport } from '@/hooks/useReports'
+import {
+    useReport,
+    useDeleteReport,
+    useComments,
+    useAddComment,
+    useDeleteComment,
+    useSubscription,
+    useSubscribe,
+    useUnsubscribe,
+} from '@/hooks/useReports'
 import { useAuth } from '@/context/AuthContext'
 import { VoteButtons } from '@/components/reports/VoteButtons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
+import { Textarea } from '@/components/ui/textarea'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -29,22 +39,24 @@ import {
     CheckCircle,
     Send,
     AlertCircle,
+    Bell,
+    MessageSquare,
 } from 'lucide-react'
 
 const statusConfig = {
-    PENDING: {
+    Pending: {
         label: 'Pending',
         color: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
         icon: Clock,
         description: 'Awaiting review by administrators',
     },
-    SENT: {
+    Sent: {
         label: 'In Progress',
         color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
         icon: Send,
         description: 'Forwarded to the responsible institution',
     },
-    FINISHED: {
+    Finished: {
         label: 'Resolved',
         color: 'bg-green-500/10 text-green-600 border-green-500/20',
         icon: CheckCircle,
@@ -53,7 +65,7 @@ const statusConfig = {
 }
 
 function StatusTimeline({ status }) {
-    const statuses = ['PENDING', 'SENT', 'FINISHED']
+    const statuses = ['Pending', 'Sent', 'Finished']
     const currentIndex = statuses.indexOf(status)
 
     return (
@@ -98,7 +110,19 @@ export default function ReportDetail() {
     const navigate = useNavigate()
     const { user, isAdmin } = useAuth()
     const { data: report, isLoading, isError } = useReport(id)
+    const { data: comments = [] } = useComments(id)
+    const addComment = useAddComment(id)
+    const deleteComment = useDeleteComment(id)
+    const { data: subscription } = useSubscription(id, !!user)
+    const subscribe = useSubscribe(id)
+    const unsubscribe = useUnsubscribe(id)
     const deleteReport = useDeleteReport()
+    const [commentText, setCommentText] = useState('')
+    const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+    useEffect(() => {
+        setActiveImageIndex(0)
+    }, [report?.id])
 
     const handleDelete = async () => {
         try {
@@ -107,6 +131,25 @@ export default function ReportDetail() {
         } catch (error) {
             // Error handled by mutation
         }
+    }
+
+    const handleToggleSubscribe = async () => {
+        if (subscription?.subscribed) {
+            await unsubscribe.mutateAsync()
+        } else {
+            await subscribe.mutateAsync()
+        }
+    }
+
+    const handleAddComment = async (e) => {
+        e.preventDefault()
+        if (!commentText.trim()) return
+        await addComment.mutateAsync(commentText.trim())
+        setCommentText('')
+    }
+
+    const handleDeleteComment = async (commentId) => {
+        await deleteComment.mutateAsync(commentId)
     }
 
     const canDelete = report && (user?.id === report.userId || isAdmin)
@@ -147,7 +190,7 @@ export default function ReportDetail() {
         )
     }
 
-    const status = statusConfig[report.status] || statusConfig.PENDING
+    const status = statusConfig[report.status] || statusConfig.Pending
     const initialSummary = report?.upvotes !== undefined && report?.downvotes !== undefined
         ? {
             upvotes: report.upvotes ?? 0,
@@ -155,6 +198,13 @@ export default function ReportDetail() {
             total: (report.upvotes ?? 0) + (report.downvotes ?? 0),
         }
         : undefined
+    const imageUrls = report.images?.length
+        ? report.images.map((image) => image.url)
+        : report.imageUrl
+            ? [report.imageUrl]
+            : []
+    const safeImageIndex = Math.min(activeImageIndex, Math.max(imageUrls.length - 1, 0))
+    const activeImage = imageUrls[safeImageIndex]
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -169,14 +219,36 @@ export default function ReportDetail() {
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Image */}
-                    {report.imageUrl && (
+                    {/* Images */}
+                    {imageUrls.length > 0 && (
                         <Card className="border-0 shadow-lg overflow-hidden">
                             <img
-                                src={report.imageUrl}
+                                src={activeImage}
                                 alt={report.title}
                                 className="w-full aspect-video object-cover"
                             />
+                            {imageUrls.length > 1 && (
+                                <div className="grid grid-cols-4 gap-2 p-4 bg-card">
+                                    {imageUrls.map((url, index) => (
+                                        <button
+                                            key={`${url}-${index}`}
+                                            type="button"
+                                            onClick={() => setActiveImageIndex(index)}
+                                            className={`rounded-md overflow-hidden border ${
+                                                index === safeImageIndex
+                                                    ? 'border-primary'
+                                                    : 'border-transparent'
+                                            }`}
+                                        >
+                                            <img
+                                                src={url}
+                                                alt={`Thumbnail ${index + 1}`}
+                                                className="h-16 w-full object-cover"
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </Card>
                     )}
 
@@ -215,6 +287,79 @@ export default function ReportDetail() {
                             <p className="text-sm text-muted-foreground text-center mt-4">
                                 {status.description}
                             </p>
+                        </CardContent>
+                    </Card>
+
+                    {/* Comments */}
+                    <Card className="border-0 shadow-lg">
+                        <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <MessageSquare className="h-4 w-4" />
+                                Comments
+                                <Badge variant="outline" className="ml-2">
+                                    {comments.length}
+                                </Badge>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {comments.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    No comments yet. Be the first to comment.
+                                </p>
+                            ) : (
+                                <div className="space-y-4">
+                                    {comments.map((comment) => {
+                                        const canDeleteComment =
+                                            user?.id === comment.userId || isAdmin
+                                        return (
+                                            <div key={comment.id} className="border-b border-border/60 pb-4 last:border-b-0 last:pb-0">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div>
+                                                        <p className="text-sm font-medium">{comment.user?.name || 'User'}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {new Date(comment.createdAt).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                    {canDeleteComment && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => handleDeleteComment(comment.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">
+                                                    {comment.content}
+                                                </p>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+
+                            {user ? (
+                                <form onSubmit={handleAddComment} className="space-y-3">
+                                    <Textarea
+                                        value={commentText}
+                                        onChange={(e) => setCommentText(e.target.value)}
+                                        placeholder="Write a comment..."
+                                        rows={3}
+                                        disabled={addComment.isPending}
+                                    />
+                                    <Button type="submit" disabled={!commentText.trim() || addComment.isPending}>
+                                        {addComment.isPending ? 'Posting...' : 'Post Comment'}
+                                    </Button>
+                                </form>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    <Link to="/login" className="text-primary hover:underline">
+                                        Sign in
+                                    </Link>{' '}
+                                    to join the discussion.
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
@@ -267,14 +412,14 @@ export default function ReportDetail() {
                                 </div>
                             )}
 
-                            {report.location && (
+                            {report.address && (
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
                                         <MapPin className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div>
                                         <div className="text-xs text-muted-foreground">Location</div>
-                                        <div className="text-sm font-medium">{report.location}</div>
+                                        <div className="text-sm font-medium">{report.address}</div>
                                     </div>
                                 </div>
                             )}
@@ -286,12 +431,40 @@ export default function ReportDetail() {
                                     </div>
                                     <div>
                                         <div className="text-xs text-muted-foreground">Reported by</div>
-                                        <div className="text-sm font-medium">{report.user.name}</div>
+                                        <Link to={`/users/${report.user.id}`} className="text-sm font-medium text-primary hover:underline">
+                                            {report.user.name}
+                                        </Link>
                                     </div>
                                 </div>
                             )}
                         </CardContent>
                     </Card>
+
+                    {/* Subscribe */}
+                    {user && (
+                        <Card className="border-0 shadow-lg">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Stay Updated</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <p className="text-sm text-muted-foreground">
+                                    Get notified about updates and new comments on this report.
+                                </p>
+                                <Button
+                                    variant={subscription?.subscribed ? 'outline' : 'default'}
+                                    className="w-full"
+                                    onClick={handleToggleSubscribe}
+                                    disabled={subscribe.isPending || unsubscribe.isPending}
+                                >
+                                    <Bell className="mr-2 h-4 w-4" />
+                                    {subscription?.subscribed ? 'Subscribed' : 'Subscribe'}
+                                </Button>
+                                <p className="text-xs text-muted-foreground">
+                                    {report.subscriptionsCount || 0} watcher{(report.subscriptionsCount || 0) !== 1 ? 's' : ''}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {/* Actions */}
                     {canDelete && (

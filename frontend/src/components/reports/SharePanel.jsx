@@ -69,9 +69,9 @@ export default function SharePanel({ report, statusLabel }) {
   }
 
   return (
-    <Card className="border-0 shadow-lg">
-      <CardHeader>
-        <CardTitle className="text-lg">{t('reportDetail.share')}</CardTitle>
+    <Card>
+      <CardHeader className="border-b-3 border-foreground">
+        <CardTitle>{t('reportDetail.share')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <Button variant="outline" className="w-full" onClick={handleCopy}>

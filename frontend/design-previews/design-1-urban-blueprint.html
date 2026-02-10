@@ -1,0 +1,2154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicReport - Urban Blueprint Design Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ========================================
+   CSS RESET & BASE
+   ======================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --navy: #0a1628;
+  --navy-light: #0f2035;
+  --blueprint: #1e3a5f;
+  --blueprint-light: #2a4d73;
+  --blueprint-line: rgba(100, 160, 230, 0.12);
+  --blueprint-line-bright: rgba(100, 160, 230, 0.25);
+  --orange: #ff6b35;
+  --orange-hover: #ff8555;
+  --orange-dark: #e55a25;
+  --orange-glow: rgba(255, 107, 53, 0.3);
+  --white: #ffffff;
+  --white-90: rgba(255, 255, 255, 0.9);
+  --white-70: rgba(255, 255, 255, 0.7);
+  --white-50: rgba(255, 255, 255, 0.5);
+  --white-20: rgba(255, 255, 255, 0.2);
+  --white-10: rgba(255, 255, 255, 0.1);
+  --white-05: rgba(255, 255, 255, 0.05);
+  --light-grid: #e8f0fe;
+  --light-bg: #f0f4fa;
+  --light-card: #ffffff;
+  --text-dark: #1a2332;
+  --text-muted: #5a6a7a;
+  --success: #2ecc71;
+  --warning: #f1c40f;
+  --danger: #e74c3c;
+  --info: #3498db;
+
+  --font-heading: 'DM Serif Display', Georgia, serif;
+  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.3);
+  --shadow-orange: 0 4px 15px rgba(255, 107, 53, 0.35);
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--navy);
+  color: var(--white);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color var(--transition-fast);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+ul { list-style: none; }
+
+/* ========================================
+   BLUEPRINT GRID BACKGROUND (reusable)
+   ======================================== */
+.bp-grid {
+  background-image:
+    linear-gradient(var(--blueprint-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px),
+    linear-gradient(var(--blueprint-line-bright) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-line-bright) 1px, transparent 1px);
+  background-size:
+    20px 20px,
+    20px 20px,
+    100px 100px,
+    100px 100px;
+}
+
+.bp-grid-light {
+  background-color: var(--light-bg);
+  background-image:
+    linear-gradient(rgba(30, 58, 95, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 95, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(30, 58, 95, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 95, 0.1) 1px, transparent 1px);
+  background-size:
+    20px 20px,
+    20px 20px,
+    100px 100px,
+    100px 100px;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 16px;
+}
+
+.section-label::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 2px;
+  background: var(--orange);
+}
+
+.section-label-dark {
+  color: var(--blueprint);
+}
+
+.section-label-dark::before {
+  background: var(--blueprint);
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin-bottom: 16px;
+}
+
+.section-subtitle {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 600px;
+}
+
+.text-center { text-align: center; }
+
+.section-subtitle.text-center,
+.section-title.text-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Crosshair decorative element */
+.crosshair {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+  opacity: 0.25;
+}
+.crosshair::before,
+.crosshair::after {
+  content: '';
+  position: absolute;
+  background: var(--orange);
+}
+.crosshair::before {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+}
+.crosshair::after {
+  width: 100%;
+  height: 1px;
+  left: 0;
+  top: 50%;
+}
+.crosshair-circle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--orange);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Measurement mark */
+.measure-mark {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  color: var(--white-50);
+  pointer-events: none;
+  opacity: 0.4;
+}
+.measure-mark::before {
+  content: '';
+  width: 40px;
+  height: 1px;
+  background: currentColor;
+  border-top: 1px dashed currentColor;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+  position: relative;
+  letter-spacing: 0.3px;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--orange) 0%, var(--orange-dark) 100%);
+  color: var(--white);
+  box-shadow: 0 2px 0 #c44a18, var(--shadow-orange);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.btn-primary:hover {
+  background: linear-gradient(180deg, var(--orange-hover) 0%, var(--orange) 100%);
+  box-shadow: 0 3px 0 #c44a18, 0 6px 20px rgba(255, 107, 53, 0.45);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #c44a18, 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--white);
+  border: 1px dashed var(--white-50);
+}
+.btn-outline:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.btn-outline-dark {
+  color: var(--blueprint);
+  border: 1px dashed var(--blueprint);
+}
+.btn-outline-dark:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.btn-sm {
+  padding: 8px 18px;
+  font-size: 0.8rem;
+}
+
+.btn-lg {
+  padding: 16px 36px;
+  font-size: 1rem;
+}
+
+/* ========================================
+   NAVBAR
+   ======================================== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 0 24px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  background: rgba(10, 22, 40, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--white-10);
+  transition: all var(--transition-base);
+}
+
+.navbar.scrolled {
+  height: 60px;
+  background: rgba(10, 22, 40, 0.95);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  color: var(--white);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.navbar-logo-mark {
+  color: var(--orange);
+  font-weight: 700;
+  font-family: var(--font-body);
+  background: var(--orange);
+  color: var(--white);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  margin-right: 8px;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.navbar-links a {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--white-70);
+  transition: color var(--transition-fast);
+  position: relative;
+  white-space: nowrap;
+}
+
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--orange);
+  transition: width var(--transition-base);
+}
+
+.navbar-links a:hover {
+  color: var(--white);
+}
+
+.navbar-links a:hover::after {
+  width: 100%;
+}
+
+.navbar-links a.active {
+  color: var(--orange);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.nav-toggle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--white-20);
+  background: transparent;
+  color: var(--white-70);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all var(--transition-fast);
+}
+
+.nav-toggle-btn:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(255, 107, 53, 0.1);
+}
+
+.btn-signin {
+  padding: 8px 18px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--white-70);
+  background: transparent;
+  border: 1px solid var(--white-20);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.btn-signin:hover {
+  color: var(--white);
+  border-color: var(--white-50);
+}
+
+.btn-getstarted {
+  padding: 8px 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--orange);
+  border-radius: var(--radius-sm);
+  border: none;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.btn-getstarted:hover {
+  background: var(--orange-hover);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Mobile menu toggle */
+.navbar-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--white-20);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  cursor: pointer;
+}
+
+.navbar-burger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--white-70);
+  transition: all var(--transition-base);
+}
+
+/* ========================================
+   HERO SECTION
+   ======================================== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 120px 0 80px;
+  overflow: hidden;
+  background-color: var(--navy);
+}
+
+.hero-grid-animated {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--blueprint-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px),
+    linear-gradient(var(--blueprint-line-bright) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-line-bright) 1px, transparent 1px);
+  background-size:
+    20px 20px,
+    20px 20px,
+    100px 100px,
+    100px 100px;
+  animation: gridPan 60s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes gridPan {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(100px, 100px); }
+}
+
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 50%, rgba(30, 58, 95, 0.5) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 30%, rgba(255, 107, 53, 0.08) 0%, transparent 60%),
+    linear-gradient(180deg, transparent 60%, var(--navy) 100%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border: 1px dashed var(--orange);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 28px;
+  animation: fadeInUp 0.8s ease both;
+}
+
+.hero-badge-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--orange);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 6vw, 4.2rem);
+  color: var(--white);
+  margin-bottom: 24px;
+  line-height: 1.1;
+  animation: fadeInUp 0.8s ease 0.15s both;
+}
+
+.hero-title-accent {
+  color: var(--orange);
+  position: relative;
+}
+
+.hero-subtitle {
+  font-size: 1.15rem;
+  color: var(--white-70);
+  line-height: 1.8;
+  margin-bottom: 40px;
+  max-width: 560px;
+  animation: fadeInUp 0.8s ease 0.3s both;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: fadeInUp 0.8s ease 0.45s both;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px dashed var(--white-20);
+  animation: fadeInUp 0.8s ease 0.6s both;
+}
+
+.hero-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-meta-value {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  color: var(--white);
+}
+
+.hero-meta-label {
+  font-size: 0.75rem;
+  color: var(--white-50);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Hero decorative illustration */
+.hero-illustration {
+  position: absolute;
+  right: -60px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 500px;
+  height: 500px;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+.hero-blueprint-circle {
+  position: absolute;
+  border: 1px dashed var(--white-50);
+  border-radius: 50%;
+  animation: rotateBlueprint 40s linear infinite;
+}
+
+.hero-blueprint-circle:nth-child(1) {
+  width: 300px; height: 300px; top: 100px; left: 100px;
+}
+.hero-blueprint-circle:nth-child(2) {
+  width: 200px; height: 200px; top: 150px; left: 150px;
+  animation-direction: reverse;
+  animation-duration: 30s;
+}
+.hero-blueprint-circle:nth-child(3) {
+  width: 400px; height: 400px; top: 50px; left: 50px;
+  animation-duration: 50s;
+}
+
+@keyframes rotateBlueprint {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.hero-crosshair-1 {
+  top: 15%;
+  right: 10%;
+}
+
+.hero-crosshair-2 {
+  bottom: 20%;
+  right: 25%;
+}
+
+.hero-measure-1 {
+  bottom: 15%;
+  left: 0;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   FEATURES SECTION
+   ======================================== */
+.features {
+  position: relative;
+  padding: 100px 0;
+  background-color: var(--navy-light);
+}
+
+.features-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.feature-card {
+  position: relative;
+  padding: 36px 28px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--white-10);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.feature-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--white-20);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  border: 1px dashed var(--orange);
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  color: var(--orange);
+  background: rgba(255, 107, 53, 0.08);
+  transition: all var(--transition-base);
+}
+
+.feature-card:hover .feature-icon {
+  background: rgba(255, 107, 53, 0.15);
+  border-style: solid;
+}
+
+.feature-number {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  color: var(--white-05);
+  line-height: 1;
+}
+
+.feature-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  color: var(--white);
+  margin-bottom: 10px;
+}
+
+.feature-desc {
+  font-size: 0.9rem;
+  color: var(--white-50);
+  line-height: 1.7;
+}
+
+/* ========================================
+   HOW IT WORKS
+   ======================================== */
+.how-it-works {
+  position: relative;
+  padding: 100px 0;
+  color: var(--text-dark);
+}
+
+.how-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.how-header .section-title {
+  color: var(--text-dark);
+}
+
+.how-header .section-subtitle {
+  color: var(--text-muted);
+}
+
+.steps-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  position: relative;
+}
+
+/* Connector line */
+.steps-connector {
+  position: absolute;
+  top: 52px;
+  left: calc(12.5% + 20px);
+  right: calc(12.5% + 20px);
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--blueprint) 0px,
+    var(--blueprint) 8px,
+    transparent 8px,
+    transparent 14px
+  );
+  z-index: 0;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  padding: 0 16px;
+}
+
+.step-number-ring {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  border: 2px dashed var(--blueprint-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  background: var(--light-bg);
+  position: relative;
+  transition: all var(--transition-base);
+}
+
+.step-item:hover .step-number-ring {
+  border-color: var(--orange);
+  border-style: solid;
+}
+
+.step-number-inner {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1px solid rgba(30, 58, 95, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  transition: all var(--transition-base);
+}
+
+.step-item:hover .step-number-inner {
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
+}
+
+.step-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.step-num {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+
+.step-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.step-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 200px;
+}
+
+/* ========================================
+   STATS SECTION
+   ======================================== */
+.stats {
+  position: relative;
+  padding: 80px 0;
+  background: linear-gradient(135deg, var(--blueprint) 0%, var(--navy) 100%);
+  overflow: hidden;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 40px 24px;
+  border: 1px dashed var(--white-20);
+  border-radius: var(--radius-md);
+  position: relative;
+  transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+  border-color: var(--orange);
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.stat-stamp {
+  position: absolute;
+  top: -1px;
+  right: 20px;
+  background: var(--orange);
+  padding: 4px 12px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.stat-value {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--white-50);
+  letter-spacing: 0.5px;
+}
+
+/* Corner marks on stat cards */
+.stat-card::before,
+.stat-card::after {
+  content: '+';
+  position: absolute;
+  font-size: 0.6rem;
+  color: var(--white-20);
+  font-family: var(--font-body);
+}
+.stat-card::before {
+  top: 8px; left: 10px;
+}
+.stat-card::after {
+  bottom: 8px; right: 10px;
+}
+
+/* ========================================
+   REPORT CARDS SECTION
+   ======================================== */
+.reports {
+  position: relative;
+  padding: 100px 0;
+  background-color: var(--navy);
+}
+
+.reports-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.report-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--white-10);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all var(--transition-base);
+}
+
+.report-card:hover {
+  border-color: var(--white-20);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.report-image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: var(--blueprint);
+  overflow: hidden;
+}
+
+.report-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--white-50);
+  font-size: 0.8rem;
+  background:
+    linear-gradient(var(--blueprint-line-bright) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-line-bright) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.report-image-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.report-status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 5px 12px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Engineering stamp style */
+.report-status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-pending {
+  background: rgba(241, 196, 15, 0.15);
+  color: var(--warning);
+  border-color: var(--warning);
+}
+
+.status-in-progress {
+  background: rgba(52, 152, 219, 0.15);
+  color: var(--info);
+  border-color: var(--info);
+}
+
+.status-resolved {
+  background: rgba(46, 204, 113, 0.15);
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.report-body {
+  padding: 24px;
+}
+
+.report-category {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 8px;
+}
+
+.report-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+
+.report-desc {
+  font-size: 0.88rem;
+  color: var(--white-50);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.report-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--white-10);
+  font-size: 0.78rem;
+  color: var(--white-50);
+}
+
+.report-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.report-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--white-05);
+}
+
+.report-votes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vote-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--white-10);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--white-50);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.vote-btn:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(255, 107, 53, 0.08);
+}
+
+.report-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--orange);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: gap var(--transition-base);
+}
+
+.report-link:hover {
+  gap: 8px;
+}
+
+/* ========================================
+   CTA SECTION
+   ======================================== */
+.cta {
+  position: relative;
+  padding: 100px 0;
+  text-align: center;
+  background: linear-gradient(180deg, var(--navy) 0%, var(--blueprint) 50%, var(--navy) 100%);
+  overflow: hidden;
+}
+
+.cta-content {
+  position: relative;
+  z-index: 2;
+}
+
+.cta-title {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  color: var(--white);
+  margin-bottom: 16px;
+}
+
+.cta-subtitle {
+  font-size: 1.1rem;
+  color: var(--white-70);
+  max-width: 500px;
+  margin: 0 auto 36px;
+  line-height: 1.7;
+}
+
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cta-decoration {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cta-line {
+  position: absolute;
+  width: 200%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--white-10), transparent);
+  left: -50%;
+}
+
+.cta-line:nth-child(1) { top: 20%; transform: rotate(-5deg); }
+.cta-line:nth-child(2) { top: 45%; transform: rotate(3deg); }
+.cta-line:nth-child(3) { top: 75%; transform: rotate(-2deg); }
+
+/* ========================================
+   FOOTER
+   ======================================== */
+.footer {
+  padding: 64px 0 0;
+  background: var(--navy);
+  border-top: 1px solid var(--white-10);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  padding-bottom: 48px;
+}
+
+.footer-brand-desc {
+  font-size: 0.9rem;
+  color: var(--white-50);
+  line-height: 1.7;
+  margin: 16px 0 24px;
+  max-width: 300px;
+}
+
+.footer-social {
+  display: flex;
+  gap: 10px;
+}
+
+.footer-social a {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--white-20);
+  border-radius: var(--radius-sm);
+  color: var(--white-50);
+  font-size: 0.85rem;
+  transition: all var(--transition-fast);
+}
+
+.footer-social a:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(255, 107, 53, 0.1);
+}
+
+.footer-heading {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 20px;
+}
+
+.footer-links li {
+  margin-bottom: 10px;
+}
+
+.footer-links a {
+  font-size: 0.88rem;
+  color: var(--white-50);
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: var(--orange);
+}
+
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0;
+  border-top: 1px dashed var(--white-10);
+  font-size: 0.8rem;
+  color: var(--white-50);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-bottom-links a {
+  color: var(--white-50);
+  font-size: 0.8rem;
+}
+
+.footer-bottom-links a:hover {
+  color: var(--orange);
+}
+
+/* ========================================
+   SCROLL ANIMATIONS (Intersection Observer)
+   ======================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+.reveal-delay-6 { transition-delay: 0.6s; }
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reports-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reports-grid .report-card:last-child {
+    grid-column: span 2;
+    max-width: 50%;
+    justify-self: center;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+
+  .hero-illustration {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-links {
+    display: none;
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: rgba(10, 22, 40, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    flex-direction: column;
+    padding: 24px;
+    gap: 0;
+    border-bottom: 1px solid var(--white-10);
+  }
+
+  .navbar-links.open {
+    display: flex;
+  }
+
+  .navbar-links a {
+    padding: 12px 0;
+    font-size: 1rem;
+    border-bottom: 1px dashed var(--white-05);
+    width: 100%;
+  }
+
+  .navbar-links a::after {
+    display: none;
+  }
+
+  .navbar-burger {
+    display: flex;
+  }
+
+  .navbar-actions .nav-toggle-btn,
+  .navbar-actions .btn-signin {
+    display: none;
+  }
+
+  .hero {
+    padding: 100px 0 60px;
+    min-height: auto;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .hero-meta {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .steps-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+
+  .steps-connector {
+    display: none;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reports-grid .report-card:last-child {
+    grid-column: span 1;
+    max-width: 100%;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .steps-container {
+    grid-template-columns: 1fr;
+  }
+
+  .cta-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cta-actions .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+/* ========================================
+   SCROLLBAR
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--navy);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--blueprint-light);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--orange);
+}
+
+/* ========================================
+   SELECTION
+   ======================================== */
+::selection {
+  background: rgba(255, 107, 53, 0.3);
+  color: var(--white);
+}
+</style>
+</head>
+<body>
+
+<!-- ========================================
+     NAVBAR
+     ======================================== -->
+<nav class="navbar" id="navbar">
+  <div class="navbar-inner">
+    <a href="#" class="navbar-logo">
+      <span class="navbar-logo-mark">CR</span>
+      CivicReport
+    </a>
+
+    <div class="navbar-links" id="navLinks">
+      <a href="#hero" class="active">Home</a>
+      <a href="#reports">Reports</a>
+      <a href="#map">Map</a>
+      <a href="#stats">Leaderboard</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+
+    <div class="navbar-actions">
+      <button class="nav-toggle-btn" title="Language">EN</button>
+      <button class="nav-toggle-btn" title="Toggle theme">&#9788;</button>
+      <button class="btn-signin">Sign In</button>
+      <button class="btn-getstarted">Get Started</button>
+      <button class="navbar-burger" id="navBurger" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ========================================
+     HERO SECTION
+     ======================================== -->
+<section class="hero" id="hero">
+  <div class="hero-grid-animated"></div>
+  <div class="hero-gradient"></div>
+
+  <!-- Decorative elements -->
+  <div class="hero-illustration">
+    <div class="hero-blueprint-circle"></div>
+    <div class="hero-blueprint-circle"></div>
+    <div class="hero-blueprint-circle"></div>
+  </div>
+
+  <div class="crosshair hero-crosshair-1">
+    <div class="crosshair-circle"></div>
+  </div>
+  <div class="crosshair hero-crosshair-2">
+    <div class="crosshair-circle"></div>
+  </div>
+  <div class="measure-mark hero-measure-1">A-1 SECTION REF</div>
+
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        Civic Infrastructure Platform
+      </div>
+
+      <h1 class="hero-title">
+        Report Issues.<br>
+        <span class="hero-title-accent">Transform Your City.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Empower your community by reporting public infrastructure problems directly to the institutions that can fix them. From potholes to broken streetlights &mdash; your voice drives change.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#reports" class="btn btn-primary btn-lg">
+          &#9998; Submit a Report
+        </a>
+        <a href="#how-it-works" class="btn btn-outline btn-lg">
+          How It Works &#10142;
+        </a>
+      </div>
+
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <span class="hero-meta-value">500+</span>
+          <span class="hero-meta-label">Reports Filed</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="hero-meta-value">45</span>
+          <span class="hero-meta-label">Municipalities</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="hero-meta-value">89%</span>
+          <span class="hero-meta-label">Resolution Rate</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================
+     FEATURES SECTION
+     ======================================== -->
+<section class="features bp-grid" id="about">
+  <div class="container">
+    <div class="features-header">
+      <span class="section-label reveal">Platform Features</span>
+      <h2 class="section-title reveal" style="color: var(--white);">
+        Built for Citizens,<br>Designed for Impact
+      </h2>
+      <p class="section-subtitle text-center reveal" style="color: var(--white-50);">
+        A comprehensive toolkit that connects communities with government institutions to resolve infrastructure issues efficiently.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <!-- Feature 1 -->
+      <div class="feature-card reveal reveal-delay-1">
+        <span class="feature-number">01</span>
+        <div class="feature-icon">&#9998;</div>
+        <h3 class="feature-title">Easy Reporting</h3>
+        <p class="feature-desc">Submit infrastructure issues in seconds with photo uploads, GPS location tagging, and categorized report forms.</p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="feature-card reveal reveal-delay-2">
+        <span class="feature-number">02</span>
+        <div class="feature-icon">&#9880;</div>
+        <h3 class="feature-title">Interactive Map</h3>
+        <p class="feature-desc">Explore a live city map showing all reported issues, their status, and density heatmaps for problem areas.</p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="feature-card reveal reveal-delay-3">
+        <span class="feature-number">03</span>
+        <div class="feature-icon">&#8634;</div>
+        <h3 class="feature-title">Real-time Tracking</h3>
+        <p class="feature-desc">Follow your report through every stage from submission to resolution with live status updates and notifications.</p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="feature-card reveal reveal-delay-4">
+        <span class="feature-number">04</span>
+        <div class="feature-icon">&#9959;</div>
+        <h3 class="feature-title">Government Connection</h3>
+        <p class="feature-desc">Reports are automatically routed to the responsible municipal department ensuring fast institutional response.</p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="feature-card reveal reveal-delay-5">
+        <span class="feature-number">05</span>
+        <div class="feature-icon">&#9737;</div>
+        <h3 class="feature-title">Transparent Process</h3>
+        <p class="feature-desc">Full visibility into report progress, government response times, and resolution statistics for public accountability.</p>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="feature-card reveal reveal-delay-6">
+        <span class="feature-number">06</span>
+        <div class="feature-icon">&#9734;</div>
+        <h3 class="feature-title">Community Driven</h3>
+        <p class="feature-desc">Upvote existing reports, comment, and collaborate with neighbors to prioritize the most critical issues.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================
+     HOW IT WORKS SECTION
+     ======================================== -->
+<section class="how-it-works bp-grid-light" id="how-it-works">
+  <div class="container">
+    <div class="how-header">
+      <span class="section-label section-label-dark reveal">Process</span>
+      <h2 class="section-title reveal">How CivicReport Works</h2>
+      <p class="section-subtitle text-center reveal" style="color: var(--text-muted);">
+        From spotting a problem to seeing it fixed &mdash; four simple steps to a better city.
+      </p>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-connector"></div>
+
+      <!-- Step 1 -->
+      <div class="step-item reveal reveal-delay-1">
+        <div class="step-number-ring">
+          <div class="step-number-inner">
+            <span class="step-icon">&#128065;</span>
+            <span class="step-num">Step 1</span>
+          </div>
+        </div>
+        <h3 class="step-title">Spot an Issue</h3>
+        <p class="step-desc">Notice a pothole, broken light, or any public infrastructure problem in your area.</p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-item reveal reveal-delay-2">
+        <div class="step-number-ring">
+          <div class="step-number-inner">
+            <span class="step-icon">&#128221;</span>
+            <span class="step-num">Step 2</span>
+          </div>
+        </div>
+        <h3 class="step-title">Submit a Report</h3>
+        <p class="step-desc">Open the app, snap a photo, pinpoint the location, and describe the issue. Done in under a minute.</p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-item reveal reveal-delay-3">
+        <div class="step-number-ring">
+          <div class="step-number-inner">
+            <span class="step-icon">&#128232;</span>
+            <span class="step-num">Step 3</span>
+          </div>
+        </div>
+        <h3 class="step-title">We Forward It</h3>
+        <p class="step-desc">Your report is automatically routed to the responsible government institution or municipal department.</p>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step-item reveal reveal-delay-4">
+        <div class="step-number-ring">
+          <div class="step-number-inner">
+            <span class="step-icon">&#9989;</span>
+            <span class="step-num">Step 4</span>
+          </div>
+        </div>
+        <h3 class="step-title">Track Progress</h3>
+        <p class="step-desc">Receive real-time updates as the issue moves through review, assignment, and resolution.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================
+     STATS SECTION
+     ======================================== -->
+<section class="stats bp-grid" id="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <!-- Stat 1 -->
+      <div class="stat-card reveal reveal-delay-1">
+        <span class="stat-stamp">Verified</span>
+        <span class="stat-icon">&#128202;</span>
+        <div class="stat-value" data-count="500">500+</div>
+        <div class="stat-label">Reports Submitted</div>
+      </div>
+
+      <!-- Stat 2 -->
+      <div class="stat-card reveal reveal-delay-2">
+        <span class="stat-stamp">Official</span>
+        <span class="stat-icon">&#9989;</span>
+        <div class="stat-value" data-count="200">200+</div>
+        <div class="stat-label">Issues Resolved</div>
+      </div>
+
+      <!-- Stat 3 -->
+      <div class="stat-card reveal reveal-delay-3">
+        <span class="stat-stamp">Live</span>
+        <span class="stat-icon">&#128680;</span>
+        <div class="stat-value" data-count="50">50+</div>
+        <div class="stat-label">Active Reports</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================
+     REPORT CARDS SECTION
+     ======================================== -->
+<section class="reports" id="reports">
+  <div class="container">
+    <div class="reports-header">
+      <span class="section-label reveal">Recent Reports</span>
+      <h2 class="section-title reveal" style="color: var(--white);">
+        Latest Community Reports
+      </h2>
+      <p class="section-subtitle text-center reveal" style="color: var(--white-50);">
+        See what citizens are reporting across the city. Every report brings us closer to better infrastructure.
+      </p>
+    </div>
+
+    <div class="reports-grid">
+      <!-- Report 1 -->
+      <div class="report-card reveal reveal-delay-1">
+        <div class="report-image">
+          <div class="report-image-placeholder">
+            <span class="report-image-icon">&#128679;</span>
+            <span>Report Photo</span>
+          </div>
+          <span class="report-status-badge status-pending">Pending</span>
+        </div>
+        <div class="report-body">
+          <div class="report-category">Roads &amp; Paving</div>
+          <h3 class="report-title">Large Pothole on Main Street</h3>
+          <p class="report-desc">A dangerous pothole approximately 50cm wide has formed near the intersection of Main St. and 3rd Avenue, causing vehicle damage and safety concerns.</p>
+          <div class="report-meta">
+            <span class="report-meta-item">&#128205; Main St. &amp; 3rd Ave</span>
+            <span class="report-meta-item">&#128197; Feb 7, 2026</span>
+          </div>
+        </div>
+        <div class="report-footer">
+          <div class="report-votes">
+            <button class="vote-btn">&#9650; 24</button>
+            <button class="vote-btn">&#9660; 2</button>
+          </div>
+          <a href="#" class="report-link">View Details &#10142;</a>
+        </div>
+      </div>
+
+      <!-- Report 2 -->
+      <div class="report-card reveal reveal-delay-2">
+        <div class="report-image">
+          <div class="report-image-placeholder">
+            <span class="report-image-icon">&#128161;</span>
+            <span>Report Photo</span>
+          </div>
+          <span class="report-status-badge status-in-progress">In Progress</span>
+        </div>
+        <div class="report-body">
+          <div class="report-category">Street Lighting</div>
+          <h3 class="report-title">Broken Streetlight on Oak Boulevard</h3>
+          <p class="report-desc">Three consecutive streetlights have been out for over two weeks on Oak Boulevard between House 12 and House 28, creating a safety hazard for pedestrians at night.</p>
+          <div class="report-meta">
+            <span class="report-meta-item">&#128205; Oak Blvd, #12-28</span>
+            <span class="report-meta-item">&#128197; Feb 3, 2026</span>
+          </div>
+        </div>
+        <div class="report-footer">
+          <div class="report-votes">
+            <button class="vote-btn">&#9650; 41</button>
+            <button class="vote-btn">&#9660; 0</button>
+          </div>
+          <a href="#" class="report-link">View Details &#10142;</a>
+        </div>
+      </div>
+
+      <!-- Report 3 -->
+      <div class="report-card reveal reveal-delay-3">
+        <div class="report-image">
+          <div class="report-image-placeholder">
+            <span class="report-image-icon">&#127795;</span>
+            <span>Report Photo</span>
+          </div>
+          <span class="report-status-badge status-resolved">Resolved</span>
+        </div>
+        <div class="report-body">
+          <div class="report-category">Parks &amp; Green Spaces</div>
+          <h3 class="report-title">Fallen Tree Blocking Park Path</h3>
+          <p class="report-desc">A large oak tree has fallen across the main walking path in Central Park after last week's storm, completely blocking access to the south entrance.</p>
+          <div class="report-meta">
+            <span class="report-meta-item">&#128205; Central Park, South</span>
+            <span class="report-meta-item">&#128197; Jan 28, 2026</span>
+          </div>
+        </div>
+        <div class="report-footer">
+          <div class="report-votes">
+            <button class="vote-btn">&#9650; 67</button>
+            <button class="vote-btn">&#9660; 1</button>
+          </div>
+          <a href="#" class="report-link">View Details &#10142;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================
+     CTA SECTION
+     ======================================== -->
+<section class="cta bp-grid" id="contact">
+  <div class="cta-decoration">
+    <div class="cta-line"></div>
+    <div class="cta-line"></div>
+    <div class="cta-line"></div>
+  </div>
+
+  <div class="container">
+    <div class="cta-content">
+      <span class="section-label reveal" style="justify-content: center;">Take Action</span>
+      <h2 class="cta-title reveal">Ready to Make a Difference?</h2>
+      <p class="cta-subtitle reveal">
+        Join thousands of citizens who are actively shaping better cities. Your next report could be the one that transforms your neighborhood.
+      </p>
+      <div class="cta-actions reveal">
+        <a href="#" class="btn btn-primary btn-lg">Get Started &mdash; It's Free</a>
+        <a href="#" class="btn btn-outline btn-lg">Learn More</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================
+     FOOTER
+     ======================================== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <!-- Brand column -->
+      <div>
+        <a href="#" class="navbar-logo" style="display: inline-flex; margin-bottom: 0;">
+          <span class="navbar-logo-mark">CR</span>
+          CivicReport
+        </a>
+        <p class="footer-brand-desc">
+          Bridging the gap between citizens and government. Report public infrastructure issues and track their resolution in real time.
+        </p>
+        <div class="footer-social">
+          <a href="#" title="Twitter">&#120143;</a>
+          <a href="#" title="GitHub">&#9741;</a>
+          <a href="#" title="LinkedIn">in</a>
+          <a href="#" title="Email">&#9993;</a>
+        </div>
+      </div>
+
+      <!-- Platform -->
+      <div>
+        <h4 class="footer-heading">Platform</h4>
+        <ul class="footer-links">
+          <li><a href="#">Submit Report</a></li>
+          <li><a href="#">View Map</a></li>
+          <li><a href="#">Leaderboard</a></li>
+          <li><a href="#">Statistics</a></li>
+          <li><a href="#">API Access</a></li>
+        </ul>
+      </div>
+
+      <!-- Resources -->
+      <div>
+        <h4 class="footer-heading">Resources</h4>
+        <ul class="footer-links">
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Community Forum</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Status Page</a></li>
+        </ul>
+      </div>
+
+      <!-- Company -->
+      <div>
+        <h4 class="footer-heading">Company</h4>
+        <ul class="footer-links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+          <li><a href="#">Partners</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 CivicReport. All rights reserved.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ========================================
+     JAVASCRIPT
+     ======================================== -->
+<script>
+(function() {
+  'use strict';
+
+  /* ------- Navbar scroll effect ------- */
+  const navbar = document.getElementById('navbar');
+  let lastScroll = 0;
+
+  function handleNavScroll() {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+    lastScroll = currentScroll;
+  }
+
+  window.addEventListener('scroll', handleNavScroll, { passive: true });
+
+  /* ------- Mobile menu ------- */
+  const burger = document.getElementById('navBurger');
+  const navLinks = document.getElementById('navLinks');
+
+  burger.addEventListener('click', function() {
+    navLinks.classList.toggle('open');
+    const spans = burger.querySelectorAll('span');
+    if (navLinks.classList.contains('open')) {
+      spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+      spans[1].style.opacity = '0';
+      spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+    } else {
+      spans[0].style.transform = '';
+      spans[1].style.opacity = '';
+      spans[2].style.transform = '';
+    }
+  });
+
+  // Close mobile menu when a link is clicked
+  navLinks.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      navLinks.classList.remove('open');
+      const spans = burger.querySelectorAll('span');
+      spans[0].style.transform = '';
+      spans[1].style.opacity = '';
+      spans[2].style.transform = '';
+    });
+  });
+
+  /* ------- Active nav link based on scroll ------- */
+  const sections = document.querySelectorAll('section[id]');
+
+  function updateActiveLink() {
+    const scrollY = window.pageYOffset + 100;
+    sections.forEach(function(section) {
+      const top = section.offsetTop;
+      const height = section.offsetHeight;
+      const id = section.getAttribute('id');
+      const link = navLinks.querySelector('a[href="#' + id + '"]');
+      if (link) {
+        if (scrollY >= top && scrollY < top + height) {
+          navLinks.querySelectorAll('a').forEach(function(a) { a.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveLink, { passive: true });
+
+  /* ------- Reveal on scroll (Intersection Observer) ------- */
+  const revealElements = document.querySelectorAll('.reveal');
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    revealElements.forEach(function(el) {
+      observer.observe(el);
+    });
+  } else {
+    // Fallback: show everything
+    revealElements.forEach(function(el) {
+      el.classList.add('visible');
+    });
+  }
+
+  /* ------- Vote button interaction ------- */
+  document.querySelectorAll('.vote-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var text = this.textContent.trim();
+      var parts = text.split(' ');
+      var arrow = parts[0];
+      var count = parseInt(parts[1], 10);
+
+      if (this.classList.contains('voted')) {
+        this.classList.remove('voted');
+        count--;
+        this.style.borderColor = '';
+        this.style.color = '';
+        this.style.background = '';
+      } else {
+        this.classList.add('voted');
+        count++;
+        this.style.borderColor = 'var(--orange)';
+        this.style.color = 'var(--orange)';
+        this.style.background = 'rgba(255, 107, 53, 0.08)';
+      }
+
+      this.textContent = arrow + ' ' + count;
+    });
+  });
+
+  /* ------- Smooth scroll for anchor links ------- */
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(e) {
+      var targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+      var target = document.querySelector(targetId);
+      if (target) {
+        e.preventDefault();
+        var offset = navbar.offsetHeight + 10;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>

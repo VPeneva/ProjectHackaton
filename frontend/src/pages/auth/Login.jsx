@@ -43,26 +43,20 @@ export default function Login() {
     return (
         <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-4">
             <div className="w-full max-w-md">
-                {/* Decorative background */}
-                <div className="absolute inset-0 -z-10 overflow-hidden">
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
-                </div>
-
-                <Card className="border-0 shadow-2xl bg-card/80 backdrop-blur-sm">
-                    <CardHeader className="space-y-1 text-center">
+                <Card className="shadow-brutal">
+                    <CardHeader className="space-y-1 text-center border-b-3 border-foreground">
                         <div className="flex justify-center mb-4">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold text-xl shadow-lg">
+                            <div className="flex h-14 w-14 items-center justify-center border-3 border-foreground bg-primary text-primary-foreground font-display text-2xl">
                                 CR
                             </div>
                         </div>
-                        <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-                        <CardDescription>
-                            Sign in to your account to continue
+                        <CardTitle className="text-3xl">SIGN IN</CardTitle>
+                        <CardDescription className="font-mono text-xs uppercase tracking-wider">
+                            [ ACCESS YOUR ACCOUNT ]
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleSubmit}>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 pt-6">
                             {error && (
                                 <Alert variant="destructive">
                                     <AlertCircle className="h-4 w-4" />
@@ -71,7 +65,7 @@ export default function Login() {
                             )}
 
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">EMAIL</Label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
@@ -89,12 +83,12 @@ export default function Login() {
 
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password">PASSWORD</Label>
                                     <Link
                                         to="/forgot-password"
-                                        className="text-xs text-primary hover:underline"
+                                        className="text-xs text-primary hover:underline font-bold uppercase tracking-wider"
                                     >
-                                        Forgot password?
+                                        FORGOT?
                                     </Link>
                                 </div>
                                 <div className="relative">
@@ -117,16 +111,16 @@ export default function Login() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Signing in...
+                                        SIGNING IN...
                                     </>
                                 ) : (
-                                    'Sign In'
+                                    'SIGN IN >>>'
                                 )}
                             </Button>
                             <p className="text-sm text-center text-muted-foreground">
-                                Don't have an account?{' '}
-                                <Link to="/register" className="text-primary hover:underline font-medium">
-                                    Create one
+                                No account?{' '}
+                                <Link to="/register" className="text-primary hover:underline font-bold uppercase">
+                                    CREATE ONE
                                 </Link>
                             </p>
                         </CardFooter>

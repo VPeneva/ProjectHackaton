@@ -29,36 +29,30 @@ function ConversationItem({ conversation, isActive, onClick }) {
         <button
             type="button"
             onClick={onClick}
-            className={`w-full text-left p-4 cursor-pointer border-b transition-colors hover:bg-muted/50 ${isActive ? 'bg-primary/10 border-l-2 border-l-primary' : ''
+            className={`w-full text-left p-4 cursor-pointer border-b-3 border-foreground transition-none hover:bg-foreground hover:text-background ${isActive ? 'bg-foreground text-background' : ''
                 }`}
         >
             <div className="flex items-start justify-between gap-2 mb-1">
-                <h3 className="font-medium line-clamp-1">{conversation.subject}</h3>
-                <Badge
-                    variant="outline"
-                    className={isOpen
-                        ? 'bg-green-500/10 text-green-600 border-green-500/20'
-                        : 'bg-gray-500/10 text-gray-600 border-gray-500/20'
-                    }
-                >
-                    {isOpen ? 'Open' : 'Closed'}
+                <h3 className="font-medium uppercase line-clamp-1">{conversation.subject}</h3>
+                <Badge variant={isOpen ? 'sent' : 'finished'}>
+                    {isOpen ? 'OPEN' : 'CLOSED'}
                 </Badge>
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider opacity-70 mb-2">
                 <User className="h-3 w-3" />
                 <span>{conversation.user.name}</span>
                 <span>({conversation.user.email})</span>
             </div>
             {lastMessage && (
-                <p className="text-sm text-muted-foreground line-clamp-1">
+                <p className="text-sm opacity-70 line-clamp-1">
                     {lastMessage.isFromAdmin ? 'You: ' : ''}{lastMessage.content}
                 </p>
             )}
             <div className="flex items-center justify-between mt-2">
-                <span className="text-xs text-muted-foreground">
+                <span className="font-mono text-xs uppercase tracking-wider opacity-70">
                     {conversation.messageCount} message{conversation.messageCount !== 1 ? 's' : ''}
                 </span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="font-mono text-xs uppercase tracking-wider opacity-70 flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {new Date(conversation.updatedAt).toLocaleDateString()}
                 </span>
@@ -106,7 +100,7 @@ function ChatView({ conversationId, onBack }) {
     if (isLoading) {
         return (
             <div className="flex-1 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-8 w-8 animate-spin text-foreground" />
             </div>
         )
     }
@@ -114,7 +108,7 @@ function ChatView({ conversationId, onBack }) {
     if (!conversation) {
         return (
             <div className="flex-1 flex items-center justify-center">
-                <p className="text-muted-foreground">Conversation not found</p>
+                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Conversation not found</p>
             </div>
         )
     }
@@ -124,14 +118,14 @@ function ChatView({ conversationId, onBack }) {
     return (
         <div className="flex-1 flex flex-col h-full">
             {/* Chat Header */}
-            <div className="p-4 border-b flex items-center justify-between bg-card">
+            <div className="p-4 border-b-3 border-foreground flex items-center justify-between bg-card">
                 <div className="flex items-center gap-3">
                     <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h2 className="font-semibold">{conversation.subject}</h2>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <h2 className="font-semibold uppercase">{conversation.subject}</h2>
+                        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             <User className="h-3 w-3" />
                             <span>{conversation.user.name}</span>
                             <a href={`mailto:${conversation.user.email}`} className="text-primary hover:underline">
@@ -141,14 +135,8 @@ function ChatView({ conversationId, onBack }) {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Badge
-                        variant="outline"
-                        className={isOpen
-                            ? 'bg-green-500/10 text-green-600 border-green-500/20'
-                            : 'bg-gray-500/10 text-gray-600 border-gray-500/20'
-                        }
-                    >
-                        {isOpen ? 'Open' : 'Closed'}
+                    <Badge variant={isOpen ? 'sent' : 'finished'}>
+                        {isOpen ? 'OPEN' : 'CLOSED'}
                     </Badge>
                     {isOpen ? (
                         <Button
@@ -163,7 +151,7 @@ function ChatView({ conversationId, onBack }) {
                             ) : (
                                 <>
                                     <X className="h-4 w-4 mr-1" />
-                                    Close
+                                    CLOSE
                                 </>
                             )}
                         </Button>
@@ -179,7 +167,7 @@ function ChatView({ conversationId, onBack }) {
                             ) : (
                                 <>
                                     <RefreshCw className="h-4 w-4 mr-1" />
-                                    Reopen
+                                    REOPEN
                                 </>
                             )}
                         </Button>
@@ -196,13 +184,13 @@ function ChatView({ conversationId, onBack }) {
                             className={`flex ${msg.isFromAdmin ? 'justify-end' : 'justify-start'}`}
                         >
                             <div
-                                className={`max-w-[80%] rounded-lg p-3 ${msg.isFromAdmin
-                                        ? 'bg-primary text-primary-foreground'
+                                className={`max-w-[80%] border-3 border-foreground p-3 ${msg.isFromAdmin
+                                        ? 'bg-foreground text-background'
                                         : 'bg-muted'
                                     }`}
                             >
                                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                <div className={`text-xs mt-1 ${msg.isFromAdmin ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                <div className={`font-mono text-xs mt-1 ${msg.isFromAdmin ? 'opacity-70' : 'text-muted-foreground'}`}>
                                     {msg.sender.name} - {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             </div>
@@ -214,7 +202,7 @@ function ChatView({ conversationId, onBack }) {
 
             {/* Message Input */}
             {isOpen ? (
-                <form onSubmit={handleSend} className="p-4 border-t bg-card">
+                <form onSubmit={handleSend} className="p-4 border-t-3 border-foreground bg-card">
                     <div className="flex gap-2">
                         <Input
                             value={message}
@@ -232,8 +220,8 @@ function ChatView({ conversationId, onBack }) {
                     </div>
                 </form>
             ) : (
-                <div className="p-4 border-t bg-muted/50 text-center">
-                    <p className="text-sm text-muted-foreground">
+                <div className="p-4 border-t-3 border-foreground bg-muted text-center">
+                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                         This conversation is closed. Reopen it to send messages.
                     </p>
                 </div>
@@ -244,7 +232,7 @@ function ChatView({ conversationId, onBack }) {
 
 function ConversationSkeleton() {
     return (
-        <div className="p-4 border-b">
+        <div className="p-4 border-b-3 border-foreground">
             <Skeleton className="h-5 w-3/4 mb-2" />
             <Skeleton className="h-4 w-1/2 mb-2" />
             <Skeleton className="h-4 w-full" />
@@ -254,19 +242,19 @@ function ConversationSkeleton() {
 
 function ContactMessageCard({ message }) {
     return (
-        <Card className="border-0 shadow-md">
+        <Card>
             <CardContent className="p-4 space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-sm font-medium">
+                    <div className="flex items-center gap-2 text-sm font-medium uppercase">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <span>{message.name}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {new Date(message.createdAt).toLocaleDateString()}
                     </span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
                     <Mail className="h-4 w-4" />
                     <a href={`mailto:${message.email}`} className="hover:underline">
                         {message.email}
@@ -280,7 +268,7 @@ function ContactMessageCard({ message }) {
 
 function ContactMessageSkeleton() {
     return (
-        <Card className="border-0 shadow-md">
+        <Card>
             <CardContent className="p-4">
                 <Skeleton className="h-4 w-1/3 mb-2" />
                 <Skeleton className="h-4 w-1/2 mb-3" />
@@ -312,7 +300,7 @@ export default function Messages() {
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col">
             {/* Header */}
-            <div className="container mx-auto px-4 py-4 border-b">
+            <div className="container mx-auto px-4 py-4 border-b-3 border-foreground">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" asChild>
                         <Link to="/admin">
@@ -320,22 +308,22 @@ export default function Messages() {
                         </Link>
                     </Button>
                     <div className="flex-1">
-                        <h1 className="text-2xl font-bold">Messages</h1>
-                        <p className="text-sm text-muted-foreground">
-                            {openCount} open, {closedCount} closed conversations · {contactCount} contact messages
+                        <h1 className="font-display text-3xl uppercase">MESSAGES</h1>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                            {openCount} open, {closedCount} closed conversations / {contactCount} contact messages
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-3 border-b">
+            <div className="container mx-auto px-4 py-3 border-b-3 border-foreground">
                 <div className="flex flex-wrap gap-2">
                     <Button
                         size="sm"
                         variant={activeTab === 'conversations' ? 'default' : 'outline'}
                         onClick={() => setActiveTab('conversations')}
                     >
-                        Conversations
+                        CONVERSATIONS
                     </Button>
                     <Button
                         size="sm"
@@ -345,7 +333,7 @@ export default function Messages() {
                             setActiveTab('contact')
                         }}
                     >
-                        Contact Form
+                        CONTACT FORM
                     </Button>
                 </div>
             </div>
@@ -355,7 +343,7 @@ export default function Messages() {
                 {activeTab === 'conversations' ? (
                     <>
                         {/* Conversations List */}
-                        <div className={`w-full md:w-80 border-r bg-card flex flex-col ${selectedId ? 'hidden md:flex' : ''}`}>
+                        <div className={`w-full md:w-80 border-r-3 border-foreground bg-card flex flex-col ${selectedId ? 'hidden md:flex' : ''}`}>
                             <ScrollArea className="flex-1">
                                 {isLoading ? (
                                     <>
@@ -369,10 +357,10 @@ export default function Messages() {
                                     </div>
                                 ) : conversations?.length === 0 ? (
                                     <div className="p-8 text-center">
-                                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                                            <MessageSquare className="h-6 w-6 text-muted-foreground" />
+                                        <div className="w-12 h-12 border-3 border-foreground flex items-center justify-center mx-auto mb-3">
+                                            <MessageSquare className="h-6 w-6 text-foreground" />
                                         </div>
-                                        <p className="text-muted-foreground text-sm">No conversations yet</p>
+                                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">No conversations yet</p>
                                     </div>
                                 ) : (
                                     conversations.map((conv) => (
@@ -396,11 +384,11 @@ export default function Messages() {
                         ) : (
                             <div className="hidden md:flex flex-1 items-center justify-center bg-muted/20">
                                 <div className="text-center">
-                                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                                        <MessageSquare className="h-8 w-8 text-muted-foreground" />
+                                    <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
+                                        <MessageSquare className="h-8 w-8 text-foreground" />
                                     </div>
-                                    <h3 className="text-lg font-semibold mb-1">Select a Conversation</h3>
-                                    <p className="text-muted-foreground text-sm">
+                                    <h3 className="font-display text-2xl uppercase mb-1">SELECT A CONVERSATION</h3>
+                                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                                         Choose a conversation from the list to view and reply
                                     </p>
                                 </div>
@@ -408,7 +396,7 @@ export default function Messages() {
                         )}
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col bg-muted/20">
+                    <div className="flex-1 flex flex-col">
                         <ScrollArea className="flex-1 p-4">
                             {contactLoading ? (
                                 <div className="space-y-4">
@@ -422,10 +410,10 @@ export default function Messages() {
                                 </div>
                             ) : contactMessages?.length === 0 ? (
                                 <div className="p-8 text-center">
-                                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                                        <Mail className="h-6 w-6 text-muted-foreground" />
+                                    <div className="w-12 h-12 border-3 border-foreground flex items-center justify-center mx-auto mb-3">
+                                        <Mail className="h-6 w-6 text-foreground" />
                                     </div>
-                                    <p className="text-muted-foreground text-sm">No contact messages yet</p>
+                                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">No contact messages yet</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">

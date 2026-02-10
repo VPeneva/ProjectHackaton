@@ -22,31 +22,36 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-t bg-background">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-                CR
-              </div>
-              <span className="font-bold">CivicReport</span>
-            </Link>
-            <p className="mt-4 text-sm text-muted-foreground">
-              {t('footer.tagline')}
-            </p>
-          </div>
+    <footer className="border-t-4 border-primary bg-foreground text-background">
+      <div className="container mx-auto px-4 py-16">
+        {/* Top section: Logo + Tagline */}
+        <div className="mb-12">
+          <Link to="/" className="inline-block">
+            <span className="font-display text-3xl font-black uppercase tracking-tight text-background">
+              CIVICREPORT<span className="text-primary">.</span>
+            </span>
+          </Link>
+          <p className="mt-3 font-mono text-sm text-background/50 tracking-wider">
+            // CIVIC INFRASTRUCTURE REPORT SYSTEM
+          </p>
+          <p className="mt-2 text-sm text-background/60">
+            {t('footer.tagline')}
+          </p>
+        </div>
 
+        {/* Grid: 4 columns */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Product Links */}
           <div>
-            <h3 className="font-semibold mb-4">{t('footer.quickLinks')}</h3>
-            <ul className="space-y-2">
+            <h3 className="uppercase font-bold text-primary font-mono text-xs tracking-widest mb-6">
+              {t('footer.quickLinks')}
+            </h3>
+            <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.href + link.label}>
                   <Link
                     to={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-xs uppercase tracking-wider text-background/70 hover:text-background transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -57,13 +62,15 @@ export default function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="font-semibold mb-4">{t('footer.resources')}</h3>
-            <ul className="space-y-2">
+            <h3 className="uppercase font-bold text-primary font-mono text-xs tracking-widest mb-6">
+              {t('footer.resources')}
+            </h3>
+            <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href + link.label}>
                   <Link
                     to={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-xs uppercase tracking-wider text-background/70 hover:text-background transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -74,13 +81,15 @@ export default function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="font-semibold mb-4">{t('footer.legal')}</h3>
-            <ul className="space-y-2">
+            <h3 className="uppercase font-bold text-primary font-mono text-xs tracking-widest mb-6">
+              {t('footer.legal')}
+            </h3>
+            <ul className="space-y-3">
               {footerLinks.legal.map((link, index) => (
                 <li key={index}>
                   <Link
                     to={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-xs uppercase tracking-wider text-background/70 hover:text-background transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -88,15 +97,30 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          {/* Status block */}
+          <div>
+            <h3 className="uppercase font-bold text-primary font-mono text-xs tracking-widest mb-6">
+              SYS_STATUS
+            </h3>
+            <div className="space-y-2 font-mono text-xs text-background/50">
+              <p>STATUS: <span className="text-green-400">ONLINE</span></p>
+              <p>BUILD: v1.0.0</p>
+              <p>REGION: BG</p>
+            </div>
+          </div>
         </div>
 
-        <Separator className="my-8" />
+        <Separator className="my-10 h-[2px] bg-background/20" />
 
-        <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
-          <p>
-            &copy; {new Date().getFullYear()} CivicReport. {t('footer.rights')}
+        {/* Footer bottom */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 font-mono text-xs text-background/50">
+          <p className="uppercase tracking-wider">
+            &copy; {new Date().getFullYear()} CIVICREPORT. {t('footer.rights')}
           </p>
-          <p className="mt-2 sm:mt-0">Made with care for our communities</p>
+          <p className="uppercase tracking-wider">
+            Made with care for our communities
+          </p>
         </div>
       </div>
     </footer>

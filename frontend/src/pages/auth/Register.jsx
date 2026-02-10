@@ -55,7 +55,7 @@ export default function Register() {
                 email: formData.email,
                 password: formData.password,
             })
-            const { token, user } = response.data
+            const { token, user } = response
             login(user, token)
             toast.success('Account created successfully!')
             navigate('/dashboard', { replace: true })
@@ -70,26 +70,20 @@ export default function Register() {
     return (
         <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-4 py-12">
             <div className="w-full max-w-md">
-                {/* Decorative background */}
-                <div className="absolute inset-0 -z-10 overflow-hidden">
-                    <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
-                    <div className="absolute bottom-1/3 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-                </div>
-
-                <Card className="border-0 shadow-2xl bg-card/80 backdrop-blur-sm">
-                    <CardHeader className="space-y-1 text-center">
+                <Card className="shadow-brutal">
+                    <CardHeader className="space-y-1 text-center border-b-3 border-foreground">
                         <div className="flex justify-center mb-4">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold text-xl shadow-lg">
+                            <div className="flex h-14 w-14 items-center justify-center border-3 border-foreground bg-primary text-primary-foreground font-display text-2xl">
                                 CR
                             </div>
                         </div>
-                        <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-                        <CardDescription>
-                            Join CivicReport to start improving your community
+                        <CardTitle className="text-3xl">CREATE ACCOUNT</CardTitle>
+                        <CardDescription className="font-mono text-xs uppercase tracking-wider">
+                            [ JOIN THE MOVEMENT ]
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleSubmit}>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 pt-6">
                             {error && (
                                 <Alert variant="destructive">
                                     <AlertCircle className="h-4 w-4" />
@@ -98,7 +92,7 @@ export default function Register() {
                             )}
 
                             <div className="space-y-2">
-                                <Label htmlFor="name">Full Name</Label>
+                                <Label htmlFor="name">FULL NAME</Label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
@@ -116,7 +110,7 @@ export default function Register() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">EMAIL</Label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
@@ -134,7 +128,7 @@ export default function Register() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor="password">PASSWORD</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
@@ -152,7 +146,7 @@ export default function Register() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                <Label htmlFor="confirmPassword">CONFIRM PASSWORD</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
@@ -170,14 +164,14 @@ export default function Register() {
                             </div>
 
                             {/* Password requirements */}
-                            <div className="space-y-2">
+                            <div className="space-y-2 border-3 border-foreground p-3">
+                                <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">[ REQUIREMENTS ]</span>
                                 {passwordRequirements.map((req, index) => (
                                     <div key={index} className="flex items-center space-x-2 text-sm">
                                         <CheckCircle2
-                                            className={`h-4 w-4 ${req.met ? 'text-green-500' : 'text-muted-foreground'
-                                                }`}
+                                            className={`h-4 w-4 ${req.met ? 'text-foreground' : 'text-muted-foreground'}`}
                                         />
-                                        <span className={req.met ? 'text-green-500' : 'text-muted-foreground'}>
+                                        <span className={`font-mono text-xs uppercase ${req.met ? 'text-foreground font-bold' : 'text-muted-foreground'}`}>
                                             {req.label}
                                         </span>
                                     </div>
@@ -189,16 +183,16 @@ export default function Register() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Creating account...
+                                        CREATING ACCOUNT...
                                     </>
                                 ) : (
-                                    'Create Account'
+                                    'CREATE ACCOUNT >>>'
                                 )}
                             </Button>
                             <p className="text-sm text-center text-muted-foreground">
-                                Already have an account?{' '}
-                                <Link to="/login" className="text-primary hover:underline font-medium">
-                                    Sign in
+                                Already registered?{' '}
+                                <Link to="/login" className="text-primary hover:underline font-bold uppercase">
+                                    SIGN IN
                                 </Link>
                             </p>
                         </CardFooter>

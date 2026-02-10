@@ -4,8 +4,22 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 import { sanitizeText } from "../utils/sanitize.js";
 import { createNotifications } from "../utils/notifications.js";
 import { getVoteCutoff } from "../utils/votes.js";
+import { config } from "../config.js";
+import { cacheGet, cacheSet, cacheDel } from "../db/redis.js";
+import crypto from "crypto";
 
 const router = express.Router();
+
+// Build a cache key from query params
+const queryCacheKey = (prefix, query) => {
+  const hash = crypto.createHash("md5").update(JSON.stringify(query)).digest("hex").slice(0, 12);
+  return `${prefix}:${hash}`;
+};
+
+// Invalidate all report-related cache
+const invalidateReportCache = async () => {
+  await cacheDel("reports:*");
+};
 const DUPLICATE_LOOKBACK_DAYS = 30;
 const DUPLICATE_COORD_THRESHOLD = 0.0005;
 
@@ -93,6 +107,13 @@ const addVoteCounts = async (reports = []) => {
  */
 router.get("/", async (req, res) => {
   try {
+    // Skip cache for user-specific queries
+    if (req.query.mine !== "true") {
+      const cacheKey = queryCacheKey("reports:list", req.query);
+      const cached = await cacheGet(cacheKey);
+      if (cached) return res.json(cached);
+    }
+
     const {
       page = 1,
       limit = 20,
@@ -125,7 +146,7 @@ router.get("/", async (req, res) => {
         try {
           const jwt = await import("jsonwebtoken");
           const token = authHeader.split(" ")[1];
-          const decoded = jwt.default.verify(token, process.env.JWT_SECRET || "secret");
+          const decoded = jwt.default.verify(token, config.JWT_SECRET);
           where.userId = decoded.id;
         } catch {
           // Invalid token, ignore mine filter
@@ -240,7 +261,7 @@ router.get("/", async (req, res) => {
 
     const reportsWithVotes = await addVoteCounts(reports);
 
-    res.json({
+    const result = {
       data: reportsWithVotes,
       pagination: {
         page: pageNum,
@@ -248,7 +269,15 @@ router.get("/", async (req, res) => {
         total,
         totalPages: Math.ceil(total / limitNum),
       },
-    });
+    };
+
+    // Cache non-user-specific results for 60s
+    if (mine !== "true") {
+      const cacheKey = queryCacheKey("reports:list", req.query);
+      await cacheSet(cacheKey, result, 60);
+    }
+
+    res.json(result);
   } catch (err) {
     console.error("Error fetching reports:", err);
     res.status(500).json({ error: "Failed to load reports" });
@@ -407,6 +436,7 @@ router.post("/", authMiddleware, async (req, res) => {
       },
     });
 
+    await invalidateReportCache();
     res.json(report);
   } catch (err) {
     console.error("Error creating report:", err);
@@ -419,6 +449,9 @@ router.post("/", authMiddleware, async (req, res) => {
 // GET /api/reports/active
 router.get("/active", async (req, res) => {
   try {
+    const cached = await cacheGet("reports:active");
+    if (cached) return res.json(cached);
+
     const reports = await prisma.report.findMany({
       where: {
         status: {
@@ -432,6 +465,7 @@ router.get("/active", async (req, res) => {
       },
     });
 
+    await cacheSet("reports:active", reports, 60);
     res.json(reports);
   } catch (err) {
     console.error("Error loading active reports:", err);
@@ -442,6 +476,9 @@ router.get("/active", async (req, res) => {
 // GET /api/reports/map
 router.get("/map", async (req, res) => {
   try {
+    const cached = await cacheGet("reports:map");
+    if (cached) return res.json(cached);
+
     const reports = await prisma.report.findMany({
       where: {
         status: { in: ["Pending", "Sent"] },
@@ -465,6 +502,7 @@ router.get("/map", async (req, res) => {
       },
     });
 
+    await cacheSet("reports:map", reports, 45);
     res.json(reports);
   } catch (err) {
     console.error("MAP ERROR:", err);
@@ -483,7 +521,7 @@ router.get("/stats", async (req, res) => {
       try {
         const jwt = await import("jsonwebtoken");
         const token = authHeader.split(" ")[1];
-        const decoded = jwt.default.verify(token, process.env.JWT_SECRET || "secret");
+        const decoded = jwt.default.verify(token, config.JWT_SECRET);
         userId = decoded.id;
       } catch {
         // Invalid token, return global stats
@@ -767,6 +805,7 @@ router.patch("/:id", authMiddleware, async (req, res) => {
       });
     });
 
+    await invalidateReportCache();
     res.json(updated);
   } catch (err) {
     console.error("Error updating report:", err);
@@ -1088,6 +1127,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       where: { id: reportId },
     });
 
+    await invalidateReportCache();
     res.json({ success: true, message: "Report deleted successfully" });
   } catch (err) {
     console.error("Error deleting report:", err);

@@ -2,8 +2,9 @@ import prisma from "../db/client.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { hashPassword, comparePassword } from "../utils/hash.js";
+import { config } from "../config.js";
 
-const RESET_TOKEN_TTL_MINUTES = parseInt(process.env.RESET_TOKEN_TTL_MINUTES || "60", 10);
+const RESET_TOKEN_TTL_MINUTES = config.RESET_TOKEN_TTL_MINUTES;
 
 export const register = async (req, res) => {
   const { email, password, name, adminKey } = req.body;
@@ -15,7 +16,7 @@ export const register = async (req, res) => {
     const hashed = await hashPassword(password);
 
     let role = "USER";
-    if (adminKey && adminKey === process.env.ADMIN_REGISTER_KEY) {
+    if (adminKey && adminKey === config.ADMIN_REGISTER_KEY) {
       role = "ADMIN";
     }
 
@@ -31,7 +32,7 @@ export const register = async (req, res) => {
         role: user.role,
         institutionId: user.institutionId || null,
       },
-      process.env.JWT_SECRET,
+      config.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
@@ -64,7 +65,7 @@ export const login = async (req, res) => {
         role: user.role,
         institutionId: user.institutionId || null,
       },
-      process.env.JWT_SECRET,
+      config.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
@@ -101,7 +102,7 @@ export const forgotPassword = async (req, res) => {
       data: { userId: user.id, tokenHash, expiresAt },
     });
 
-    const shouldExposeToken = process.env.EXPOSE_RESET_TOKEN === "true" || process.env.NODE_ENV !== "production";
+    const shouldExposeToken = config.EXPOSE_RESET_TOKEN || config.NODE_ENV !== "production";
     if (shouldExposeToken) {
       return res.json({
         ...responseMessage,

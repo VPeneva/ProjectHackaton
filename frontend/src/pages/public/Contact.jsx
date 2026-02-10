@@ -100,17 +100,13 @@ export default function Contact() {
         <div className="min-h-screen py-12">
             {/* Hero Section */}
             <section className="relative py-12 md:py-20 overflow-hidden">
-                <div className="absolute inset-0 -z-10">
-                    <div className="absolute top-0 left-1/3 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 right-1/3 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
-                </div>
-
                 <div className="container mx-auto px-4">
                     <div className="max-w-2xl mx-auto text-center mb-12">
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                            Get in Touch
+                        <h1 className="font-display text-6xl md:text-8xl uppercase tracking-tight mb-4">
+                            GET IN TOUCH
                         </h1>
-                        <p className="text-lg text-muted-foreground">
+                        <div className="border-b-3 border-foreground w-24 mx-auto mb-4" />
+                        <p className="font-mono text-sm uppercase tracking-wider text-muted-foreground">
                             Have questions or feedback? We'd love to hear from you. Send us a message
                             and we'll respond as soon as possible.
                         </p>
@@ -123,24 +119,24 @@ export default function Contact() {
                 <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                     {/* Contact Info */}
                     <div className="space-y-6">
-                        <h2 className="text-2xl font-bold">Contact Information</h2>
+                        <h2 className="font-display text-2xl uppercase">Contact Information</h2>
                         <p className="text-muted-foreground">
                             Reach out through any of these channels and we'll get back to you promptly.
                         </p>
 
                         <div className="space-y-4">
                             {contactInfo.map((item, index) => (
-                                <Card key={index} className="border-0 shadow-md">
+                                <Card key={index}>
                                     <CardContent className="p-4 flex items-center space-x-4">
-                                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                            <item.icon className="h-5 w-5 text-primary" />
+                                        <div className="w-10 h-10 border-3 border-foreground bg-muted flex items-center justify-center shrink-0">
+                                            <item.icon className="h-5 w-5 text-foreground" />
                                         </div>
                                         <div>
-                                            <div className="text-sm text-muted-foreground">{item.title}</div>
+                                            <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{item.title}</div>
                                             {item.href ? (
                                                 <a
                                                     href={item.href}
-                                                    className="font-medium hover:text-primary transition-colors"
+                                                    className="font-medium hover:bg-foreground hover:text-background transition-none"
                                                 >
                                                     {item.value}
                                                 </a>
@@ -155,21 +151,21 @@ export default function Contact() {
 
                         {/* Sign in prompt for guests */}
                         {!isAuthenticated && (
-                            <Card className="border-0 shadow-md bg-primary/5">
+                            <Card className="border-3 border-foreground">
                                 <CardContent className="p-4">
                                     <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                            <MessageSquare className="h-5 w-5 text-primary" />
+                                        <div className="w-10 h-10 border-3 border-foreground bg-muted flex items-center justify-center shrink-0">
+                                            <MessageSquare className="h-5 w-5 text-foreground" />
                                         </div>
                                         <div>
-                                            <h3 className="font-medium mb-1">Want live chat support?</h3>
+                                            <h3 className="font-bold uppercase mb-1">Want live chat support?</h3>
                                             <p className="text-sm text-muted-foreground mb-3">
                                                 Sign in to chat directly with our support team and track your conversations.
                                             </p>
                                             <Button size="sm" asChild>
                                                 <Link to="/login">
                                                     <LogIn className="h-4 w-4 mr-2" />
-                                                    Sign In
+                                                    <span className="uppercase">Sign In</span>
                                                 </Link>
                                             </Button>
                                         </div>
@@ -181,9 +177,9 @@ export default function Contact() {
 
                     {/* Contact Form */}
                     <div className="md:col-span-2">
-                        <Card className="border-0 shadow-xl">
-                            <CardHeader>
-                                <CardTitle>
+                        <Card>
+                            <CardHeader className="border-b-3 border-foreground">
+                                <CardTitle className="font-display text-xl uppercase">
                                     {isAuthenticated ? 'Start a Conversation' : 'Send a Message'}
                                 </CardTitle>
                                 <CardDescription>
@@ -193,13 +189,13 @@ export default function Contact() {
                                     }
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="pt-6">
                                 {success ? (
                                     <div className="text-center py-8">
-                                        <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-                                            <CheckCircle className="h-8 w-8 text-green-600" />
+                                        <div className="w-16 h-16 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-4">
+                                            <CheckCircle className="h-8 w-8 text-foreground" />
                                         </div>
-                                        <h3 className="text-xl font-semibold mb-2">Message Sent!</h3>
+                                        <h3 className="font-display text-xl uppercase mb-2">MESSAGE SENT!</h3>
                                         <p className="text-muted-foreground mb-6">
                                             {isAuthenticated
                                                 ? 'Your conversation has been started. You can continue the conversation from your messages.'
@@ -208,17 +204,17 @@ export default function Contact() {
                                         </p>
                                         {isAuthenticated ? (
                                             <div className="flex gap-3 justify-center">
-                                                <Button variant="outline" onClick={() => setSuccess(false)}>
-                                                    Send Another
+                                                <Button variant="outline" onClick={() => setSuccess(false)} className="hover:bg-foreground hover:text-background transition-none">
+                                                    <span className="uppercase">Send Another</span>
                                                 </Button>
                                                 <Button onClick={() => navigate('/messages')}>
                                                     <MessageSquare className="h-4 w-4 mr-2" />
-                                                    View Messages
+                                                    <span className="uppercase">View Messages</span>
                                                 </Button>
                                             </div>
                                         ) : (
-                                            <Button variant="outline" onClick={() => setSuccess(false)}>
-                                                Send Another Message
+                                            <Button variant="outline" onClick={() => setSuccess(false)} className="hover:bg-foreground hover:text-background transition-none">
+                                                <span className="uppercase">Send Another Message</span>
                                             </Button>
                                         )}
                                     </div>
@@ -235,7 +231,7 @@ export default function Contact() {
                                             // Logged-in user form
                                             <>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="subject">Subject</Label>
+                                                    <Label htmlFor="subject" className="font-mono text-xs uppercase tracking-wider">Subject</Label>
                                                     <Input
                                                         id="subject"
                                                         name="subject"
@@ -248,7 +244,7 @@ export default function Contact() {
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="message">Message</Label>
+                                                    <Label htmlFor="message" className="font-mono text-xs uppercase tracking-wider">Message</Label>
                                                     <Textarea
                                                         id="message"
                                                         name="message"
@@ -266,7 +262,7 @@ export default function Contact() {
                                             <>
                                                 <div className="grid sm:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="name">Name</Label>
+                                                        <Label htmlFor="name" className="font-mono text-xs uppercase tracking-wider">Name</Label>
                                                         <Input
                                                             id="name"
                                                             name="name"
@@ -278,7 +274,7 @@ export default function Contact() {
                                                         />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="email">Email</Label>
+                                                        <Label htmlFor="email" className="font-mono text-xs uppercase tracking-wider">Email</Label>
                                                         <Input
                                                             id="email"
                                                             name="email"
@@ -293,7 +289,7 @@ export default function Contact() {
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="message">Message</Label>
+                                                    <Label htmlFor="message" className="font-mono text-xs uppercase tracking-wider">Message</Label>
                                                     <Textarea
                                                         id="message"
                                                         name="message"
@@ -312,12 +308,12 @@ export default function Contact() {
                                             {loading ? (
                                                 <>
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                    Sending...
+                                                    <span className="uppercase">Sending...</span>
                                                 </>
                                             ) : (
                                                 <>
                                                     <Send className="mr-2 h-4 w-4" />
-                                                    {isAuthenticated ? 'Start Conversation' : 'Send Message'}
+                                                    <span className="uppercase">{isAuthenticated ? 'Start Conversation' : 'Send Message'}</span>
                                                 </>
                                             )}
                                         </Button>

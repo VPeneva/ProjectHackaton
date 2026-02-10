@@ -40,20 +40,20 @@ export default function ForgotPassword() {
   return (
     <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="border-0 shadow-2xl bg-card/80 backdrop-blur-sm">
-          <CardHeader className="space-y-2 text-center">
+        <Card className="shadow-brutal">
+          <CardHeader className="space-y-2 text-center border-b-3 border-foreground">
             <div className="flex justify-center mb-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold text-xl shadow-lg">
+              <div className="flex h-14 w-14 items-center justify-center border-3 border-foreground bg-primary text-primary-foreground font-display text-2xl">
                 CR
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">Reset your password</CardTitle>
-            <CardDescription>
-              Enter the email associated with your account and we will send a reset link.
+            <CardTitle className="text-3xl">RESET PASSWORD</CardTitle>
+            <CardDescription className="font-mono text-xs uppercase tracking-wider">
+              [ ENTER YOUR EMAIL TO RECOVER ACCESS ]
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               {error && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
@@ -62,14 +62,14 @@ export default function ForgotPassword() {
               )}
 
               {successMessage && (
-                <Alert>
+                <Alert variant="success">
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>{successMessage}</AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">EMAIL</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -86,17 +86,17 @@ export default function ForgotPassword() {
               </div>
 
               {resetToken && (
-                <div className="rounded-lg border bg-muted/30 p-3 text-sm space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <div className="border-3 border-foreground p-3 text-sm space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground">
                     <KeyRound className="h-3 w-3" />
-                    Reset token (dev only)
+                    RESET TOKEN (DEV)
                   </div>
-                  <code className="block break-all text-xs bg-muted/50 p-2 rounded">
+                  <code className="block break-all text-xs bg-muted p-2 font-mono border-2 border-foreground">
                     {resetToken}
                   </code>
                   {resetUrl && (
                     <Button variant="outline" size="sm" asChild className="w-full">
-                      <Link to={resetUrl}>Open reset page</Link>
+                      <Link to={resetUrl}>OPEN RESET PAGE</Link>
                     </Button>
                   )}
                 </div>
@@ -107,16 +107,16 @@ export default function ForgotPassword() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending reset link...
+                    SENDING...
                   </>
                 ) : (
-                  'Send reset link'
+                  'SEND RESET LINK >>>'
                 )}
               </Button>
               <Button variant="ghost" asChild className="text-sm">
                 <Link to="/login" className="flex items-center gap-1">
                   <ArrowLeft className="h-4 w-4" />
-                  Back to login
+                  BACK TO LOGIN
                 </Link>
               </Button>
             </CardFooter>

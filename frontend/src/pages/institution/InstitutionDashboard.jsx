@@ -9,10 +9,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MapPin, CheckCircle, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-react'
 
-const statusColors = {
-  Pending: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  Sent: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  Finished: 'bg-green-500/10 text-green-600 border-green-500/20',
+const statusVariants = {
+  Pending: 'pending',
+  Sent: 'sent',
+  Finished: 'finished',
 }
 
 export default function InstitutionDashboard() {
@@ -45,15 +45,15 @@ export default function InstitutionDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('institution.title')}</h1>
-        <p className="text-muted-foreground">{t('institution.subtitle')}</p>
+      <div className="mb-8 border-b-3 border-foreground pb-4">
+        <h1 className="font-display text-5xl md:text-7xl uppercase">{t('institution.title')}</h1>
+        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">{t('institution.subtitle')}</p>
       </div>
 
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <Card key={i} className="border-0 shadow-md">
+            <Card key={i}>
               <CardContent className="p-6">
                 <Skeleton className="h-5 w-1/3 mb-3" />
                 <Skeleton className="h-4 w-full mb-2" />
@@ -63,13 +63,13 @@ export default function InstitutionDashboard() {
           ))}
         </div>
       ) : isError ? (
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
             {errorMessage}
           </CardContent>
         </Card>
       ) : reports.length === 0 ? (
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
             {t('institution.noReports')}
           </CardContent>
@@ -77,33 +77,33 @@ export default function InstitutionDashboard() {
       ) : (
         <div className="space-y-4">
           {reports.map((report) => (
-            <Card key={report.id} className="border-0 shadow-md">
-              <CardHeader className="pb-2">
+            <Card key={report.id}>
+              <CardHeader className="pb-2 border-b-3 border-foreground">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div>
-                    <CardTitle className="text-lg">
+                    <CardTitle className="text-lg uppercase">
                       <Link to={`/reports/${report.id}`} className="hover:underline">
                         {report.title}
                       </Link>
                     </CardTitle>
                     {report.address && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                      <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1 mt-1">
                         <MapPin className="h-3 w-3" />
                         {report.address}
                       </p>
                     )}
                   </div>
-                  <Badge variant="outline" className={statusColors[report.status] || ''}>
+                  <Badge variant={statusVariants[report.status] || 'outline'}>
                     {statusLabel(report.status)}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-4">
                 <div className="text-sm text-muted-foreground line-clamp-2">
                   {report.description}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <ThumbsUp className="h-3 w-3" />
                     {report.upvotes ?? 0}
@@ -124,7 +124,7 @@ export default function InstitutionDashboard() {
                     }
                   >
                     <MessageSquare className="h-4 w-4 mr-1" />
-                    {t('institution.respond')}
+                    {t('institution.respond').toUpperCase()}
                   </Button>
                   <Button
                     size="sm"
@@ -132,7 +132,7 @@ export default function InstitutionDashboard() {
                     disabled={resolveReport.isPending || report.status === 'Finished'}
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
-                    {t('institution.resolve')}
+                    {t('institution.resolve').toUpperCase()}
                   </Button>
                 </div>
 
@@ -151,7 +151,7 @@ export default function InstitutionDashboard() {
                       onClick={() => handleSendResponse(report.id)}
                       disabled={respond.isPending || !responses[report.id]?.trim()}
                     >
-                      {t('institution.sendResponse')}
+                      {t('institution.sendResponse').toUpperCase()}
                     </Button>
                   </div>
                 )}

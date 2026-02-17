@@ -15,7 +15,7 @@ const interpolate = (template, vars = {}) =>
 
 export function I18nProvider({
   children,
-  defaultLanguage = 'en',
+  defaultLanguage = 'bg',
   storageKey = 'civic-report-language',
 }) {
   const [language, setLanguage] = useState(() => {

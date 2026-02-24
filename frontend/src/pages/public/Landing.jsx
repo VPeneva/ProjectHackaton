@@ -276,7 +276,7 @@ function CTA() {
                             Ready to Make a Difference?
                         </h2>
                         <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto relative">
-                            Join CivicReport today and become part of the solution. Your voice matters, and together we can build better communities.
+                            Join CityClarity today and become part of the solution. Your voice matters, and together we can build better communities.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative">
                             <Button size="lg" asChild className="text-base">

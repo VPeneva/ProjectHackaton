@@ -15,11 +15,11 @@ export default function Legal() {
             content: [
                 {
                     heading: '1. Acceptance of Terms',
-                    text: 'By accessing and using CivicReport, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.',
+                    text: 'By accessing and using CityClarity, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.',
                 },
                 {
                     heading: '2. Use of Service',
-                    text: 'CivicReport is a platform for citizens to report infrastructure issues to local authorities. You agree to use this service only for its intended purpose and to provide accurate information in your reports.',
+                    text: 'CityClarity is a platform for citizens to report infrastructure issues to local authorities. You agree to use this service only for its intended purpose and to provide accurate information in your reports.',
                 },
                 {
                     heading: '3. User Accounts',
@@ -31,15 +31,15 @@ export default function Legal() {
                 },
                 {
                     heading: '5. Prohibited Activities',
-                    text: 'You may not use CivicReport for spam, harassment, or any illegal activities. Submitting false reports, impersonating others, or attempting to disrupt the service is strictly prohibited.',
+                    text: 'You may not use CityClarity for spam, harassment, or any illegal activities. Submitting false reports, impersonating others, or attempting to disrupt the service is strictly prohibited.',
                 },
                 {
                     heading: '6. Intellectual Property',
-                    text: 'All content and materials on CivicReport are protected by intellectual property rights. Photos you upload remain your property, but you grant us a license to use them for operating and improving the service.',
+                    text: 'All content and materials on CityClarity are protected by intellectual property rights. Photos you upload remain your property, but you grant us a license to use them for operating and improving the service.',
                 },
                 {
                     heading: '7. Limitation of Liability',
-                    text: 'CivicReport is provided "as is" without warranties. We are not responsible for actions taken or not taken by government institutions in response to reports.',
+                    text: 'CityClarity is provided "as is" without warranties. We are not responsible for actions taken or not taken by government institutions in response to reports.',
                 },
                 {
                     heading: '8. Changes to Terms',

@@ -86,7 +86,7 @@ export const generateShareImage = async ({
 
   ctx.fillStyle = 'rgba(255,255,255,0.7)'
   ctx.font = '18px Inter, system-ui, sans-serif'
-  ctx.fillText('CivicReport', 80, 560)
+  ctx.fillText('CityClarity', 80, 560)
 
   return canvas.toDataURL('image/png')
 }

@@ -85,7 +85,7 @@ export default function Register() {
                         </div>
                         <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
                         <CardDescription>
-                            Join CivicReport to start improving your community
+                            Join CityClarity to start improving your community
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleSubmit}>

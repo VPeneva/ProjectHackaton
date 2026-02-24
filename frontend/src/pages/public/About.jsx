@@ -38,7 +38,7 @@ export default function About() {
     ]
 
     const team = [
-        { name: 'CivicReport Team', role: 'Building better communities' },
+        { name: 'CityClarity Team', role: 'Building better communities' },
     ]
 
     return (
@@ -55,7 +55,7 @@ export default function About() {
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
                             About{' '}
                             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                                CivicReport
+                                CityClarity
                             </span>
                         </h1>
                         <p className="text-lg md:text-xl text-muted-foreground">
@@ -73,7 +73,7 @@ export default function About() {
                         <div>
                             <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
                             <p className="text-muted-foreground mb-4">
-                                CivicReport was born from a simple idea: everyone should have an easy way to
+                                CityClarity was born from a simple idea: everyone should have an easy way to
                                 report infrastructure issues in their community. Whether it's a pothole on
                                 your street, a broken streetlight, or damaged public property, we believe
                                 that citizens deserve a voice.
@@ -124,7 +124,7 @@ export default function About() {
                     <div className="text-center mb-12">
                         <h2 className="text-3xl font-bold mb-4">Our Values</h2>
                         <p className="text-muted-foreground max-w-2xl mx-auto">
-                            These principles guide everything we do at CivicReport.
+                            These principles guide everything we do at CityClarity.
                         </p>
                     </div>
 

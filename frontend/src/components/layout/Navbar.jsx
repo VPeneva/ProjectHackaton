@@ -87,7 +87,7 @@ export default function Navbar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
             CR
           </div>
-          <span className="hidden font-bold sm:inline-block">CivicReport</span>
+          <span className="hidden font-bold sm:inline-block">CityClarity</span>
         </Link>
 
         {/* Desktop Navigation */}

@@ -29,7 +29,7 @@ export default function NotFound() {
                 </h1>
                 <p className="text-lg text-muted-foreground mb-8">
                     Oops! Looks like this page went missing. Don't worry, you can find your
-                    way back or explore other parts of CivicReport.
+                    way back or explore other parts of CityClarity.
                 </p>
 
                 {/* Actions */}

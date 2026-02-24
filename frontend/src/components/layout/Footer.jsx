@@ -16,8 +16,8 @@ export default function Footer() {
       { href: '/contact', label: t('nav.contact') },
     ],
     legal: [
-      { href: '/legal', label: 'Terms of Service' },
-      { href: '/legal', label: 'Privacy Policy' },
+      { href: '/legal', label: t('footer.termsOfService') },
+      { href: '/legal', label: t('footer.privacyPolicy') },
     ],
   }
 
@@ -88,6 +88,18 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          {/* Status block */}
+          <div>
+            <h3 className="uppercase font-bold text-primary font-mono text-xs tracking-widest mb-6">
+              {t('footer.systemStatus')}
+            </h3>
+            <div className="space-y-2 font-mono text-xs text-background/50">
+              <p>STATUS: <span className="text-green-400">ONLINE</span></p>
+              <p>BUILD: v1.0.0</p>
+              <p>REGION: BG</p>
+            </div>
+          </div>
         </div>
 
         <Separator className="my-8" />
@@ -96,7 +108,9 @@ export default function Footer() {
           <p>
             &copy; {new Date().getFullYear()} CivicReport. {t('footer.rights')}
           </p>
-          <p className="mt-2 sm:mt-0">Made with care for our communities</p>
+          <p className="uppercase tracking-wider">
+            {t('footer.madeWithCare')}
+          </p>
         </div>
       </div>
     </footer>

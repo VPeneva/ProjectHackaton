@@ -21,48 +21,67 @@ import {
 // Hero Section
 function Hero() {
     return (
-        <section className="relative overflow-hidden py-20 md:py-32">
-            {/* Background decorations */}
-            <div className="absolute inset-0 -z-10">
-                <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
-            </div>
-
-            <div className="container mx-auto px-4">
-                <div className="max-w-4xl mx-auto text-center">
-                    <Badge variant="secondary" className="mb-4 px-4 py-1.5">
-                        <Zap className="w-3 h-3 mr-1" />
-                        Empowering Communities
-                    </Badge>
-
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-                        Report Issues.{' '}
-                        <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                            Transform
-                        </span>{' '}
-                        Your City.
+        <section className="relative border-b-4 border-foreground">
+            <div className="container mx-auto px-4 py-16 md:py-24 lg:py-32">
+                <div className="max-w-6xl">
+                    {/* Massive stacked typography */}
+                    <h1 className="font-display leading-[0.85]">
+                        <span className="block text-7xl md:text-[140px] lg:text-[180px] text-foreground">
+                            REPORT.
+                        </span>
+                        <span className="block text-7xl md:text-[140px] lg:text-[180px] text-primary">
+                            TRANSFORM.
+                        </span>
+                        <span
+                            className="block text-7xl md:text-[140px] lg:text-[180px] text-transparent"
+                            style={{
+                                WebkitTextStroke: '2px hsl(var(--foreground))',
+                            }}
+                        >
+                            IMPROVE.
+                        </span>
                     </h1>
 
-                    <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                        Join thousands of citizens making a difference. Report infrastructure problems,
-                        track progress in real-time, and watch your community improve.
+                    {/* System status line */}
+                    <div className="mt-8 mb-4">
+                        <span className="font-mono text-sm md:text-base text-primary tracking-widest">
+                            [SYSTEM ACTIVE &mdash; ACCEPTING REPORTS]
+                        </span>
+                    </div>
+
+                    {/* Redacted decorative text */}
+                    <p className="font-mono text-muted-foreground/30 line-through text-sm mb-10 select-none">
+                        Nobody cares.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Button size="lg" asChild className="text-base">
+                    {/* CTA buttons */}
+                    <div className="flex flex-col sm:flex-row items-start gap-4">
+                        <Button size="lg" asChild className="text-base font-mono uppercase tracking-wider">
                             <Link to="/register">
-                                Get Started Free
-                                <ArrowRight className="ml-2 h-5 w-5" />
+                                REPORT NOW &gt;&gt;&gt;
                             </Link>
                         </Button>
-                        <Button size="lg" variant="outline" asChild className="text-base">
+                        <Button size="lg" variant="outline" asChild className="text-base font-mono uppercase tracking-wider border-2">
                             <Link to="/reports">
                                 <MapPin className="mr-2 h-5 w-5" />
-                                Explore Reports
+                                EXPLORE REPORTS
                             </Link>
                         </Button>
                     </div>
+                </div>
+            </div>
+
+            {/* Marquee ticker bar */}
+            <div className="bg-foreground overflow-hidden py-3 border-t-4 border-foreground">
+                <div className="marquee-track">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                        <span key={i} className="flex items-center shrink-0">
+                            <span className="font-display text-accent text-xl md:text-2xl tracking-widest whitespace-nowrap px-6">
+                                YOUR CITY NEEDS YOU
+                            </span>
+                            <span className="w-4 h-4 bg-primary shrink-0" />
+                        </span>
+                    ))}
                 </div>
             </div>
         </section>
@@ -76,69 +95,69 @@ function Features() {
             icon: FileText,
             title: 'Easy Reporting',
             description: 'Submit reports in minutes with our intuitive form. Add photos and pinpoint locations on the map.',
-            color: 'text-blue-500',
-            bgColor: 'bg-blue-500/10',
         },
         {
             icon: MapPin,
             title: 'Interactive Map',
-            description: 'View all active reports on an interactive map. See what\'s happening in your neighborhood.',
-            color: 'text-green-500',
-            bgColor: 'bg-green-500/10',
+            description: "View all active reports on an interactive map. See what's happening in your neighborhood.",
         },
         {
             icon: Clock,
             title: 'Real-time Tracking',
             description: 'Track your report status from submission to resolution. Stay informed every step of the way.',
-            color: 'text-amber-500',
-            bgColor: 'bg-amber-500/10',
         },
         {
             icon: Building2,
             title: 'Government Connection',
             description: 'Reports are forwarded directly to responsible institutions for quick action.',
-            color: 'text-purple-500',
-            bgColor: 'bg-purple-500/10',
         },
         {
             icon: Shield,
             title: 'Transparent Process',
             description: 'Full visibility into the reporting process. Know exactly where your report stands.',
-            color: 'text-red-500',
-            bgColor: 'bg-red-500/10',
         },
         {
             icon: Users,
             title: 'Community Driven',
             description: 'Join a community of engaged citizens working together to improve public spaces.',
-            color: 'text-teal-500',
-            bgColor: 'bg-teal-500/10',
         },
     ]
 
     return (
-        <section className="py-20 bg-muted/30">
+        <section className="py-20 md:py-28">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                        Everything You Need to Make a Difference
-                    </h2>
-                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        Powerful tools designed to make civic reporting simple, effective, and impactful.
-                    </p>
-                </div>
+                {/* Section title */}
+                <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-16 border-b-4 border-foreground pb-6">
+                    CAPABILITIES
+                </h2>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Grid with thick shared borders */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 border-t-[3px] border-l-[3px] border-foreground">
                     {features.map((feature, index) => (
-                        <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                            <CardContent className="p-6">
-                                <div className={`w-12 h-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4`}>
-                                    <feature.icon className={`h-6 w-6 ${feature.color}`} />
-                                </div>
-                                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                                <p className="text-muted-foreground">{feature.description}</p>
-                            </CardContent>
-                        </Card>
+                        <div
+                            key={index}
+                            className="group border-b-[3px] border-r-[3px] border-foreground p-6 md:p-8 transition-none hover:bg-foreground hover:text-background cursor-default"
+                        >
+                            {/* Number tag */}
+                            <span className="font-mono text-sm text-primary group-hover:text-primary font-bold tracking-wider">
+                                [{String(index + 1).padStart(2, '0')}]
+                            </span>
+
+                            {/* Icon */}
+                            <div className="mt-4 mb-4">
+                                <feature.icon className="h-8 w-8" strokeWidth={2.5} />
+                            </div>
+
+                            {/* Title */}
+                            <h3 className="font-display text-2xl md:text-3xl uppercase mb-3">
+                                {feature.title}
+                            </h3>
+
+                            {/* Description */}
+                            <p className="text-sm md:text-base leading-relaxed opacity-80">
+                                {feature.description}
+                            </p>
+                        </div>
                     ))}
                 </div>
             </div>
@@ -176,36 +195,44 @@ function HowItWorks() {
     ]
 
     return (
-        <section className="py-20">
+        <section className="py-20 md:py-28 bg-muted/30 border-y-4 border-foreground">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
-                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        Making your voice heard has never been easier. Follow these simple steps to report an issue.
-                    </p>
-                </div>
+                {/* Section title */}
+                <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-16">
+                    HOW IT WORKS
+                </h2>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {steps.map((item, index) => (
-                        <div key={index} className="relative text-center">
-                            {/* Connector line */}
-                            {index < steps.length - 1 && (
-                                <div className="hidden lg:block absolute top-10 left-1/2 w-full h-0.5 bg-gradient-to-r from-primary/50 to-primary/20" />
-                            )}
+                <div className="relative">
+                    {/* Connector line (desktop only) */}
+                    <div className="hidden lg:block absolute top-[55px] left-[calc(12.5%+2px)] right-[calc(12.5%+2px)] h-[3px] bg-foreground z-0" />
 
-                            <div className="relative z-10">
-                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                    <item.icon className="h-8 w-8" />
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
+                        {steps.map((item, index) => (
+                            <div key={index} className="text-center relative z-10">
+                                {/* Step number in bordered square */}
+                                <div className="w-28 h-28 border-[3px] border-foreground bg-background flex items-center justify-center mx-auto mb-6">
+                                    <span className="font-display text-[80px] leading-none text-foreground">
+                                        {item.step}
+                                    </span>
                                 </div>
-                                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-sm font-bold shadow-md mx-auto" style={{ left: 'calc(50% + 20px)' }}>
-                                    {item.step}
-                                </div>
+
+                                {/* Monospace step label */}
+                                <span className="font-mono text-xs md:text-sm text-primary font-bold tracking-widest">
+                                    [STEP {String(item.step).padStart(2, '0')}]
+                                </span>
+
+                                {/* Title */}
+                                <h3 className="font-display text-2xl md:text-3xl uppercase mt-3 mb-2">
+                                    {item.title}
+                                </h3>
+
+                                {/* Description */}
+                                <p className="text-sm text-muted-foreground leading-relaxed max-w-[250px] mx-auto">
+                                    {item.description}
+                                </p>
                             </div>
-
-                            <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                            <p className="text-muted-foreground">{item.description}</p>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>
@@ -221,39 +248,58 @@ function Stats() {
             label: 'Reports Submitted',
             value: stats?.total || '500+',
             icon: FileText,
+            mono: 'TOTAL_REPORTS',
         },
         {
             label: 'Issues Resolved',
             value: stats?.byStatus?.FINISHED || '200+',
             icon: CheckCircle,
+            mono: 'STATUS_RESOLVED',
         },
         {
             label: 'Active Reports',
             value: (stats?.byStatus?.PENDING || 0) + (stats?.byStatus?.SENT || 0) || '50+',
             icon: Clock,
+            mono: 'STATUS_ACTIVE',
         },
     ]
 
     return (
-        <section className="py-20 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+        <section className="bg-foreground text-background py-20 md:py-28">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Making Real Impact</h2>
-                    <p className="text-lg opacity-90 max-w-2xl mx-auto">
-                        Together, we're building better communities. Here's what we've accomplished so far.
-                    </p>
-                </div>
+                <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-16 text-background">
+                    IMPACT IN NUMBERS
+                </h2>
 
-                <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div className="flex flex-col md:flex-row items-center justify-center max-w-5xl mx-auto">
                     {statItems.map((stat, index) => (
-                        <div key={index} className="text-center">
-                            <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
-                                <stat.icon className="h-8 w-8" />
+                        <div key={index} className="flex items-center">
+                            <div className="text-center px-8 md:px-12 py-6">
+                                {/* Monospace sub-label */}
+                                <span className="font-mono text-xs tracking-widest text-background/50 block mb-2">
+                                    {stat.mono}
+                                </span>
+
+                                {/* Huge number */}
+                                <div className="font-display text-6xl md:text-7xl lg:text-8xl text-background leading-none mb-3">
+                                    {isLoading ? '...' : stat.value}
+                                </div>
+
+                                {/* Label */}
+                                <span className="font-mono text-sm tracking-wider text-background/70 uppercase">
+                                    {stat.label}
+                                </span>
                             </div>
-                            <div className="text-4xl md:text-5xl font-bold mb-2">
-                                {isLoading ? '...' : stat.value}
-                            </div>
-                            <div className="text-lg opacity-90">{stat.label}</div>
+
+                            {/* Vertical divider (not after last item) */}
+                            {index < statItems.length - 1 && (
+                                <div className="hidden md:block w-[3px] h-32 bg-background shrink-0" />
+                            )}
+
+                            {/* Horizontal divider on mobile */}
+                            {index < statItems.length - 1 && (
+                                <div className="block md:hidden w-32 h-[3px] bg-background shrink-0" />
+                            )}
                         </div>
                     ))}
                 </div>
@@ -265,28 +311,39 @@ function Stats() {
 // CTA Section
 function CTA() {
     return (
-        <section className="py-20">
+        <section className="py-20 md:py-28">
             <div className="container mx-auto px-4">
-                <Card className="max-w-4xl mx-auto border-0 shadow-2xl bg-gradient-to-br from-card to-muted/50 overflow-hidden">
-                    <CardContent className="p-8 md:p-12 text-center relative">
-                        {/* Background decoration */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <Card className="max-w-4xl mx-auto border-[3px] border-foreground shadow-brutal bg-background overflow-hidden">
+                    <CardContent className="p-8 md:p-12 lg:p-16 text-center relative">
+                        {/* URGENT stamp */}
+                        <div className="absolute top-6 right-6 md:top-8 md:right-8">
+                            <span className="inline-block font-display text-3xl md:text-4xl text-primary border-[3px] border-primary px-4 py-1 rotate-12 select-none">
+                                URGENT
+                            </span>
+                        </div>
 
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4 relative">
-                            Ready to Make a Difference?
+                        {/* Headline */}
+                        <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-6 leading-[0.9] pt-8">
+                            DO SOMETHING
+                            <br />
+                            ABOUT IT
                         </h2>
-                        <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto relative">
-                            Join CityClarity today and become part of the solution. Your voice matters, and together we can build better communities.
+
+                        <p className="font-mono text-sm md:text-base text-muted-foreground mb-10 max-w-xl mx-auto">
+                            Your voice matters. Join CityClarity today and become part of the solution. Together we build better communities.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative">
-                            <Button size="lg" asChild className="text-base">
+
+                        {/* CTA buttons */}
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Button size="lg" asChild className="text-base font-mono uppercase tracking-wider">
                                 <Link to="/register">
-                                    Create Free Account
-                                    <ArrowRight className="ml-2 h-5 w-5" />
+                                    REPORT NOW &gt;&gt;&gt;
                                 </Link>
                             </Button>
-                            <Button size="lg" variant="outline" asChild className="text-base">
-                                <Link to="/about">Learn More About Us</Link>
+                            <Button size="lg" variant="outline" asChild className="text-base font-mono uppercase tracking-wider border-2">
+                                <Link to="/about">
+                                    LEARN MORE
+                                </Link>
                             </Button>
                         </div>
                     </CardContent>

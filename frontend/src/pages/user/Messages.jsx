@@ -36,19 +36,15 @@ function ConversationItem({ conversation, isActive, onClick }) {
         <button
             type="button"
             onClick={onClick}
-            className={`w-full text-left p-4 cursor-pointer border-b transition-colors hover:bg-muted/50 ${isActive ? 'bg-primary/10 border-l-2 border-l-primary' : ''
+            className={`w-full text-left p-4 cursor-pointer border-b-3 border-foreground transition-none hover:bg-foreground hover:text-background ${isActive ? 'bg-primary text-primary-foreground' : ''
                 }`}
         >
             <div className="flex items-start justify-between gap-2 mb-1">
-                <h3 className="font-medium line-clamp-1">{conversation.subject}</h3>
+                <h3 className="font-display text-lg uppercase line-clamp-1">{conversation.subject}</h3>
                 <Badge
-                    variant="outline"
-                    className={isOpen
-                        ? 'bg-green-500/10 text-green-600 border-green-500/20'
-                        : 'bg-gray-500/10 text-gray-600 border-gray-500/20'
-                    }
+                    variant={isOpen ? 'sent' : 'finished'}
                 >
-                    {isOpen ? 'Open' : 'Closed'}
+                    {isOpen ? 'OPEN' : 'CLOSED'}
                 </Badge>
             </div>
             {lastMessage && (
@@ -57,10 +53,10 @@ function ConversationItem({ conversation, isActive, onClick }) {
                 </p>
             )}
             <div className="flex items-center justify-between mt-2">
-                <span className="text-xs text-muted-foreground">
+                <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                     {conversation.messageCount} message{conversation.messageCount !== 1 ? 's' : ''}
                 </span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {new Date(conversation.updatedAt).toLocaleDateString()}
                 </span>
@@ -110,7 +106,7 @@ function ChatView({ conversationId, onBack }) {
     if (!conversation) {
         return (
             <div className="flex-1 flex items-center justify-center">
-                <p className="text-muted-foreground">Conversation not found</p>
+                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Conversation not found</p>
             </div>
         )
     }
@@ -120,26 +116,22 @@ function ChatView({ conversationId, onBack }) {
     return (
         <div className="flex-1 flex flex-col h-full">
             {/* Chat Header */}
-            <div className="p-4 border-b flex items-center justify-between bg-card">
+            <div className="p-4 border-b-3 border-foreground flex items-center justify-between bg-card">
                 <div className="flex items-center gap-3">
                     <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h2 className="font-semibold">{conversation.subject}</h2>
-                        <p className="text-sm text-muted-foreground">
+                        <h2 className="font-display text-xl uppercase">{conversation.subject}</h2>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             Support conversation
                         </p>
                     </div>
                 </div>
                 <Badge
-                    variant="outline"
-                    className={isOpen
-                        ? 'bg-green-500/10 text-green-600 border-green-500/20'
-                        : 'bg-gray-500/10 text-gray-600 border-gray-500/20'
-                    }
+                    variant={isOpen ? 'sent' : 'finished'}
                 >
-                    {isOpen ? 'Open' : 'Closed'}
+                    {isOpen ? 'OPEN' : 'CLOSED'}
                 </Badge>
                 {isOpen && (
                     <Button
@@ -152,7 +144,7 @@ function ChatView({ conversationId, onBack }) {
                         {closeConversation.isPending ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                            'Close'
+                            'CLOSE'
                         )}
                     </Button>
                 )}
@@ -167,13 +159,13 @@ function ChatView({ conversationId, onBack }) {
                             className={`flex ${msg.isFromAdmin ? 'justify-start' : 'justify-end'}`}
                         >
                             <div
-                                className={`max-w-[80%] rounded-lg p-3 ${msg.isFromAdmin
+                                className={`max-w-[80%] border-3 border-foreground p-3 ${msg.isFromAdmin
                                         ? 'bg-muted'
                                         : 'bg-primary text-primary-foreground'
                                     }`}
                             >
                                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                <div className={`text-xs mt-1 ${msg.isFromAdmin ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
+                                <div className={`font-mono text-xs uppercase tracking-wider mt-1 ${msg.isFromAdmin ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
                                     {msg.isFromAdmin ? 'Support' : 'You'} - {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             </div>
@@ -185,7 +177,7 @@ function ChatView({ conversationId, onBack }) {
 
             {/* Message Input */}
             {isOpen ? (
-                <form onSubmit={handleSend} className="p-4 border-t bg-card">
+                <form onSubmit={handleSend} className="p-4 border-t-3 border-foreground bg-card">
                     <div className="flex gap-2">
                         <Input
                             value={message}
@@ -203,8 +195,8 @@ function ChatView({ conversationId, onBack }) {
                     </div>
                 </form>
             ) : (
-                <div className="p-4 border-t bg-muted/50 text-center">
-                    <p className="text-sm text-muted-foreground">
+                <div className="p-4 border-t-3 border-foreground bg-muted text-center">
+                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                         This conversation has been closed by support.
                     </p>
                 </div>
@@ -236,15 +228,15 @@ function NewConversationDialog({ open, onOpenChange }) {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>New Conversation</DialogTitle>
-                    <DialogDescription>
+                    <DialogTitle className="font-display text-2xl uppercase">NEW CONVERSATION</DialogTitle>
+                    <DialogDescription className="font-mono text-xs uppercase tracking-wider">
                         Start a new conversation with our support team.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="subject">Subject</Label>
+                            <Label htmlFor="subject" className="font-mono text-xs uppercase tracking-wider">SUBJECT</Label>
                             <Input
                                 id="subject"
                                 value={subject}
@@ -254,7 +246,7 @@ function NewConversationDialog({ open, onOpenChange }) {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="message">Message</Label>
+                            <Label htmlFor="message" className="font-mono text-xs uppercase tracking-wider">MESSAGE</Label>
                             <Textarea
                                 id="message"
                                 value={message}
@@ -271,7 +263,7 @@ function NewConversationDialog({ open, onOpenChange }) {
                             variant="outline"
                             onClick={() => onOpenChange(false)}
                         >
-                            Cancel
+                            CANCEL
                         </Button>
                         <Button
                             type="submit"
@@ -282,7 +274,7 @@ function NewConversationDialog({ open, onOpenChange }) {
                             ) : (
                                 <Send className="h-4 w-4 mr-2" />
                             )}
-                            Send Message
+                            SEND MESSAGE
                         </Button>
                     </DialogFooter>
                 </form>
@@ -293,7 +285,7 @@ function NewConversationDialog({ open, onOpenChange }) {
 
 function ConversationSkeleton() {
     return (
-        <div className="p-4 border-b">
+        <div className="p-4 border-b-3 border-foreground">
             <Skeleton className="h-5 w-3/4 mb-2" />
             <Skeleton className="h-4 w-full mb-2" />
             <Skeleton className="h-3 w-1/2" />
@@ -315,17 +307,17 @@ export default function UserMessages() {
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col">
             {/* Header */}
-            <div className="container mx-auto px-4 py-4 border-b">
+            <div className="container mx-auto px-4 py-4 border-b-3 border-foreground">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">My Messages</h1>
-                        <p className="text-sm text-muted-foreground">
+                        <h1 className="font-display text-3xl uppercase">MY MESSAGES</h1>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             {openCount} open conversation{openCount !== 1 ? 's' : ''}
                         </p>
                     </div>
                     <Button onClick={() => setNewDialogOpen(true)}>
                         <Plus className="h-4 w-4 mr-2" />
-                        New Message
+                        NEW MESSAGE
                     </Button>
                 </div>
             </div>
@@ -333,7 +325,7 @@ export default function UserMessages() {
             {/* Main Content */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Conversations List */}
-                <div className={`w-full md:w-80 border-r bg-card flex flex-col ${selectedId ? 'hidden md:flex' : ''}`}>
+                <div className={`w-full md:w-80 border-r-3 border-foreground bg-card flex flex-col ${selectedId ? 'hidden md:flex' : ''}`}>
                     <ScrollArea className="flex-1">
                         {isLoading ? (
                             <>
@@ -347,13 +339,13 @@ export default function UserMessages() {
                             </div>
                         ) : conversations?.length === 0 ? (
                             <div className="p-8 text-center">
-                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+                                <div className="w-12 h-12 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-3">
                                     <MessageSquare className="h-6 w-6 text-muted-foreground" />
                                 </div>
-                                <p className="text-muted-foreground text-sm mb-4">No conversations yet</p>
+                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-4">No conversations yet</p>
                                 <Button size="sm" onClick={() => setNewDialogOpen(true)}>
                                     <Plus className="h-4 w-4 mr-1" />
-                                    Start a conversation
+                                    START A CONVERSATION
                                 </Button>
                             </div>
                         ) : (
@@ -378,16 +370,16 @@ export default function UserMessages() {
                 ) : (
                     <div className="hidden md:flex flex-1 items-center justify-center bg-muted/20">
                         <div className="text-center">
-                            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                            <div className="w-16 h-16 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-4">
                                 <MessageSquare className="h-8 w-8 text-muted-foreground" />
                             </div>
-                            <h3 className="text-lg font-semibold mb-1">Select a Conversation</h3>
-                            <p className="text-muted-foreground text-sm mb-4">
+                            <h3 className="font-display text-2xl uppercase mb-1">SELECT A CONVERSATION</h3>
+                            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-4">
                                 Choose a conversation or start a new one
                             </p>
                             <Button onClick={() => setNewDialogOpen(true)}>
                                 <Plus className="h-4 w-4 mr-2" />
-                                New Message
+                                NEW MESSAGE
                             </Button>
                         </div>
                     </div>

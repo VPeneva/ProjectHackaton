@@ -8,21 +8,21 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { FileText, Clock, CheckCircle, Send, User, Trophy } from 'lucide-react'
 
 const statusConfig = {
-  Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-  Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-  Finished: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+  Pending: { label: 'Pending', variant: 'pending' },
+  Sent: { label: 'In Progress', variant: 'sent' },
+  Finished: { label: 'Resolved', variant: 'finished' },
 }
 
 function StatCard({ title, value, icon: Icon }) {
   return (
-    <Card className="border-0 shadow-md">
+    <Card>
       <CardContent className="p-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold">{value}</p>
+          <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{title}</p>
+          <p className="font-display text-3xl">{value}</p>
         </div>
-        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-          <Icon className="h-5 w-5 text-muted-foreground" />
+        <div className="w-10 h-10 border-3 border-foreground bg-muted flex items-center justify-center">
+          <Icon className="h-5 w-5 text-foreground" />
         </div>
       </CardContent>
     </Card>
@@ -34,7 +34,7 @@ function ReportCard({ report }) {
   const imageUrl = report.images?.[0]?.url || report.imageUrl
 
   return (
-    <Card className="border-0 shadow-md overflow-hidden">
+    <Card className="overflow-hidden">
       {imageUrl && (
         <Link to={`/reports/${report.id}`} className="block">
           <div className="aspect-video overflow-hidden bg-muted">
@@ -44,14 +44,14 @@ function ReportCard({ report }) {
       )}
       <CardContent className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold line-clamp-1">{report.title}</h3>
-          <Badge variant="outline" className={status.color}>
+          <h3 className="font-bold uppercase line-clamp-1">{report.title}</h3>
+          <Badge variant={status.variant}>
             {status.label}
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground line-clamp-2">{report.description}</p>
-        <Button size="sm" variant="outline" asChild>
-          <Link to={`/reports/${report.id}`}>View Report</Link>
+        <Button size="sm" variant="outline" asChild className="hover:bg-foreground hover:text-background transition-none">
+          <Link to={`/reports/${report.id}`}><span className="uppercase">View Report</span></Link>
         </Button>
       </CardContent>
     </Card>
@@ -84,13 +84,13 @@ export default function UserProfile() {
   if (isError || !data) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card className="border-0 shadow-lg max-w-lg mx-auto">
+        <Card className="max-w-lg mx-auto">
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground">
               {error?.response?.data?.error || 'Unable to load user profile.'}
             </p>
             <Button asChild className="mt-4">
-              <Link to="/reports">Back to Reports</Link>
+              <Link to="/reports"><span className="uppercase">Back to Reports</span></Link>
             </Button>
           </CardContent>
         </Card>
@@ -103,12 +103,12 @@ export default function UserProfile() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
-          <User className="h-6 w-6 text-primary" />
+        <div className="w-14 h-14 border-3 border-foreground bg-muted flex items-center justify-center">
+          <User className="h-6 w-6 text-foreground" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold">{user.name}</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="font-display text-5xl uppercase">{user.name}</h1>
+          <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
             Member since {new Date(user.createdAt).toLocaleDateString()}
           </p>
         </div>
@@ -123,20 +123,20 @@ export default function UserProfile() {
 
       {gamification && (
         <div className="grid md:grid-cols-2 gap-4 mb-8">
-          <Card className="border-0 shadow-md">
+          <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">{t('gamification.points')}</p>
-                <p className="text-2xl font-bold">{gamification.points}</p>
+                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('gamification.points')}</p>
+                <p className="font-display text-3xl">{gamification.points}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                <Trophy className="h-5 w-5 text-muted-foreground" />
+              <div className="w-10 h-10 border-3 border-foreground bg-muted flex items-center justify-center">
+                <Trophy className="h-5 w-5 text-foreground" />
               </div>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-md">
+          <Card>
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground mb-2">{t('gamification.badges')}</p>
+              <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-2">{t('gamification.badges')}</p>
               <div className="flex flex-wrap gap-2">
                 {gamification.badges?.length ? (
                   gamification.badges.map((badge) => (
@@ -153,11 +153,11 @@ export default function UserProfile() {
         </div>
       )}
 
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">Recent Reports</h2>
+      <div className="mb-4 border-b-3 border-foreground pb-4">
+        <h2 className="font-display text-xl uppercase">Recent Reports</h2>
       </div>
       {reports.length === 0 ? (
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
             No reports published yet.
           </CardContent>

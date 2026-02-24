@@ -39,8 +39,8 @@ import {
 import { toast } from 'sonner'
 
 const statusConfig = {
-    Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    Pending: { label: 'PENDING', variant: 'pending' },
+    Sent: { label: 'IN PROGRESS', variant: 'sent' },
 }
 
 function ReportRow({ report, onSend, onResolve, institutions, selected, onToggleSelect, onMerge }) {
@@ -57,12 +57,12 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
     const ratio = totalVotes ? upvotes / totalVotes : 0
     const communityBadge =
         totalVotes === 0
-            ? { label: 'No votes yet', className: 'bg-muted text-muted-foreground border-border/60' }
+            ? { label: 'NO VOTES YET', variant: 'outline' }
             : ratio >= 0.7
-                ? { label: 'Community validated', className: 'bg-green-500/10 text-green-600 border-green-500/20' }
+                ? { label: 'COMMUNITY VALIDATED', variant: 'finished' }
                 : ratio <= 0.3
-                    ? { label: 'Needs review', className: 'bg-rose-500/10 text-rose-600 border-rose-500/20' }
-                    : { label: 'Mixed feedback', className: 'bg-amber-500/10 text-amber-600 border-amber-500/20' }
+                    ? { label: 'NEEDS REVIEW', variant: 'pending' }
+                    : { label: 'MIXED FEEDBACK', variant: 'sent' }
 
     const handleSend = async () => {
         if (!selectedInstitution) {
@@ -83,7 +83,7 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
 
     return (
         <>
-            <Card className="border-0 shadow-md">
+            <Card>
                 <CardContent className="p-4">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                         <div className="flex items-start">
@@ -96,7 +96,7 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                         </div>
                         {/* Image */}
                         {imageUrl && (
-                            <div className="w-full lg:w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
+                            <div className="w-full lg:w-20 h-20 border-3 border-foreground overflow-hidden bg-muted shrink-0">
                                 <img
                                     src={imageUrl}
                                     alt={report.title}
@@ -108,15 +108,15 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2 mb-1">
-                                <h3 className="font-semibold line-clamp-1">{report.title}</h3>
-                                <Badge variant="outline" className={status.color}>
+                                <h3 className="font-semibold uppercase line-clamp-1">{report.title}</h3>
+                                <Badge variant={status.variant}>
                                     {status.label}
                                 </Badge>
                             </div>
                             <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                                 {report.description}
                             </p>
-                            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-4 font-mono text-xs uppercase tracking-wider text-muted-foreground">
                                 {report.category && (
                                     <span className="flex items-center gap-1">
                                         <Building2 className="h-3 w-3" />
@@ -134,7 +134,7 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                                     {new Date(report.createdAt).toLocaleDateString()}
                                 </span>
                             </div>
-                            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                            <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1 text-emerald-600">
                                     <ThumbsUp className="h-3 w-3" />
                                     {upvotes}
@@ -143,7 +143,7 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                                     <ThumbsDown className="h-3 w-3" />
                                     {downvotes}
                                 </span>
-                                <Badge variant="outline" className={communityBadge.className}>
+                                <Badge variant={communityBadge.variant}>
                                     {communityBadge.label}
                                 </Badge>
                             </div>
@@ -154,36 +154,34 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                             <Button variant="outline" size="sm" asChild>
                                 <Link to={`/reports/${report.id}`}>
                                     <Eye className="h-4 w-4 mr-1" />
-                                    View
+                                    VIEW
                                 </Link>
                             </Button>
 
                             <Button variant="outline" size="sm" onClick={() => onMerge(report)}>
                                 <GitMerge className="h-4 w-4 mr-1" />
-                                Merge
+                                MERGE
                             </Button>
 
                             {report.status === 'Pending' && (
                                 <Button size="sm" onClick={() => setSendDialogOpen(true)}>
                                     <Send className="h-4 w-4 mr-1" />
-                                    Send
+                                    SEND
                                 </Button>
                             )}
 
                             {report.status === 'Sent' && (
                                 <Button
                                     size="sm"
-                                    variant="success"
                                     onClick={handleResolve}
                                     disabled={resolving}
-                                    className="bg-green-600 hover:bg-green-700 text-white"
                                 >
                                     {resolving ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
                                         <>
                                             <CheckCircle className="h-4 w-4 mr-1" />
-                                            Resolve
+                                            RESOLVE
                                         </>
                                     )}
                                 </Button>
@@ -197,8 +195,8 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
             <Dialog open={sendDialogOpen} onOpenChange={setSendDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Send Report to Institution</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="font-display text-2xl uppercase">SEND REPORT TO INSTITUTION</DialogTitle>
+                        <DialogDescription className="font-mono text-xs uppercase tracking-wider">
                             Select the institution responsible for handling this report.
                         </DialogDescription>
                     </DialogHeader>
@@ -218,7 +216,7 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setSendDialogOpen(false)}>
-                            Cancel
+                            CANCEL
                         </Button>
                         <Button onClick={handleSend} disabled={sending || !selectedInstitution}>
                             {sending ? (
@@ -226,7 +224,7 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                             ) : (
                                 <Send className="h-4 w-4 mr-2" />
                             )}
-                            Send Report
+                            SEND REPORT
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -237,10 +235,10 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
 
 function ReportSkeleton() {
     return (
-        <Card className="border-0 shadow-md">
+        <Card>
             <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                    <Skeleton className="w-20 h-20 rounded-lg shrink-0" />
+                    <Skeleton className="w-20 h-20 shrink-0" />
                     <div className="flex-1">
                         <Skeleton className="h-5 w-3/4 mb-2" />
                         <Skeleton className="h-4 w-full mb-1" />
@@ -370,51 +368,51 @@ export default function ManageReports() {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 border-b-3 border-foreground pb-4">
                 <div>
-                    <h1 className="text-3xl font-bold mb-2">Manage Reports</h1>
-                    <p className="text-muted-foreground">
+                    <h1 className="font-display text-5xl uppercase">MANAGE REPORTS</h1>
+                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">
                         Review, forward, and resolve submitted reports.
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <label className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground">
                         <input
                             type="checkbox"
                             checked={allSelected}
                             onChange={toggleSelectAll}
                             className="h-4 w-4 accent-primary"
                         />
-                        Select all
+                        SELECT ALL
                     </label>
                     <Button
                         variant={filter === 'all' ? 'default' : 'outline'}
                         onClick={() => setFilter('all')}
                         size="sm"
                     >
-                        All ({(pendingCount + sentCount)})
+                        ALL ({(pendingCount + sentCount)})
                     </Button>
                     <Button
                         variant={filter === 'Pending' ? 'default' : 'outline'}
                         onClick={() => setFilter('Pending')}
                         size="sm"
                     >
-                        Pending ({pendingCount})
+                        PENDING ({pendingCount})
                     </Button>
                     <Button
                         variant={filter === 'Sent' ? 'default' : 'outline'}
                         onClick={() => setFilter('Sent')}
                         size="sm"
                     >
-                        In Progress ({sentCount})
+                        IN PROGRESS ({sentCount})
                     </Button>
                 </div>
             </div>
 
             {selectedIds.length > 0 && (
-                <Card className="border-0 shadow-lg mb-6">
+                <Card className="border-3 border-foreground mb-6">
                     <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="text-sm text-muted-foreground">
+                        <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             {selectedIds.length} report{selectedIds.length !== 1 ? 's' : ''} selected
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -424,17 +422,15 @@ export default function ManageReports() {
                                 disabled={bulkSend.isPending}
                             >
                                 <Send className="h-4 w-4 mr-1" />
-                                Bulk Send
+                                BULK SEND
                             </Button>
                             <Button
                                 size="sm"
-                                variant="success"
-                                className="bg-green-600 hover:bg-green-700 text-white"
                                 onClick={handleBulkResolve}
                                 disabled={bulkResolve.isPending}
                             >
                                 <CheckCircle className="h-4 w-4 mr-1" />
-                                Bulk Resolve
+                                BULK RESOLVE
                             </Button>
                         </div>
                     </CardContent>
@@ -449,19 +445,19 @@ export default function ManageReports() {
                     ))}
                 </div>
             ) : isError ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
                         <p className="text-muted-foreground">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : filteredReports.length === 0 ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
-                        <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
-                            <CheckCircle className="h-8 w-8 text-green-500" />
+                        <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
+                            <CheckCircle className="h-8 w-8 text-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">All Caught Up!</h3>
-                        <p className="text-muted-foreground">
+                        <h3 className="font-display text-2xl uppercase mb-2">ALL CAUGHT UP!</h3>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             {filter === 'all'
                                 ? 'No pending or in-progress reports at the moment.'
                                 : `No ${filter === 'Pending' ? 'pending' : 'in-progress'} reports.`}
@@ -489,8 +485,8 @@ export default function ManageReports() {
             <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Send Reports to Institution</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="font-display text-2xl uppercase">SEND REPORTS TO INSTITUTION</DialogTitle>
+                        <DialogDescription className="font-mono text-xs uppercase tracking-wider">
                             Select the institution responsible for the selected reports.
                         </DialogDescription>
                     </DialogHeader>
@@ -510,7 +506,7 @@ export default function ManageReports() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>
-                            Cancel
+                            CANCEL
                         </Button>
                         <Button onClick={handleBulkSend} disabled={bulkSend.isPending || !bulkInstitution}>
                             {bulkSend.isPending ? (
@@ -518,7 +514,7 @@ export default function ManageReports() {
                             ) : (
                                 <Send className="h-4 w-4 mr-2" />
                             )}
-                            Send Reports
+                            SEND REPORTS
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -537,17 +533,17 @@ export default function ManageReports() {
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Merge Duplicate Reports</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="font-display text-2xl uppercase">MERGE DUPLICATE REPORTS</DialogTitle>
+                        <DialogDescription className="font-mono text-xs uppercase tracking-wider">
                             Merge "{mergeSource?.title}" into another report. The source report will be removed,
                             while votes, comments, and subscriptions will be moved to the target.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-2">
                         <div className="space-y-2">
-                            <p className="text-sm font-medium">Select a target report</p>
+                            <p className="font-mono text-xs uppercase tracking-wider font-medium">Select a target report</p>
                             {similarReports.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                                     No similar reports found. Enter a target report ID below.
                                 </p>
                             ) : (
@@ -557,21 +553,21 @@ export default function ManageReports() {
                                             key={item.id}
                                             type="button"
                                             onClick={() => setMergeTargetId(item.id.toString())}
-                                            className={`w-full text-left p-2 rounded-md border ${
+                                            className={`w-full text-left p-2 border-3 transition-none ${
                                                 mergeTargetId === item.id.toString()
                                                     ? 'border-primary bg-primary/5'
-                                                    : 'border-border/60'
+                                                    : 'border-foreground'
                                             }`}
                                         >
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm font-medium line-clamp-1">
+                                                <span className="text-sm font-medium uppercase line-clamp-1">
                                                     {item.title}
                                                 </span>
-                                                <Badge variant="outline" className={statusConfig[item.status]?.color || ''}>
+                                                <Badge variant={statusConfig[item.status]?.variant || 'outline'}>
                                                     {statusConfig[item.status]?.label || item.status}
                                                 </Badge>
                                             </div>
-                                            <p className="text-xs text-muted-foreground line-clamp-2">
+                                            <p className="font-mono text-xs text-muted-foreground line-clamp-2">
                                                 {item.description}
                                             </p>
                                         </button>
@@ -580,7 +576,7 @@ export default function ManageReports() {
                             )}
                         </div>
                         <div className="space-y-2">
-                            <p className="text-sm font-medium">Target report ID (optional)</p>
+                            <p className="font-mono text-xs uppercase tracking-wider font-medium">Target report ID (optional)</p>
                             <Input
                                 placeholder="Enter report ID"
                                 value={mergeTargetId}
@@ -590,7 +586,7 @@ export default function ManageReports() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setMergeDialogOpen(false)}>
-                            Cancel
+                            CANCEL
                         </Button>
                         <Button onClick={handleMerge} disabled={mergeReports.isPending}>
                             {mergeReports.isPending ? (
@@ -598,7 +594,7 @@ export default function ManageReports() {
                             ) : (
                                 <GitMerge className="h-4 w-4 mr-2" />
                             )}
-                            Merge Reports
+                            MERGE REPORTS
                         </Button>
                     </DialogFooter>
                 </DialogContent>

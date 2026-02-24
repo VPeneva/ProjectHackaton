@@ -49,19 +49,22 @@ import {
 const statusConfig = {
     Pending: {
         labelKey: 'statuses.pending',
-        color: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+        variant: 'pending',
+        stamp: 'PENDING',
         icon: Clock,
         descriptionKey: 'reportDetail.pendingDesc',
     },
     Sent: {
         labelKey: 'statuses.sent',
-        color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+        variant: 'sent',
+        stamp: 'SENT',
         icon: Send,
         descriptionKey: 'reportDetail.sentDesc',
     },
     Finished: {
         labelKey: 'statuses.finished',
-        color: 'bg-green-500/10 text-green-600 border-green-500/20',
+        variant: 'finished',
+        stamp: 'RESOLVED',
         icon: CheckCircle,
         descriptionKey: 'reportDetail.finishedDesc',
     },
@@ -82,23 +85,22 @@ function StatusTimeline({ status, t }) {
                     <div key={s} className="flex items-center flex-1">
                         <div className="flex flex-col items-center">
                             <div
-                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isActive
+                                className={`w-10 h-10 border-3 border-foreground flex items-center justify-center transition-none ${isActive
                                         ? isCurrent
                                             ? 'bg-primary text-primary-foreground'
-                                            : 'bg-green-500 text-white'
+                                            : 'bg-foreground text-background'
                                         : 'bg-muted text-muted-foreground'
                                     }`}
                             >
                                 <config.icon className="h-5 w-5" />
                             </div>
-                            <span className={`text-xs mt-2 ${isActive ? 'font-medium' : 'text-muted-foreground'}`}>
+                            <span className={`font-mono text-xs uppercase tracking-wider mt-2 ${isActive ? 'font-bold' : 'text-muted-foreground'}`}>
                                 {t(config.labelKey)}
                             </span>
                         </div>
                         {index < statuses.length - 1 && (
                             <div
-                                className={`flex-1 h-1 mx-2 rounded ${index < currentIndex ? 'bg-green-500' : 'bg-muted'
-                                    }`}
+                                className={`flex-1 h-1 mx-2 ${index < currentIndex ? 'bg-foreground' : 'bg-muted'}`}
                             />
                         )}
                     </div>
@@ -163,7 +165,7 @@ export default function ReportDetail() {
         return (
             <div className="container mx-auto px-4 py-8 max-w-4xl">
                 <Skeleton className="h-8 w-32 mb-6" />
-                <Skeleton className="h-64 w-full mb-6 rounded-lg" />
+                <Skeleton className="h-64 w-full mb-6" />
                 <Skeleton className="h-6 w-3/4 mb-4" />
                 <Skeleton className="h-4 w-full mb-2" />
                 <Skeleton className="h-4 w-2/3" />
@@ -174,19 +176,19 @@ export default function ReportDetail() {
     if (isError || !report) {
         return (
             <div className="container mx-auto px-4 py-8">
-                <Card className="max-w-lg mx-auto border-0 shadow-lg">
+                <Card className="max-w-lg mx-auto">
                     <CardContent className="p-8 text-center">
-                        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-                            <AlertCircle className="h-8 w-8 text-destructive" />
+                        <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
+                            <AlertCircle className="h-8 w-8" />
                         </div>
-                        <h2 className="text-xl font-semibold mb-2">Report Not Found</h2>
-                        <p className="text-muted-foreground mb-4">
+                        <h2 className="font-display text-3xl mb-2">REPORT NOT FOUND</h2>
+                        <p className="text-muted-foreground font-mono text-sm uppercase mb-4">
                             This report doesn't exist or has been removed.
                         </p>
                         <Button asChild>
                             <Link to="/reports">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Reports
+                                BACK TO REPORTS
                             </Link>
                         </Button>
                     </CardContent>
@@ -223,28 +225,36 @@ export default function ReportDetail() {
                 </Link>
             </Button>
 
+            {/* Report ID Header */}
+            <div className="mb-6 border-b-3 border-foreground pb-4">
+                <span className="font-mono text-xs text-primary uppercase tracking-wider">
+                    RPT-{String(report.id).padStart(4, '0')}
+                </span>
+                <h1 className="font-display text-4xl md:text-6xl mt-1">{report.title}</h1>
+            </div>
+
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Images */}
                     {imageUrls.length > 0 && (
-                        <Card className="border-0 shadow-lg overflow-hidden">
+                        <Card className="overflow-hidden">
                             <img
                                 src={activeImage}
                                 alt={report.title}
                                 className="w-full aspect-video object-cover"
                             />
                             {imageUrls.length > 1 && (
-                                <div className="grid grid-cols-4 gap-2 p-4 bg-card">
+                                <div className="grid grid-cols-4 gap-2 p-4 border-t-3 border-foreground">
                                     {imageUrls.map((url, index) => (
                                         <button
                                             key={`${url}-${index}`}
                                             type="button"
                                             onClick={() => setActiveImageIndex(index)}
-                                            className={`rounded-md overflow-hidden border ${
+                                            className={`overflow-hidden border-3 ${
                                                 index === safeImageIndex
                                                     ? 'border-primary'
-                                                    : 'border-transparent'
+                                                    : 'border-foreground'
                                             }`}
                                         >
                                             <img
@@ -259,22 +269,21 @@ export default function ReportDetail() {
                         </Card>
                     )}
 
-                    {/* Title and Description */}
-                    <Card className="border-0 shadow-lg">
-                        <CardHeader>
+                    {/* Description */}
+                    <Card>
+                        <CardHeader className="border-b-3 border-foreground">
                             <div className="flex items-start justify-between gap-4">
-                                <CardTitle className="text-2xl">{report.title}</CardTitle>
-                                <Badge variant="outline" className={status.color}>
-                                    <status.icon className="h-3 w-3 mr-1" />
-                                    {statusLabel}
+                                <CardTitle>{t('reportDetail.details')}</CardTitle>
+                                <Badge variant={status.variant}>
+                                    {status.stamp}
                                 </Badge>
                             </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-4">
                             <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                 {report.description}
                             </p>
-                            <div className="mt-6 pt-4 border-t border-border/60">
+                            <div className="mt-6 pt-4 border-t-3 border-foreground">
                                 <VoteButtons
                                     reportId={report.id}
                                     status={report.status}
@@ -285,22 +294,22 @@ export default function ReportDetail() {
                     </Card>
 
                     {/* Status Timeline */}
-                    <Card className="border-0 shadow-lg">
-                        <CardHeader>
-                            <CardTitle className="text-lg">{t('reportDetail.reportStatus')}</CardTitle>
+                    <Card>
+                        <CardHeader className="border-b-3 border-foreground">
+                            <CardTitle>{t('reportDetail.reportStatus')}</CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-4">
                             <StatusTimeline status={report.status} t={t} />
-                            <p className="text-sm text-muted-foreground text-center mt-4">
+                            <p className="font-mono text-xs text-muted-foreground text-center mt-4 uppercase">
                                 {statusDescription}
                             </p>
                         </CardContent>
                     </Card>
 
                     {/* Comments */}
-                    <Card className="border-0 shadow-lg">
-                        <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
+                    <Card>
+                        <CardHeader className="border-b-3 border-foreground">
+                            <CardTitle className="flex items-center gap-2">
                                 <MessageSquare className="h-4 w-4" />
                                 {t('reportDetail.comments')}
                                 <Badge variant="outline" className="ml-2">
@@ -308,9 +317,9 @@ export default function ReportDetail() {
                                 </Badge>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="pt-4 space-y-4">
                             {comments.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-mono text-sm text-muted-foreground uppercase">
                                     {t('reportDetail.noComments')}
                                 </p>
                             ) : (
@@ -319,11 +328,11 @@ export default function ReportDetail() {
                                         const canDeleteComment =
                                             user?.id === comment.userId || isAdmin
                                         return (
-                                            <div key={comment.id} className="border-b border-border/60 pb-4 last:border-b-0 last:pb-0">
+                                            <div key={comment.id} className="border-b-3 border-foreground pb-4 last:border-b-0 last:pb-0">
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div>
-                                                        <p className="text-sm font-medium">{comment.user?.name || 'User'}</p>
-                                                        <p className="text-xs text-muted-foreground">
+                                                        <p className="text-sm font-bold uppercase">{comment.user?.name || 'User'}</p>
+                                                        <p className="font-mono text-xs text-muted-foreground">
                                                             {new Date(comment.createdAt).toLocaleString()}
                                                         </p>
                                                         {comment.user?.role === 'INSTITUTION' && (
@@ -353,7 +362,7 @@ export default function ReportDetail() {
                             )}
 
                             {user ? (
-                                <form onSubmit={handleAddComment} className="space-y-3">
+                                <form onSubmit={handleAddComment} className="space-y-3 border-t-3 border-foreground pt-4">
                                     <Textarea
                                         value={commentText}
                                         onChange={(e) => setCommentText(e.target.value)}
@@ -362,12 +371,12 @@ export default function ReportDetail() {
                                         disabled={addComment.isPending}
                                     />
                                     <Button type="submit" disabled={!commentText.trim() || addComment.isPending}>
-                                        {addComment.isPending ? 'Posting...' : t('reportDetail.postComment')}
+                                        {addComment.isPending ? 'POSTING...' : t('reportDetail.postComment')}
                                     </Button>
                                 </form>
                             ) : (
-                                <p className="text-sm text-muted-foreground">
-                                    <Link to="/login" className="text-primary hover:underline">
+                                <p className="font-mono text-sm text-muted-foreground uppercase">
+                                    <Link to="/login" className="text-primary hover:underline font-bold">
                                         {t('nav.signIn')}
                                     </Link>{' '}
                                     {t('reportDetail.signInToComment')}
@@ -380,18 +389,18 @@ export default function ReportDetail() {
                 {/* Sidebar */}
                 <div className="space-y-6">
                     {/* Details */}
-                    <Card className="border-0 shadow-lg">
-                        <CardHeader>
-                            <CardTitle className="text-lg">{t('reportDetail.details')}</CardTitle>
+                    <Card>
+                        <CardHeader className="border-b-3 border-foreground">
+                            <CardTitle>{t('reportDetail.details')}</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="pt-4 space-y-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                                <div className="w-8 h-8 border-3 border-foreground bg-muted flex items-center justify-center">
                                     <Clock className="h-4 w-4 text-muted-foreground" />
                                 </div>
                                 <div>
-                                    <div className="text-xs text-muted-foreground">{t('reportDetail.submitted')}</div>
-                                    <div className="text-sm font-medium">
+                                    <div className="font-mono text-xs text-muted-foreground uppercase">{t('reportDetail.submitted')}</div>
+                                    <div className="text-sm font-bold">
                                         {new Date(report.createdAt).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
@@ -403,48 +412,48 @@ export default function ReportDetail() {
 
                             {report.category && (
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                                    <div className="w-8 h-8 border-3 border-foreground bg-muted flex items-center justify-center">
                                         <Tag className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-muted-foreground">{t('reportDetail.category')}</div>
-                                        <div className="text-sm font-medium">{report.category.name}</div>
+                                        <div className="font-mono text-xs text-muted-foreground uppercase">{t('reportDetail.category')}</div>
+                                        <div className="text-sm font-bold">{report.category.name}</div>
                                     </div>
                                 </div>
                             )}
 
                             {report.institution && (
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                                    <div className="w-8 h-8 border-3 border-foreground bg-muted flex items-center justify-center">
                                         <Building2 className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-muted-foreground">{t('reportDetail.institution')}</div>
-                                        <div className="text-sm font-medium">{report.institution.name}</div>
+                                        <div className="font-mono text-xs text-muted-foreground uppercase">{t('reportDetail.institution')}</div>
+                                        <div className="text-sm font-bold">{report.institution.name}</div>
                                     </div>
                                 </div>
                             )}
 
                             {report.address && (
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                                    <div className="w-8 h-8 border-3 border-foreground bg-muted flex items-center justify-center">
                                         <MapPin className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-muted-foreground">{t('reportDetail.location')}</div>
-                                        <div className="text-sm font-medium">{report.address}</div>
+                                        <div className="font-mono text-xs text-muted-foreground uppercase">{t('reportDetail.location')}</div>
+                                        <div className="text-sm font-bold">{report.address}</div>
                                     </div>
                                 </div>
                             )}
 
                             {report.user && (
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                                    <div className="w-8 h-8 border-3 border-foreground bg-muted flex items-center justify-center">
                                         <User className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-muted-foreground">{t('reportDetail.reportedBy')}</div>
-                                        <Link to={`/users/${report.user.id}`} className="text-sm font-medium text-primary hover:underline">
+                                        <div className="font-mono text-xs text-muted-foreground uppercase">{t('reportDetail.reportedBy')}</div>
+                                        <Link to={`/users/${report.user.id}`} className="text-sm font-bold text-primary hover:underline uppercase">
                                             {report.user.name}
                                         </Link>
                                     </div>
@@ -455,12 +464,12 @@ export default function ReportDetail() {
 
                     {/* Subscribe */}
                     {user && (
-                        <Card className="border-0 shadow-lg">
-                            <CardHeader>
-                                <CardTitle className="text-lg">{t('reportDetail.stayUpdated')}</CardTitle>
+                        <Card>
+                            <CardHeader className="border-b-3 border-foreground">
+                                <CardTitle>{t('reportDetail.stayUpdated')}</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                                <p className="text-sm text-muted-foreground">
+                            <CardContent className="pt-4 space-y-3">
+                                <p className="font-mono text-xs text-muted-foreground uppercase">
                                     Get notified about updates and new comments on this report.
                                 </p>
                                 <Button
@@ -472,7 +481,7 @@ export default function ReportDetail() {
                                     <Bell className="mr-2 h-4 w-4" />
                                     {subscription?.subscribed ? t('reportDetail.subscribed') : t('reportDetail.subscribe')}
                                 </Button>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="font-mono text-xs text-muted-foreground uppercase">
                                     {report.subscriptionsCount || 0} watcher{(report.subscriptionsCount || 0) !== 1 ? 's' : ''}
                                 </p>
                             </CardContent>
@@ -483,13 +492,13 @@ export default function ReportDetail() {
                     <SharePanel report={report} statusLabel={statusLabel} />
 
                     {/* Similar Reports */}
-                    <Card className="border-0 shadow-lg">
-                        <CardHeader>
-                            <CardTitle className="text-lg">{t('reportDetail.similarReports')}</CardTitle>
+                    <Card>
+                        <CardHeader className="border-b-3 border-foreground">
+                            <CardTitle>{t('reportDetail.similarReports')}</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="pt-4 space-y-3">
                             {similarReports.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-mono text-sm text-muted-foreground uppercase">
                                     {t('reportDetail.noSimilar')}
                                 </p>
                             ) : (
@@ -497,15 +506,15 @@ export default function ReportDetail() {
                                     <Link
                                         key={item.id}
                                         to={`/reports/${item.id}`}
-                                        className="block border border-border/60 rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                                        className="block border-3 border-foreground p-3 hover:bg-foreground hover:text-background transition-none"
                                     >
                                         <div className="flex items-center justify-between gap-2 mb-1">
-                                            <p className="text-sm font-medium line-clamp-1">{item.title}</p>
-                                            <Badge variant="outline" className={statusConfig[item.status]?.color || status.color}>
-                                                {t(statusConfig[item.status]?.labelKey || status.labelKey)}
+                                            <p className="text-sm font-bold uppercase line-clamp-1">{item.title}</p>
+                                            <Badge variant={statusConfig[item.status]?.variant || status.variant}>
+                                                {statusConfig[item.status]?.stamp || status.stamp}
                                             </Badge>
                                         </div>
-                                        <p className="text-xs text-muted-foreground line-clamp-2">
+                                        <p className="font-mono text-xs text-muted-foreground line-clamp-2">
                                             {item.description}
                                         </p>
                                     </Link>
@@ -516,11 +525,11 @@ export default function ReportDetail() {
 
                     {/* Actions */}
                     {canDelete && (
-                        <Card className="border-0 shadow-lg">
-                            <CardHeader>
-                                <CardTitle className="text-lg">{t('reportDetail.actions')}</CardTitle>
+                        <Card>
+                            <CardHeader className="border-b-3 border-foreground">
+                                <CardTitle>{t('reportDetail.actions')}</CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="pt-4">
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button variant="destructive" className="w-full">

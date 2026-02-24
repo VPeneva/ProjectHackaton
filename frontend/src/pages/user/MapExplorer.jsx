@@ -18,9 +18,9 @@ L.Icon.Default.mergeOptions({
 })
 
 const statusConfig = {
-    Pending: { key: 'statuses.pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    Sent: { key: 'statuses.sent', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-    Finished: { key: 'statuses.finished', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+    Pending: { key: 'statuses.pending', variant: 'pending', stamp: 'PENDING' },
+    Sent: { key: 'statuses.sent', variant: 'sent', stamp: 'IN PROGRESS' },
+    Finished: { key: 'statuses.finished', variant: 'finished', stamp: 'RESOLVED' },
 }
 
 function ReportListItem({ report }) {
@@ -29,15 +29,15 @@ function ReportListItem({ report }) {
 
     return (
         <Link to={`/reports/${report.id}`} className="block">
-            <div className="p-4 hover:bg-muted/50 transition-colors border-b last:border-b-0">
+            <div className="p-4 hover:bg-foreground hover:text-background transition-none border-b-3 border-foreground last:border-b-0">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-medium line-clamp-1">{report.title}</h3>
-                    <Badge variant="outline" className={`shrink-0 text-xs ${status.color}`}>
-                        {t(status.key)}
+                    <h3 className="font-display text-lg uppercase line-clamp-1">{report.title}</h3>
+                    <Badge variant={status.variant} className="shrink-0">
+                        {status.stamp}
                     </Badge>
                 </div>
                 {report.address && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1 font-mono text-xs uppercase tracking-wider text-muted-foreground">
                         <MapPin className="h-3 w-3" />
                         <span className="line-clamp-1">{report.address}</span>
                     </div>
@@ -80,10 +80,10 @@ export default function MapExplorer() {
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col">
             {/* Header */}
-            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="container mx-auto px-4 py-4 flex items-center justify-between border-b-3 border-foreground">
                 <div>
-                    <h1 className="text-2xl font-bold">{t('reports.mapView')}</h1>
-                    <p className="text-sm text-muted-foreground">
+                    <h1 className="font-display text-3xl uppercase">{t('reports.mapView')}</h1>
+                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                         {t('reports.subtitle')}
                     </p>
                 </div>
@@ -93,7 +93,7 @@ export default function MapExplorer() {
                         className="md:hidden"
                     >
                         <List className="h-4 w-4 mr-2" />
-                        {showList ? 'Show Map' : 'Show List'}
+                        {showList ? 'SHOW MAP' : 'SHOW LIST'}
                     </Button>
                 </div>
 
@@ -104,7 +104,7 @@ export default function MapExplorer() {
                     {isLoading ? (
                         <div className="absolute inset-0 flex items-center justify-center bg-muted">
                             <div className="text-center">
-                                <Skeleton className="w-16 h-16 rounded-full mx-auto mb-4" />
+                                <Skeleton className="w-16 h-16 mx-auto mb-4" />
                                 <Skeleton className="w-32 h-4 mx-auto" />
                             </div>
                         </div>
@@ -132,23 +132,23 @@ export default function MapExplorer() {
                                 >
                                     <Popup>
                                         <div className="min-w-[200px]">
-                                            <h3 className="font-semibold mb-1">{report.title}</h3>
+                                            <h3 className="font-display text-lg uppercase mb-1">{report.title}</h3>
                                             <Badge
-                                                variant="outline"
-                                                className={`mb-2 text-xs ${statusConfig[report.status]?.color || ''}`}
+                                                variant={statusConfig[report.status]?.variant || 'pending'}
+                                                className="mb-2"
                                             >
-                                                {t(statusConfig[report.status]?.key || report.status)}
+                                                {statusConfig[report.status]?.stamp || report.status}
                                             </Badge>
                                             {report.address && (
-                                                <p className="text-xs text-muted-foreground mb-2">
+                                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-2">
                                                     {report.address}
                                                 </p>
                                             )}
                                             <Link
                                                 to={`/reports/${report.id}`}
-                                                className="text-xs text-primary hover:underline"
+                                                className="font-mono text-xs uppercase tracking-wider text-primary hover:underline"
                                             >
-                                                View Details →
+                                                VIEW DETAILS &rarr;
                                             </Link>
                                         </div>
                                     </Popup>
@@ -160,12 +160,12 @@ export default function MapExplorer() {
 
                 {/* Sidebar List */}
                 <div
-                    className={`w-full md:w-80 border-l bg-card overflow-hidden flex flex-col ${showList ? '' : 'hidden md:flex'
+                    className={`w-full md:w-80 border-l-3 border-foreground bg-card overflow-hidden flex flex-col ${showList ? '' : 'hidden md:flex'
                         }`}
                 >
-                    <div className="p-4 border-b">
-                        <h2 className="font-semibold">Active Reports</h2>
-                        <p className="text-xs text-muted-foreground">
+                    <div className="p-4 border-b-3 border-foreground">
+                        <h2 className="font-display text-xl uppercase">ACTIVE REPORTS</h2>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             {allReports.length} total reports
                         </p>
                     </div>
@@ -182,7 +182,7 @@ export default function MapExplorer() {
                             </div>
                         ) : allReports.length === 0 ? (
                             <div className="p-8 text-center">
-                                <p className="text-muted-foreground text-sm">No active reports</p>
+                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">No active reports</p>
                             </div>
                         ) : (
                             allReports.map((report) => (

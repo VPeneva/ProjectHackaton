@@ -1,0 +1,1960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicReport — Soft Cartography Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ========================================
+   RESET & BASE
+   ======================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --parchment: #f5f0e8;
+  --parchment-light: #f9f6f0;
+  --cream: #fffef9;
+  --indigo: #2c3e6b;
+  --indigo-dark: #1e2d50;
+  --indigo-light: #3d5291;
+  --copper: #b87333;
+  --copper-light: #d4945a;
+  --copper-dark: #96592a;
+  --teal: #4a7c7e;
+  --teal-light: #5f9a9c;
+  --charcoal: #333333;
+  --charcoal-light: #555555;
+  --rose: #c9a0a0;
+  --rose-light: #dbbfbf;
+  --border-warm: rgba(184, 115, 51, 0.2);
+  --shadow-warm: 0 2px 20px rgba(44, 62, 107, 0.06), 0 1px 4px rgba(184, 115, 51, 0.08);
+  --shadow-warm-hover: 0 8px 40px rgba(44, 62, 107, 0.1), 0 2px 8px rgba(184, 115, 51, 0.12);
+  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'Lato', 'Helvetica Neue', Arial, sans-serif;
+  --transition: 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--charcoal);
+  background-color: var(--parchment);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Paper texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+img { max-width: 100%; display: block; }
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--indigo);
+}
+
+h1 { font-size: clamp(2.4rem, 5vw, 3.8rem); }
+h2 { font-size: clamp(1.8rem, 3.5vw, 2.6rem); }
+h3 { font-size: clamp(1.2rem, 2vw, 1.5rem); }
+
+.accent-italic {
+  font-style: italic;
+  color: var(--copper);
+}
+
+.section-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--copper);
+  margin-bottom: 0.75rem;
+}
+
+.section-desc {
+  font-size: 1.05rem;
+  color: var(--charcoal-light);
+  max-width: 600px;
+  margin: 0 auto 3rem;
+  line-height: 1.8;
+}
+
+.coordinate-text {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: var(--copper);
+  opacity: 0.7;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 2rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+
+.btn-primary {
+  background: var(--indigo);
+  color: var(--cream);
+  border: 1px solid var(--indigo);
+}
+.btn-primary:hover {
+  background: var(--indigo-light);
+  border-color: var(--indigo-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(44, 62, 107, 0.3);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--copper);
+  border: 1px solid var(--copper);
+}
+.btn-secondary:hover {
+  background: var(--copper);
+  color: var(--cream);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(184, 115, 51, 0.25);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--indigo);
+  border: 1px solid transparent;
+  padding: 0.7rem 1.2rem;
+}
+.btn-ghost:hover {
+  border-color: var(--border-warm);
+  background: rgba(184, 115, 51, 0.04);
+}
+
+.btn-light {
+  background: var(--cream);
+  color: var(--indigo);
+  border: 1px solid var(--cream);
+}
+.btn-light:hover {
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+}
+
+.btn-light-outline {
+  background: transparent;
+  color: var(--cream);
+  border: 1px solid rgba(255, 254, 249, 0.4);
+}
+.btn-light-outline:hover {
+  background: rgba(255, 254, 249, 0.1);
+  border-color: rgba(255, 254, 249, 0.7);
+}
+
+/* ========================================
+   NAVBAR
+   ======================================== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(245, 240, 232, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-warm);
+  transition: all var(--transition);
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-logo-icon {
+  width: 38px;
+  height: 38px;
+  position: relative;
+}
+
+.nav-logo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.nav-logo-text {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--indigo);
+  letter-spacing: -0.01em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2.2rem;
+}
+
+.nav-links a {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--charcoal-light);
+  transition: color var(--transition);
+  font-variant: small-caps;
+  position: relative;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--copper);
+}
+
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--copper);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-actions .btn {
+  padding: 0.6rem 1.4rem;
+  font-size: 0.7rem;
+}
+
+.mobile-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+.mobile-toggle span {
+  display: block;
+  width: 22px;
+  height: 1.5px;
+  background: var(--indigo);
+  transition: all var(--transition);
+}
+
+/* ========================================
+   HERO SECTION
+   ======================================== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 8rem 0 5rem;
+  overflow: hidden;
+  background: var(--parchment);
+}
+
+/* Topographic background lines */
+.hero-topo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.06;
+}
+
+.hero-topo svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Compass rose decoration */
+.hero-compass {
+  position: absolute;
+  right: 8%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 420px;
+  height: 420px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.hero-compass svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+}
+
+.hero-coordinates {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.hero-coordinates .coordinate-text {
+  opacity: 1;
+}
+
+.hero-coordinates .coord-line {
+  width: 40px;
+  height: 1px;
+  background: var(--copper);
+  opacity: 0.5;
+}
+
+.hero h1 {
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.hero-desc {
+  font-size: 1.1rem;
+  line-height: 1.9;
+  color: var(--charcoal-light);
+  max-width: 540px;
+  margin-bottom: 2.5rem;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--border-warm);
+}
+
+.hero-meta-item {
+  text-align: left;
+}
+
+.hero-meta-number {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--indigo);
+}
+
+.hero-meta-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--charcoal-light);
+  margin-top: 0.2rem;
+}
+
+/* ========================================
+   FEATURES SECTION
+   ======================================== */
+.features {
+  position: relative;
+  padding: 7rem 0;
+  background: var(--cream);
+}
+
+.features::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  pointer-events: none;
+}
+
+.features-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.feature-card {
+  position: relative;
+  background: var(--cream);
+  border: 1px solid var(--border-warm);
+  padding: 2.5rem 2rem 2rem;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-warm);
+}
+
+.feature-card:hover {
+  box-shadow: var(--shadow-warm-hover);
+  transform: translateY(-3px);
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 2rem;
+  width: 32px;
+  height: 2px;
+  background: var(--copper);
+}
+
+.feature-icon {
+  font-size: 1.6rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border-warm);
+  border-radius: 50%;
+  color: var(--indigo);
+  background: rgba(245, 240, 232, 0.5);
+}
+
+.feature-card h3 {
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+
+.feature-card p {
+  font-size: 0.92rem;
+  color: var(--charcoal-light);
+  line-height: 1.75;
+}
+
+/* ========================================
+   HOW IT WORKS
+   ======================================== */
+.how-it-works {
+  position: relative;
+  padding: 7rem 0;
+  background: var(--parchment-light);
+  overflow: hidden;
+}
+
+.how-header {
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.journey-path {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Dotted path line */
+.journey-path::before {
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: calc(100% - 80px);
+  border-left: 2px dashed var(--border-warm);
+}
+
+.waypoint {
+  display: flex;
+  align-items: flex-start;
+  gap: 3rem;
+  margin-bottom: 4rem;
+  position: relative;
+}
+
+.waypoint:last-child {
+  margin-bottom: 0;
+}
+
+.waypoint:nth-child(even) {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.waypoint-marker {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--copper);
+  border-radius: 50%;
+  background: var(--cream);
+  box-shadow: 0 0 0 8px var(--parchment-light);
+}
+
+.waypoint-direction {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--copper);
+  text-transform: uppercase;
+}
+
+.waypoint-number {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--indigo);
+  line-height: 1;
+}
+
+.waypoint-content {
+  flex: 1;
+  max-width: 340px;
+  padding-top: 1rem;
+}
+
+.waypoint:nth-child(odd) .waypoint-content {
+  margin-right: auto;
+}
+
+.waypoint:nth-child(even) .waypoint-content {
+  margin-left: auto;
+}
+
+.waypoint-content h3 {
+  margin-bottom: 0.6rem;
+}
+
+.waypoint-content p {
+  font-size: 0.92rem;
+  color: var(--charcoal-light);
+  line-height: 1.75;
+}
+
+.waypoint-coord {
+  margin-top: 0.6rem;
+}
+
+/* ========================================
+   STATS SECTION
+   ======================================== */
+.stats {
+  position: relative;
+  padding: 6rem 0;
+  background: var(--indigo);
+  overflow: hidden;
+}
+
+/* Contour lines overlay */
+.stats-contours {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.07;
+}
+
+.stats-contours svg {
+  width: 100%;
+  height: 100%;
+}
+
+.stats-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.stats-header {
+  margin-bottom: 4rem;
+}
+
+.stats-header .section-subtitle {
+  color: var(--copper-light);
+}
+
+.stats-header h2 {
+  color: var(--cream);
+}
+
+.stats-header p {
+  color: rgba(255, 254, 249, 0.65);
+  max-width: 550px;
+  margin: 1rem auto 0;
+  font-size: 1.02rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+
+.stat-item {
+  padding: 2rem 1rem;
+  border: 1px solid rgba(255, 254, 249, 0.1);
+  position: relative;
+}
+
+.stat-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 1px;
+  background: var(--copper-light);
+}
+
+.stat-number {
+  font-family: var(--font-heading);
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: var(--cream);
+  line-height: 1.1;
+  margin-bottom: 0.3rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 254, 249, 0.5);
+  font-weight: 700;
+}
+
+/* ========================================
+   REPORT CARDS SECTION
+   ======================================== */
+.reports {
+  position: relative;
+  padding: 7rem 0;
+  background: var(--cream);
+}
+
+.reports-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.report-card {
+  background: var(--cream);
+  border: 1px solid var(--border-warm);
+  overflow: hidden;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-warm);
+  position: relative;
+}
+
+.report-card:hover {
+  box-shadow: var(--shadow-warm-hover);
+  transform: translateY(-3px);
+}
+
+.report-card-image {
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.report-card-image-bg {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+
+.report-card-image-bg.pothole {
+  background: linear-gradient(135deg, #d4c4a8 0%, #b8a88a 100%);
+}
+.report-card-image-bg.streetlight {
+  background: linear-gradient(135deg, #2c3e6b 0%, #4a5d8a 100%);
+  color: var(--copper-light);
+}
+.report-card-image-bg.bench {
+  background: linear-gradient(135deg, #4a7c7e 0%, #5f9a9c 100%);
+  color: var(--cream);
+}
+
+.report-card-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border: 1px solid;
+  background: rgba(255, 254, 249, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.status-progress {
+  color: var(--copper);
+  border-color: var(--copper);
+}
+
+.status-resolved {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+
+.status-open {
+  color: var(--rose);
+  border-color: var(--rose);
+}
+
+.report-card-body {
+  padding: 1.8rem 1.6rem;
+}
+
+.report-card-category {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--copper);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.report-card-category::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 1px;
+  background: var(--copper);
+}
+
+.report-card h3 {
+  font-size: 1.15rem;
+  margin-bottom: 0.7rem;
+  line-height: 1.35;
+}
+
+.report-card p {
+  font-size: 0.88rem;
+  color: var(--charcoal-light);
+  line-height: 1.7;
+  margin-bottom: 1.2rem;
+}
+
+.report-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-warm);
+}
+
+.report-card-location {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.report-card-location span {
+  display: block;
+  font-size: 0.62rem;
+  color: var(--charcoal-light);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  margin-top: 0.15rem;
+}
+
+.report-card-date {
+  font-size: 0.72rem;
+  color: var(--charcoal-light);
+}
+
+/* ========================================
+   CTA SECTION (Map Legend)
+   ======================================== */
+.cta-section {
+  position: relative;
+  padding: 6rem 0;
+  background: var(--parchment);
+  overflow: hidden;
+}
+
+.cta-legend {
+  position: relative;
+  max-width: 780px;
+  margin: 0 auto;
+  border: 2px solid var(--copper);
+  padding: 4rem 3.5rem;
+  background: var(--cream);
+  text-align: center;
+  box-shadow: var(--shadow-warm);
+}
+
+.cta-legend::before,
+.cta-legend::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--copper);
+}
+
+.cta-legend::before {
+  top: -7px;
+  left: -7px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.cta-legend::after {
+  top: -7px;
+  right: -7px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.cta-legend-corners-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cta-legend-corners-bottom::before,
+.cta-legend-corners-bottom::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--copper);
+}
+
+.cta-legend-corners-bottom::before {
+  bottom: -7px;
+  left: -7px;
+  border-right: none;
+  border-top: none;
+}
+
+.cta-legend-corners-bottom::after {
+  bottom: -7px;
+  right: -7px;
+  border-left: none;
+  border-top: none;
+}
+
+.cta-legend-label {
+  position: absolute;
+  top: -0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--cream);
+  padding: 0 1.2rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--copper);
+}
+
+.cta-legend h2 {
+  margin-bottom: 1rem;
+}
+
+.cta-legend p {
+  font-size: 1.02rem;
+  color: var(--charcoal-light);
+  max-width: 500px;
+  margin: 0 auto 2rem;
+  line-height: 1.8;
+}
+
+.cta-legend .hero-buttons {
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.cta-legend .coordinate-text {
+  margin-top: 0.5rem;
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+.footer {
+  background: var(--parchment);
+  border-top: 1px solid var(--border-warm);
+  padding: 4rem 0 2rem;
+  position: relative;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+
+.footer-brand {
+  max-width: 280px;
+}
+
+.footer-brand .nav-logo {
+  margin-bottom: 1.2rem;
+}
+
+.footer-brand p {
+  font-size: 0.88rem;
+  color: var(--charcoal-light);
+  line-height: 1.7;
+  margin-bottom: 1.2rem;
+}
+
+.footer-coordinates {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.footer-heading {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--indigo);
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-warm);
+}
+
+.footer-links a {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--charcoal-light);
+  padding: 0.35rem 0;
+  transition: color var(--transition);
+}
+
+.footer-links a:hover {
+  color: var(--copper);
+}
+
+.footer-newsletter p {
+  font-size: 0.85rem;
+  color: var(--charcoal-light);
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.footer-newsletter-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.footer-newsletter-form input {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--border-warm);
+  background: var(--cream);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--charcoal);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.footer-newsletter-form input::placeholder {
+  color: var(--rose);
+}
+
+.footer-newsletter-form input:focus {
+  border-color: var(--copper);
+}
+
+.footer-newsletter-form button {
+  padding: 0.7rem 1.2rem;
+  background: var(--indigo);
+  color: var(--cream);
+  border: 1px solid var(--indigo);
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.footer-newsletter-form button:hover {
+  background: var(--indigo-light);
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-warm);
+}
+
+.footer-bottom p {
+  font-size: 0.75rem;
+  color: var(--charcoal-light);
+  letter-spacing: 0.05em;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-bottom-links a {
+  font-size: 0.72rem;
+  color: var(--charcoal-light);
+  transition: color var(--transition);
+}
+
+.footer-bottom-links a:hover {
+  color: var(--copper);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in-delay-1 { transition-delay: 0.1s; }
+.fade-in-delay-2 { transition-delay: 0.2s; }
+.fade-in-delay-3 { transition-delay: 0.3s; }
+.fade-in-delay-4 { transition-delay: 0.4s; }
+.fade-in-delay-5 { transition-delay: 0.5s; }
+.fade-in-delay-6 { transition-delay: 0.6s; }
+
+/* Topographic spin for compass */
+@keyframes slow-rotate {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+.hero-compass {
+  animation: slow-rotate 120s linear infinite;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .reports-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hero-compass {
+    opacity: 0.03;
+    right: -5%;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-links,
+  .nav-actions {
+    display: none;
+  }
+  .mobile-toggle {
+    display: flex;
+  }
+  .hero {
+    min-height: auto;
+    padding: 7rem 0 4rem;
+  }
+  .hero h1 {
+    font-size: 2.2rem;
+  }
+  .hero-meta {
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .journey-path::before {
+    left: 40px;
+  }
+  .waypoint,
+  .waypoint:nth-child(even) {
+    flex-direction: column;
+    text-align: left;
+    align-items: flex-start;
+    padding-left: 0;
+  }
+  .waypoint:nth-child(even) .waypoint-content {
+    margin-left: 0;
+  }
+  .waypoint-marker {
+    width: 64px;
+    height: 64px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .stat-number {
+    font-size: 2rem;
+  }
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+  .cta-legend {
+    padding: 3rem 2rem;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 1.2rem;
+  }
+  .hero h1 {
+    font-size: 1.9rem;
+  }
+  .hero-buttons {
+    flex-direction: column;
+  }
+  .hero-buttons .btn {
+    width: 100%;
+    text-align: center;
+  }
+  .cta-legend {
+    padding: 2.5rem 1.5rem;
+  }
+  .footer-newsletter-form {
+    flex-direction: column;
+  }
+}
+
+/* ========================================
+   MOBILE NAV OPEN STATE
+   ======================================== */
+.nav-mobile-menu {
+  display: none;
+  position: absolute;
+  top: 72px;
+  left: 0;
+  width: 100%;
+  background: rgba(245, 240, 232, 0.98);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-warm);
+  padding: 1.5rem 2rem 2rem;
+}
+
+.nav-mobile-menu.open {
+  display: block;
+}
+
+.nav-mobile-menu a {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--charcoal-light);
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--border-warm);
+  transition: color var(--transition);
+}
+
+.nav-mobile-menu a:hover {
+  color: var(--copper);
+}
+
+.nav-mobile-menu .mobile-nav-buttons {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.nav-mobile-menu .mobile-nav-buttons .btn {
+  flex: 1;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================
+     NAVBAR
+     ============================ -->
+<nav class="navbar" id="navbar">
+  <div class="container navbar-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="19" cy="19" r="17" stroke="#2c3e6b" stroke-width="1.5" fill="none"/>
+          <circle cx="19" cy="19" r="11" stroke="#2c3e6b" stroke-width="1" fill="none" opacity="0.4"/>
+          <line x1="19" y1="1" x2="19" y2="10" stroke="#2c3e6b" stroke-width="1.5"/>
+          <line x1="19" y1="28" x2="19" y2="37" stroke="#2c3e6b" stroke-width="1.5"/>
+          <line x1="1" y1="19" x2="10" y2="19" stroke="#2c3e6b" stroke-width="1.5"/>
+          <line x1="28" y1="19" x2="37" y2="19" stroke="#2c3e6b" stroke-width="1.5"/>
+          <polygon points="19,6 21.5,14 19,12 16.5,14" fill="#2c3e6b"/>
+          <polygon points="19,32 21.5,24 19,26 16.5,24" fill="#b87333"/>
+          <circle cx="19" cy="19" r="3" fill="#b87333"/>
+        </svg>
+      </div>
+      <span class="nav-logo-text">CivicReport</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#features" class="active">Features</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#stats">Impact</a></li>
+      <li><a href="#reports">Reports</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <a href="#" class="btn btn-ghost">Sign In</a>
+      <a href="#" class="btn btn-primary">Get Started</a>
+    </div>
+
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <div class="nav-mobile-menu" id="mobileMenu">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#stats">Impact</a>
+    <a href="#reports">Reports</a>
+    <div class="mobile-nav-buttons">
+      <a href="#" class="btn btn-ghost">Sign In</a>
+      <a href="#" class="btn btn-primary">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ============================
+     HERO SECTION
+     ============================ -->
+<section class="hero" id="hero">
+  <!-- Topographic background -->
+  <div class="hero-topo">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#2c3e6b" stroke-width="1.2">
+        <ellipse cx="250" cy="450" rx="120" ry="80"/>
+        <ellipse cx="250" cy="450" rx="180" ry="130"/>
+        <ellipse cx="250" cy="450" rx="250" ry="180"/>
+        <ellipse cx="250" cy="450" rx="330" ry="240"/>
+        <ellipse cx="250" cy="450" rx="420" ry="310"/>
+        <ellipse cx="1100" cy="200" rx="100" ry="70"/>
+        <ellipse cx="1100" cy="200" rx="160" ry="110"/>
+        <ellipse cx="1100" cy="200" rx="230" ry="160"/>
+        <ellipse cx="1100" cy="200" rx="310" ry="220"/>
+        <ellipse cx="700" cy="700" rx="90" ry="60"/>
+        <ellipse cx="700" cy="700" rx="150" ry="100"/>
+        <ellipse cx="700" cy="700" rx="220" ry="150"/>
+        <ellipse cx="700" cy="700" rx="300" ry="210"/>
+        <ellipse cx="1300" cy="650" rx="80" ry="55"/>
+        <ellipse cx="1300" cy="650" rx="140" ry="95"/>
+        <ellipse cx="1300" cy="650" rx="210" ry="145"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Compass rose decoration -->
+  <div class="hero-compass">
+    <svg viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#2c3e6b" stroke-width="1">
+        <circle cx="210" cy="210" r="200"/>
+        <circle cx="210" cy="210" r="180"/>
+        <circle cx="210" cy="210" r="140"/>
+        <circle cx="210" cy="210" r="100"/>
+        <circle cx="210" cy="210" r="60"/>
+        <circle cx="210" cy="210" r="20"/>
+        <!-- Cardinal lines -->
+        <line x1="210" y1="10" x2="210" y2="410"/>
+        <line x1="10" y1="210" x2="410" y2="210"/>
+        <!-- Diagonal lines -->
+        <line x1="68" y1="68" x2="352" y2="352" opacity="0.5"/>
+        <line x1="352" y1="68" x2="68" y2="352" opacity="0.5"/>
+        <!-- Compass points -->
+        <polygon points="210,30 218,100 210,80 202,100" fill="#2c3e6b" stroke="none"/>
+        <polygon points="210,390 218,320 210,340 202,320" fill="#b87333" stroke="none"/>
+        <polygon points="30,210 100,202 80,210 100,218" fill="#b87333" stroke="none" opacity="0.6"/>
+        <polygon points="390,210 320,202 340,210 320,218" fill="#b87333" stroke="none" opacity="0.6"/>
+      </g>
+      <text x="210" y="22" text-anchor="middle" fill="#2c3e6b" font-family="Playfair Display, serif" font-size="14" font-weight="700">N</text>
+      <text x="210" y="408" text-anchor="middle" fill="#b87333" font-family="Playfair Display, serif" font-size="14" font-weight="700">S</text>
+      <text x="16" y="214" text-anchor="middle" fill="#b87333" font-family="Playfair Display, serif" font-size="14" font-weight="700">W</text>
+      <text x="404" y="214" text-anchor="middle" fill="#b87333" font-family="Playfair Display, serif" font-size="14" font-weight="700">E</text>
+    </svg>
+  </div>
+
+  <div class="container">
+    <div class="hero-content fade-in">
+      <div class="hero-coordinates">
+        <span class="coord-line"></span>
+        <span class="coordinate-text">42.6977&deg; N, 23.3219&deg; E</span>
+      </div>
+
+      <h1>Chart the Course<br>for a <span class="accent-italic">Better</span> City</h1>
+
+      <p class="hero-desc">
+        Every pothole, broken streetlight, and crumbling sidewalk has a story. CivicReport maps these stories,
+        connecting citizens with the institutions that can write better endings.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#" class="btn btn-primary">Report an Issue</a>
+        <a href="#" class="btn btn-secondary">Explore the Map</a>
+      </div>
+
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <div class="hero-meta-number">12,400+</div>
+          <div class="hero-meta-label">Issues Reported</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-number">87%</div>
+          <div class="hero-meta-label">Resolution Rate</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-number">48 hrs</div>
+          <div class="hero-meta-label">Avg. Response</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+     FEATURES SECTION
+     ============================ -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-header fade-in">
+      <div class="section-subtitle">Features</div>
+      <h2>The Tools to Navigate <span class="accent-italic">Change</span></h2>
+      <p class="section-desc">
+        A comprehensive cartography of civic engagement &mdash; every feature designed to help you
+        pinpoint problems and chart paths to solutions.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card fade-in fade-in-delay-1">
+        <div class="feature-icon">&#9678;</div>
+        <h3>Precision Reporting</h3>
+        <p>Pin issues on an interactive map with GPS accuracy. Upload photos, add descriptions, and categorize problems with intuitive tools.</p>
+      </div>
+
+      <div class="feature-card fade-in fade-in-delay-2">
+        <div class="feature-icon">&#9872;</div>
+        <h3>Live Tracking</h3>
+        <p>Follow your report's journey from submission to resolution. Real-time status updates keep you informed at every waypoint.</p>
+      </div>
+
+      <div class="feature-card fade-in fade-in-delay-3">
+        <div class="feature-icon">&#9881;</div>
+        <h3>Smart Routing</h3>
+        <p>Reports are automatically directed to the responsible institution. No more navigating bureaucratic dead ends.</p>
+      </div>
+
+      <div class="feature-card fade-in fade-in-delay-4">
+        <div class="feature-icon">&#9733;</div>
+        <h3>Community Compass</h3>
+        <p>Upvote existing reports, add corroborating details, and rally your neighborhood around shared priorities.</p>
+      </div>
+
+      <div class="feature-card fade-in fade-in-delay-5">
+        <div class="feature-icon">&#9638;</div>
+        <h3>Analytics Atlas</h3>
+        <p>Heat maps, trend charts, and resolution metrics give government bodies the data landscape they need to prioritize resources.</p>
+      </div>
+
+      <div class="feature-card fade-in fade-in-delay-6">
+        <div class="feature-icon">&#9670;</div>
+        <h3>Instant Alerts</h3>
+        <p>Subscribe to zones on the map. Receive notifications when new issues arise or existing ones are resolved in your area.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+     HOW IT WORKS
+     ============================ -->
+<section class="how-it-works" id="how-it-works">
+  <div class="container">
+    <div class="how-header fade-in">
+      <div class="section-subtitle">The Journey</div>
+      <h2>Four Waypoints to <span class="accent-italic">Resolution</span></h2>
+      <p class="section-desc">
+        From first sighting to final fix &mdash; trace the path of a civic report
+        as it navigates from your hands to the teams that make it right.
+      </p>
+    </div>
+
+    <div class="journey-path">
+      <div class="waypoint fade-in">
+        <div class="waypoint-marker">
+          <span class="waypoint-direction">N</span>
+          <span class="waypoint-number">01</span>
+        </div>
+        <div class="waypoint-content">
+          <h3>Spot &amp; Pin</h3>
+          <p>Encounter an issue? Open CivicReport, drop a pin on the map, snap a photo, and describe what you see. Your report is now on the chart.</p>
+          <div class="coordinate-text waypoint-coord">Start Point &bull; 42.6977&deg; N</div>
+        </div>
+      </div>
+
+      <div class="waypoint fade-in">
+        <div class="waypoint-marker">
+          <span class="waypoint-direction">E</span>
+          <span class="waypoint-number">02</span>
+        </div>
+        <div class="waypoint-content">
+          <h3>Route &amp; Assign</h3>
+          <p>Our intelligent system identifies the responsible municipal department and routes your report directly to their queue, no middlemen involved.</p>
+          <div class="coordinate-text waypoint-coord">Transit &bull; 23.3219&deg; E</div>
+        </div>
+      </div>
+
+      <div class="waypoint fade-in">
+        <div class="waypoint-marker">
+          <span class="waypoint-direction">S</span>
+          <span class="waypoint-number">03</span>
+        </div>
+        <div class="waypoint-content">
+          <h3>Track &amp; Update</h3>
+          <p>Watch as your report progresses. Receive updates when a team is dispatched, work begins, and the issue nears completion.</p>
+          <div class="coordinate-text waypoint-coord">In Progress &bull; Bearing 180&deg;</div>
+        </div>
+      </div>
+
+      <div class="waypoint fade-in">
+        <div class="waypoint-marker">
+          <span class="waypoint-direction">W</span>
+          <span class="waypoint-number">04</span>
+        </div>
+        <div class="waypoint-content">
+          <h3>Resolve &amp; Verify</h3>
+          <p>The issue is fixed. Confirm the resolution, rate the response, and help build a living atlas of civic improvement.</p>
+          <div class="coordinate-text waypoint-coord">Destination &bull; Journey Complete</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+     STATS SECTION
+     ============================ -->
+<section class="stats" id="stats">
+  <!-- Contour lines overlay -->
+  <div class="stats-contours">
+    <svg viewBox="0 0 1440 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#fffef9" stroke-width="1">
+        <ellipse cx="300" cy="250" rx="140" ry="90"/>
+        <ellipse cx="300" cy="250" rx="220" ry="150"/>
+        <ellipse cx="300" cy="250" rx="310" ry="210"/>
+        <ellipse cx="300" cy="250" rx="420" ry="280"/>
+        <ellipse cx="1000" cy="300" rx="120" ry="80"/>
+        <ellipse cx="1000" cy="300" rx="200" ry="140"/>
+        <ellipse cx="1000" cy="300" rx="290" ry="200"/>
+        <ellipse cx="1000" cy="300" rx="390" ry="270"/>
+        <ellipse cx="700" cy="100" rx="90" ry="60"/>
+        <ellipse cx="700" cy="100" rx="160" ry="110"/>
+        <ellipse cx="700" cy="100" rx="240" ry="170"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="container stats-inner">
+    <div class="stats-header fade-in">
+      <div class="section-subtitle">By The Numbers</div>
+      <h2>Charting Our <span class="accent-italic" style="color: var(--copper-light);">Collective</span> Impact</h2>
+      <p>A measured account of how communities are reshaping their public landscapes, one pinned report at a time.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-item fade-in fade-in-delay-1">
+        <div class="stat-number">12,478</div>
+        <div class="stat-label">Issues Reported</div>
+      </div>
+      <div class="stat-item fade-in fade-in-delay-2">
+        <div class="stat-number">10,856</div>
+        <div class="stat-label">Issues Resolved</div>
+      </div>
+      <div class="stat-item fade-in fade-in-delay-3">
+        <div class="stat-number">340</div>
+        <div class="stat-label">Municipalities</div>
+      </div>
+      <div class="stat-item fade-in fade-in-delay-4">
+        <div class="stat-number">28,900</div>
+        <div class="stat-label">Active Citizens</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+     REPORT CARDS
+     ============================ -->
+<section class="reports" id="reports">
+  <div class="container">
+    <div class="reports-header fade-in">
+      <div class="section-subtitle">Recent Reports</div>
+      <h2>From the <span class="accent-italic">Field</span></h2>
+      <p class="section-desc">
+        A curated selection of recent civic reports &mdash; each one a coordinate on the map
+        of collective improvement.
+      </p>
+    </div>
+
+    <div class="reports-grid">
+      <div class="report-card fade-in fade-in-delay-1">
+        <div class="report-card-image">
+          <div class="report-card-image-bg pothole">
+            <span>&#9673;</span>
+          </div>
+          <span class="report-card-status status-progress">In Progress</span>
+        </div>
+        <div class="report-card-body">
+          <div class="report-card-category">Road Infrastructure</div>
+          <h3>Large Pothole on Vitosha Boulevard</h3>
+          <p>Significant road damage spanning approximately 1.2 meters, posing risk to vehicles and cyclists during the evening commute.</p>
+          <div class="report-card-meta">
+            <div class="report-card-location">
+              42.6886&deg; N, 23.3189&deg; E
+              <span>Vitosha Blvd, Sofia</span>
+            </div>
+            <div class="report-card-date">Feb 4, 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-card fade-in fade-in-delay-2">
+        <div class="report-card-image">
+          <div class="report-card-image-bg streetlight">
+            <span>&#9788;</span>
+          </div>
+          <span class="report-card-status status-resolved">Resolved</span>
+        </div>
+        <div class="report-card-body">
+          <div class="report-card-category">Public Lighting</div>
+          <h3>Broken Streetlights on Graf Ignatiev</h3>
+          <p>Three consecutive streetlights non-functional, creating a 200-meter dark zone. Reported safety concern by multiple residents.</p>
+          <div class="report-card-meta">
+            <div class="report-card-location">
+              42.6912&deg; N, 23.3241&deg; E
+              <span>Graf Ignatiev St, Sofia</span>
+            </div>
+            <div class="report-card-date">Jan 28, 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-card fade-in fade-in-delay-3">
+        <div class="report-card-image">
+          <div class="report-card-image-bg bench">
+            <span>&#9878;</span>
+          </div>
+          <span class="report-card-status status-open">Open</span>
+        </div>
+        <div class="report-card-body">
+          <div class="report-card-category">Public Amenities</div>
+          <h3>Damaged Park Benches in South Park</h3>
+          <p>Several wooden benches with broken slats and missing armrests near the central fountain. Area frequented by families and elderly visitors.</p>
+          <div class="report-card-meta">
+            <div class="report-card-location">
+              42.6822&deg; N, 23.3156&deg; E
+              <span>South Park, Sofia</span>
+            </div>
+            <div class="report-card-date">Feb 7, 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+     CTA SECTION
+     ============================ -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-legend fade-in">
+      <div class="cta-legend-corners-bottom"></div>
+      <div class="cta-legend-label">Legend</div>
+
+      <div class="section-subtitle">Begin Your Survey</div>
+      <h2>Put Your City<br>on the <span class="accent-italic">Map</span></h2>
+      <p>
+        Every great atlas began with a single observation. Yours could be the report that
+        transforms a neglected corner into a thriving public space.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#" class="btn btn-primary">Start Reporting</a>
+        <a href="#" class="btn btn-secondary">View the Atlas</a>
+      </div>
+
+      <div class="coordinate-text">Mapping a better tomorrow &bull; 42.6977&deg; N, 23.3219&deg; E</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+     FOOTER
+     ============================ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo">
+          <div class="nav-logo-icon">
+            <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="19" cy="19" r="17" stroke="#2c3e6b" stroke-width="1.5" fill="none"/>
+              <circle cx="19" cy="19" r="11" stroke="#2c3e6b" stroke-width="1" fill="none" opacity="0.4"/>
+              <line x1="19" y1="1" x2="19" y2="10" stroke="#2c3e6b" stroke-width="1.5"/>
+              <line x1="19" y1="28" x2="19" y2="37" stroke="#2c3e6b" stroke-width="1.5"/>
+              <line x1="1" y1="19" x2="10" y2="19" stroke="#2c3e6b" stroke-width="1.5"/>
+              <line x1="28" y1="19" x2="37" y2="19" stroke="#2c3e6b" stroke-width="1.5"/>
+              <polygon points="19,6 21.5,14 19,12 16.5,14" fill="#2c3e6b"/>
+              <polygon points="19,32 21.5,24 19,26 16.5,24" fill="#b87333"/>
+              <circle cx="19" cy="19" r="3" fill="#b87333"/>
+            </svg>
+          </div>
+          <span class="nav-logo-text">CivicReport</span>
+        </a>
+        <p>Charting the course for civic improvement through precision mapping, transparent tracking, and community collaboration.</p>
+        <div class="footer-coordinates">
+          <span class="coordinate-text">Est. 2024 &bull; 42.6977&deg; N, 23.3219&deg; E</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-heading">Navigate</div>
+        <ul class="footer-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#stats">Impact</a></li>
+          <li><a href="#reports">Reports</a></li>
+          <li><a href="#">Submit a Report</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-heading">Cartography</div>
+        <ul class="footer-links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">For Municipalities</a></li>
+          <li><a href="#">API Documentation</a></li>
+          <li><a href="#">Press Kit</a></li>
+          <li><a href="#">Careers</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-heading">Stay Charted</div>
+        <p class="footer-newsletter" style="font-size: 0.85rem; color: var(--charcoal-light); margin-bottom: 1rem; line-height: 1.7;">
+          Receive monthly dispatches on civic improvements, new features, and community milestones.
+        </p>
+        <div class="footer-newsletter-form">
+          <input type="email" placeholder="your@coordinates.com">
+          <button type="button">Subscribe</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 CivicReport. All coordinates reserved.</p>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookie Settings</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ============================
+     SCRIPTS
+     ============================ -->
+<script>
+(function() {
+  'use strict';
+
+  // ---- Intersection Observer for fade-in animations ----
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px 0px -60px 0px',
+    threshold: 0.1
+  };
+
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.fade-in').forEach(function(el) {
+    observer.observe(el);
+  });
+
+  // ---- Mobile menu toggle ----
+  var mobileToggle = document.getElementById('mobileToggle');
+  var mobileMenu = document.getElementById('mobileMenu');
+
+  if (mobileToggle && mobileMenu) {
+    mobileToggle.addEventListener('click', function() {
+      mobileMenu.classList.toggle('open');
+    });
+
+    // Close mobile menu on link click
+    mobileMenu.querySelectorAll('a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        mobileMenu.classList.remove('open');
+      });
+    });
+  }
+
+  // ---- Navbar background on scroll ----
+  var navbar = document.getElementById('navbar');
+  var lastScroll = 0;
+
+  window.addEventListener('scroll', function() {
+    var currentScroll = window.pageYOffset;
+
+    if (currentScroll > 80) {
+      navbar.style.boxShadow = '0 1px 12px rgba(44, 62, 107, 0.06)';
+    } else {
+      navbar.style.boxShadow = 'none';
+    }
+
+    lastScroll = currentScroll;
+  });
+
+  // ---- Smooth scroll for anchor links (fallback for older browsers) ----
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(e) {
+      var href = this.getAttribute('href');
+      if (href === '#') return;
+
+      var target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        var offset = navbar.offsetHeight + 20;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+        window.scrollTo({
+          top: top,
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+
+  // ---- Animated stat counters ----
+  var statNumbers = document.querySelectorAll('.stat-number');
+  var statsAnimated = false;
+
+  function animateCounters() {
+    statNumbers.forEach(function(el) {
+      var text = el.textContent.replace(/,/g, '');
+      var target = parseInt(text, 10);
+      if (isNaN(target)) return;
+
+      var duration = 2000;
+      var startTime = null;
+
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        var current = Math.floor(eased * target);
+        el.textContent = current.toLocaleString();
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          el.textContent = target.toLocaleString();
+        }
+      }
+
+      requestAnimationFrame(step);
+    });
+  }
+
+  var statsSection = document.getElementById('stats');
+  if (statsSection) {
+    var statsObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting && !statsAnimated) {
+          statsAnimated = true;
+          animateCounters();
+          statsObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    statsObserver.observe(statsSection);
+  }
+
+})();
+</script>
+
+</body>
+</html>

@@ -17,10 +17,10 @@ export default function Notifications() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 border-b-3 border-foreground pb-6">
         <div>
-          <h1 className="text-3xl font-bold">Notifications</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="font-display text-5xl uppercase">NOTIFICATIONS</h1>
+          <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
             {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
           </p>
         </div>
@@ -31,7 +31,7 @@ export default function Notifications() {
           disabled={markAll.isPending || unreadCount === 0}
         >
           <Check className="h-4 w-4 mr-1" />
-          Mark all read
+          MARK ALL READ
         </Button>
       </div>
 
@@ -42,18 +42,18 @@ export default function Notifications() {
           ))}
         </div>
       ) : isError ? (
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground">{errorMessage}</p>
           </CardContent>
         </Card>
       ) : notifications.length === 0 ? (
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardContent className="p-12 text-center">
-            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-4">
               <Bell className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="text-muted-foreground">You have no notifications.</p>
+            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">You have no notifications.</p>
           </CardContent>
         </Card>
       ) : (
@@ -61,15 +61,15 @@ export default function Notifications() {
           {notifications.map((notification) => (
             <Card
               key={notification.id}
-              className={`border-0 shadow-md ${
-                notification.isRead ? 'bg-card' : 'bg-primary/5'
-              }`}
+              className={
+                notification.isRead ? '' : 'border-l-4 border-l-primary'
+              }
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-base">{notification.title}</CardTitle>
+                  <CardTitle className="font-display text-lg uppercase">{notification.title}</CardTitle>
                   {!notification.isRead && (
-                    <Badge variant="secondary">New</Badge>
+                    <Badge variant="pending">NEW</Badge>
                   )}
                 </div>
               </CardHeader>
@@ -77,12 +77,12 @@ export default function Notifications() {
                 {notification.body && (
                   <p className="text-sm text-muted-foreground">{notification.body}</p>
                 )}
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider text-muted-foreground">
                   <span>{new Date(notification.createdAt).toLocaleString()}</span>
                   <div className="flex items-center gap-2">
                     {notification.reportId && (
                       <Button size="sm" variant="link" asChild>
-                        <Link to={`/reports/${notification.reportId}`}>View Report</Link>
+                        <Link to={`/reports/${notification.reportId}`}>VIEW REPORT</Link>
                       </Button>
                     )}
                     {!notification.isRead && (
@@ -91,7 +91,7 @@ export default function Notifications() {
                         variant="outline"
                         onClick={() => markRead.mutate(notification.id)}
                       >
-                        Mark read
+                        MARK READ
                       </Button>
                     )}
                   </div>

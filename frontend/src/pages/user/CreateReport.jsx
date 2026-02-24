@@ -200,29 +200,29 @@ export default function CreateReport() {
     const isSubmitting = createReport.isPending || uploading
     const latValue = formData.lat ? parseFloat(formData.lat) : null
     const lngValue = formData.lng ? parseFloat(formData.lng) : null
-    const hasCoords = !Number.isNaN(latValue) && !Number.isNaN(lngValue)
+    const hasCoords = latValue !== null && lngValue !== null && !Number.isNaN(latValue) && !Number.isNaN(lngValue)
     const mapPosition = hasCoords ? [latValue, lngValue] : null
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-2xl">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">Create New Report</h1>
-                <p className="text-muted-foreground">
-                    Report an infrastructure issue in your community.
+            <div className="mb-8 border-b-3 border-foreground pb-6">
+                <h1 className="font-display text-5xl md:text-7xl">NEW REPORT</h1>
+                <p className="text-muted-foreground font-mono text-sm uppercase tracking-wider mt-2">
+                    [ REPORT AN INFRASTRUCTURE ISSUE ]
                 </p>
             </div>
 
-            <Card className="border-0 shadow-xl">
-                <CardHeader>
+            <Card>
+                <CardHeader className="border-b-3 border-foreground">
                     <CardTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5 text-primary" />
-                        Report Details
+                        REPORT DETAILS
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="font-mono text-xs uppercase tracking-wider">
                         Provide as much detail as possible to help resolve the issue quickly.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {error && (
                             <Alert variant="destructive">
@@ -233,7 +233,7 @@ export default function CreateReport() {
 
                         {/* Title */}
                         <div className="space-y-2">
-                            <Label htmlFor="title">Title *</Label>
+                            <Label htmlFor="title">TITLE *</Label>
                             <Input
                                 id="title"
                                 name="title"
@@ -247,7 +247,7 @@ export default function CreateReport() {
 
                         {/* Description */}
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description *</Label>
+                            <Label htmlFor="description">DESCRIPTION *</Label>
                             <Textarea
                                 id="description"
                                 name="description"
@@ -262,7 +262,7 @@ export default function CreateReport() {
                         {/* Institution & Category */}
                         <div className="grid sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Institution</Label>
+                                <Label>INSTITUTION</Label>
                                 <Select
                                     value={selectedInstitution}
                                     onValueChange={handleInstitutionChange}
@@ -281,7 +281,7 @@ export default function CreateReport() {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Category *</Label>
+                                <Label>CATEGORY *</Label>
                                 <Select
                                     value={formData.categoryId}
                                     onValueChange={(value) =>
@@ -307,7 +307,7 @@ export default function CreateReport() {
                         <div className="space-y-2">
                             <Label htmlFor="address" className="flex items-center gap-1">
                                 <MapPin className="h-4 w-4" />
-                                Location
+                                LOCATION
                             </Label>
                             <Input
                                 id="address"
@@ -322,7 +322,7 @@ export default function CreateReport() {
                         {/* Coordinates */}
                         <div className="grid sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="lat">Latitude (optional)</Label>
+                                <Label htmlFor="lat">LATITUDE (OPTIONAL)</Label>
                                 <Input
                                     id="lat"
                                     name="lat"
@@ -335,7 +335,7 @@ export default function CreateReport() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="lng">Longitude (optional)</Label>
+                                <Label htmlFor="lng">LONGITUDE (OPTIONAL)</Label>
                                 <Input
                                     id="lng"
                                     name="lng"
@@ -353,9 +353,9 @@ export default function CreateReport() {
                         <div className="space-y-2">
                             <Label className="flex items-center gap-1">
                                 <MapPin className="h-4 w-4" />
-                                Pick location on map
+                                PICK LOCATION ON MAP
                             </Label>
-                            <div className="h-64 rounded-lg overflow-hidden border border-border">
+                            <div className="h-64 overflow-hidden border-3 border-foreground">
                                 <MapContainer
                                     center={mapPosition || DEFAULT_CENTER}
                                     zoom={mapPosition ? 14 : DEFAULT_ZOOM}
@@ -369,7 +369,7 @@ export default function CreateReport() {
                                     <LocationMarker position={mapPosition} onSelect={handleMapSelect} />
                                 </MapContainer>
                             </div>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="font-mono text-xs text-muted-foreground uppercase">
                                 Click the map to set coordinates. You can also type them manually above.
                             </p>
                         </div>
@@ -378,7 +378,7 @@ export default function CreateReport() {
                         <div className="space-y-2">
                             <Label className="flex items-center gap-1">
                                 <ImageIcon className="h-4 w-4" />
-                                Photos (optional)
+                                PHOTOS (OPTIONAL)
                             </Label>
                             <input
                                 ref={fileInputRef}
@@ -392,7 +392,7 @@ export default function CreateReport() {
                                 {images.map((image, index) => (
                                     <div
                                         key={image.preview}
-                                        className="relative rounded-lg overflow-hidden bg-muted aspect-video"
+                                        className="relative overflow-hidden bg-muted aspect-video border-3 border-foreground"
                                     >
                                         <img
                                             src={image.preview}
@@ -414,19 +414,19 @@ export default function CreateReport() {
                                 {images.length < MAX_IMAGES && (
                                     <div
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors flex flex-col items-center justify-center"
+                                        className="border-3 border-dashed border-foreground p-6 text-center cursor-pointer hover:bg-foreground hover:text-background transition-none flex flex-col items-center justify-center"
                                     >
-                                        <Upload className="h-6 w-6 mb-2 text-muted-foreground" />
-                                        <p className="text-xs text-muted-foreground">
-                                            Add photo
+                                        <Upload className="h-6 w-6 mb-2" />
+                                        <p className="font-mono text-xs uppercase font-bold">
+                                            ADD PHOTO
                                         </p>
-                                        <p className="text-[10px] text-muted-foreground mt-1">
-                                            {images.length}/{MAX_IMAGES} used
+                                        <p className="font-mono text-[10px] text-muted-foreground mt-1">
+                                            {images.length}/{MAX_IMAGES} USED
                                         </p>
                                     </div>
                                 )}
                             </div>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="font-mono text-xs text-muted-foreground uppercase">
                                 Max {MAX_IMAGES} images, each up to 5MB.
                             </p>
                         </div>
@@ -436,13 +436,10 @@ export default function CreateReport() {
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    {uploading ? 'Uploading image...' : 'Creating report...'}
+                                    {uploading ? 'UPLOADING IMAGE...' : 'CREATING REPORT...'}
                                 </>
                             ) : (
-                                <>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Submit Report
-                                </>
+                                'SUBMIT REPORT >>>'
                             )}
                         </Button>
                     </form>

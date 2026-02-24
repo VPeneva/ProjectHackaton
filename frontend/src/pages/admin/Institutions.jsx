@@ -47,18 +47,18 @@ function InstitutionRow({ institution, onDelete, onManageUsers }) {
     }
 
     return (
-        <Card className="border-0 shadow-md">
+        <Card>
             <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-primary" />
+                    <div className="w-10 h-10 border-3 border-foreground bg-muted flex items-center justify-center">
+                        <Building2 className="h-5 w-5 text-foreground" />
                     </div>
                     <div>
-                        <h3 className="font-semibold">{institution.name}</h3>
-                        <p className="text-xs text-muted-foreground">
+                        <h3 className="font-semibold uppercase">{institution.name}</h3>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             {institution._count?.categories || 0} categories
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             {institution._count?.users || 0} portal users
                         </p>
                     </div>
@@ -66,10 +66,10 @@ function InstitutionRow({ institution, onDelete, onManageUsers }) {
                 <div className="flex items-center gap-2">
                     <Link
                         to={`/admin/categories?institution=${institution.id}`}
-                        className="text-sm text-primary hover:underline"
+                        className="font-mono text-xs uppercase tracking-wider text-primary hover:underline"
                     >
                         <Tag className="h-4 w-4 inline mr-1" />
-                        Manage Categories
+                        MANAGE CATEGORIES
                     </Link>
                     <Button
                         variant="outline"
@@ -77,7 +77,7 @@ function InstitutionRow({ institution, onDelete, onManageUsers }) {
                         onClick={() => onManageUsers(institution)}
                     >
                         <Users className="h-4 w-4 mr-1" />
-                        Portal Users
+                        PORTAL USERS
                     </Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -92,19 +92,19 @@ function InstitutionRow({ institution, onDelete, onManageUsers }) {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Institution</AlertDialogTitle>
-                                <AlertDialogDescription>
+                                <AlertDialogTitle className="font-display text-2xl uppercase">DELETE INSTITUTION</AlertDialogTitle>
+                                <AlertDialogDescription className="font-mono text-xs uppercase tracking-wider">
                                     Are you sure you want to delete "{institution.name}"? This will also delete all associated categories.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel>CANCEL</AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={handleDelete}
                                     disabled={deleting}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
-                                    {deleting ? 'Deleting...' : 'Delete'}
+                                    {deleting ? 'DELETING...' : 'DELETE'}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -188,7 +188,7 @@ export default function Institutions() {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Header */}
-            <div className="flex items-center justify-between gap-4 mb-8">
+            <div className="flex items-center justify-between gap-4 mb-8 border-b-3 border-foreground pb-4">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" asChild>
                         <Link to="/admin" aria-label="Back to admin">
@@ -196,8 +196,8 @@ export default function Institutions() {
                         </Link>
                     </Button>
                     <div>
-                        <h1 className="text-3xl font-bold mb-1">Institutions</h1>
-                        <p className="text-muted-foreground">
+                        <h1 className="font-display text-5xl uppercase">INSTITUTIONS</h1>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">
                             Manage government institutions that receive reports.
                         </p>
                     </div>
@@ -206,13 +206,13 @@ export default function Institutions() {
                     <DialogTrigger asChild>
                         <Button>
                             <Plus className="h-4 w-4 mr-2" />
-                            Add Institution
+                            ADD INSTITUTION
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Add New Institution</DialogTitle>
-                            <DialogDescription>
+                            <DialogTitle className="font-display text-2xl uppercase">ADD NEW INSTITUTION</DialogTitle>
+                            <DialogDescription className="font-mono text-xs uppercase tracking-wider">
                                 Enter the name of the government institution.
                             </DialogDescription>
                         </DialogHeader>
@@ -226,7 +226,7 @@ export default function Institutions() {
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                                Cancel
+                                CANCEL
                             </Button>
                             <Button onClick={handleCreate} disabled={createInstitution.isPending}>
                                 {createInstitution.isPending ? (
@@ -234,7 +234,7 @@ export default function Institutions() {
                                 ) : (
                                     <Plus className="h-4 w-4 mr-2" />
                                 )}
-                                Add Institution
+                                ADD INSTITUTION
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -245,9 +245,9 @@ export default function Institutions() {
             {isLoading ? (
                 <div className="space-y-4">
                     {[...Array(3)].map((_, i) => (
-                        <Card key={i} className="border-0 shadow-md">
+                        <Card key={i}>
                             <CardContent className="p-4 flex items-center gap-4">
-                                <Skeleton className="w-10 h-10 rounded-lg" />
+                                <Skeleton className="w-10 h-10" />
                                 <div className="flex-1">
                                     <Skeleton className="h-5 w-48 mb-1" />
                                     <Skeleton className="h-3 w-24" />
@@ -257,24 +257,24 @@ export default function Institutions() {
                     ))}
                 </div>
             ) : isError ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
                         <p className="text-muted-foreground">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : institutions?.length === 0 ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
-                        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                            <Building2 className="h-8 w-8 text-muted-foreground" />
+                        <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
+                            <Building2 className="h-8 w-8 text-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">No Institutions Yet</h3>
-                        <p className="text-muted-foreground mb-4">
+                        <h3 className="font-display text-2xl uppercase mb-2">NO INSTITUTIONS YET</h3>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-4">
                             Add your first institution to start organizing reports.
                         </p>
                         <Button onClick={() => setDialogOpen(true)}>
                             <Plus className="h-4 w-4 mr-2" />
-                            Add First Institution
+                            ADD FIRST INSTITUTION
                         </Button>
                     </CardContent>
                 </Card>
@@ -295,14 +295,14 @@ export default function Institutions() {
             <Dialog open={manageDialogOpen} onOpenChange={setManageDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Institution Portal Users</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="font-display text-2xl uppercase">INSTITUTION PORTAL USERS</DialogTitle>
+                        <DialogDescription className="font-mono text-xs uppercase tracking-wider">
                             Manage accounts that can access the institution portal.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <p className="text-sm font-medium">Create new account</p>
+                            <p className="font-mono text-xs uppercase tracking-wider font-medium">Create new account</p>
                             <Input
                                 placeholder="Name"
                                 value={newUserName}
@@ -328,24 +328,24 @@ export default function Institutions() {
                                 ) : (
                                     <Users className="h-4 w-4 mr-2" />
                                 )}
-                                Create Portal User
+                                CREATE PORTAL USER
                             </Button>
                         </div>
 
                         <div className="space-y-2">
-                            <p className="text-sm font-medium">Existing accounts</p>
+                            <p className="font-mono text-xs uppercase tracking-wider font-medium">Existing accounts</p>
                             {institutionUsers.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">No portal users yet.</p>
+                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">No portal users yet.</p>
                             ) : (
                                 <div className="space-y-2">
                                     {institutionUsers.map((user) => (
                                         <div
                                             key={user.id}
-                                            className="flex items-center justify-between border border-border/60 rounded-md p-2"
+                                            className="flex items-center justify-between border-3 border-foreground p-2"
                                         >
                                             <div>
-                                                <p className="text-sm font-medium">{user.name}</p>
-                                                <p className="text-xs text-muted-foreground">{user.email}</p>
+                                                <p className="text-sm font-medium uppercase">{user.name}</p>
+                                                <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
                                             </div>
                                             <Button
                                                 variant="outline"
@@ -363,7 +363,7 @@ export default function Institutions() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setManageDialogOpen(false)}>
-                            Close
+                            CLOSE
                         </Button>
                     </DialogFooter>
                 </DialogContent>

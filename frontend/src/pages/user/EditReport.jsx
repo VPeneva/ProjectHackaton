@@ -227,13 +227,13 @@ export default function EditReport() {
   const isSubmitting = updateReport.isPending || uploading
   const latValue = formData.latitude ? parseFloat(formData.latitude) : null
   const lngValue = formData.longitude ? parseFloat(formData.longitude) : null
-  const hasCoords = !Number.isNaN(latValue) && !Number.isNaN(lngValue)
+  const hasCoords = latValue !== null && lngValue !== null && !Number.isNaN(latValue) && !Number.isNaN(lngValue)
   const mapPosition = hasCoords ? [latValue, lngValue] : null
 
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="border-0 shadow-xl">
+        <Card>
           <CardContent className="p-12 text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
           </CardContent>
@@ -249,11 +249,11 @@ export default function EditReport() {
       'Failed to load report details.'
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="border-0 shadow-xl">
+        <Card>
           <CardContent className="p-12 text-center">
             <p className="text-muted-foreground">{errorMessage}</p>
             <Button asChild className="mt-4" variant="outline">
-              <Link to="/my-reports">Back to My Reports</Link>
+              <Link to="/my-reports">BACK TO MY REPORTS</Link>
             </Button>
           </CardContent>
         </Card>
@@ -264,7 +264,7 @@ export default function EditReport() {
   if (report.status !== 'Pending') {
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="border-0 shadow-xl">
+        <Card>
           <CardContent className="p-12 text-center space-y-4">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -273,7 +273,7 @@ export default function EditReport() {
               </AlertDescription>
             </Alert>
             <Button asChild variant="outline">
-              <Link to="/my-reports">Back to My Reports</Link>
+              <Link to="/my-reports">BACK TO MY REPORTS</Link>
             </Button>
           </CardContent>
         </Card>
@@ -284,14 +284,14 @@ export default function EditReport() {
   if (user?.id && report.userId && user.id !== report.userId && user.role !== 'ADMIN') {
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="border-0 shadow-xl">
+        <Card>
           <CardContent className="p-12 text-center space-y-4">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>You do not have permission to edit this report.</AlertDescription>
             </Alert>
             <Button asChild variant="outline">
-              <Link to="/my-reports">Back to My Reports</Link>
+              <Link to="/my-reports">BACK TO MY REPORTS</Link>
             </Button>
           </CardContent>
         </Card>
@@ -301,25 +301,25 @@ export default function EditReport() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="mb-8 flex items-center gap-3">
+      <div className="mb-8 flex items-center gap-3 border-b-3 border-foreground pb-6">
         <Button asChild variant="ghost" size="icon">
           <Link to="/my-reports">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold mb-1">Edit Report</h1>
-          <p className="text-muted-foreground">Update the details of your pending report.</p>
+          <h1 className="font-display text-5xl uppercase mb-1">EDIT REPORT</h1>
+          <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Update the details of your pending report.</p>
         </div>
       </div>
 
-      <Card className="border-0 shadow-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card>
+        <CardHeader className="border-b-3 border-foreground">
+          <CardTitle className="font-display text-2xl uppercase flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            Report Details
+            REPORT DETAILS
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="font-mono text-xs uppercase tracking-wider">
             Adjust any fields below and save to update your report.
           </CardDescription>
         </CardHeader>
@@ -333,7 +333,7 @@ export default function EditReport() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title" className="font-mono text-xs uppercase tracking-wider">TITLE *</Label>
               <Input
                 id="title"
                 name="title"
@@ -346,7 +346,7 @@ export default function EditReport() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
+              <Label htmlFor="description" className="font-mono text-xs uppercase tracking-wider">DESCRIPTION *</Label>
               <Textarea
                 id="description"
                 name="description"
@@ -360,7 +360,7 @@ export default function EditReport() {
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Institution *</Label>
+                <Label className="font-mono text-xs uppercase tracking-wider">INSTITUTION *</Label>
                 <Select
                   value={selectedInstitution}
                   onValueChange={handleInstitutionChange}
@@ -379,7 +379,7 @@ export default function EditReport() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Category *</Label>
+                <Label className="font-mono text-xs uppercase tracking-wider">CATEGORY *</Label>
                 <Select
                   value={formData.categoryId}
                   onValueChange={(value) =>
@@ -402,9 +402,9 @@ export default function EditReport() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address" className="flex items-center gap-1">
+              <Label htmlFor="address" className="font-mono text-xs uppercase tracking-wider flex items-center gap-1">
                 <MapPin className="h-4 w-4" />
-                Location
+                LOCATION
               </Label>
               <Input
                 id="address"
@@ -418,7 +418,7 @@ export default function EditReport() {
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="latitude">Latitude (optional)</Label>
+                <Label htmlFor="latitude" className="font-mono text-xs uppercase tracking-wider">LATITUDE (OPTIONAL)</Label>
                 <Input
                   id="latitude"
                   name="latitude"
@@ -431,7 +431,7 @@ export default function EditReport() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="longitude">Longitude (optional)</Label>
+                <Label htmlFor="longitude" className="font-mono text-xs uppercase tracking-wider">LONGITUDE (OPTIONAL)</Label>
                 <Input
                   id="longitude"
                   name="longitude"
@@ -446,11 +446,11 @@ export default function EditReport() {
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-1">
+              <Label className="font-mono text-xs uppercase tracking-wider flex items-center gap-1">
                 <MapPin className="h-4 w-4" />
-                Pick location on map
+                PICK LOCATION ON MAP
               </Label>
-              <div className="h-64 rounded-lg overflow-hidden border border-border">
+              <div className="h-64 border-3 border-foreground overflow-hidden">
                 <MapContainer
                   center={mapPosition || DEFAULT_CENTER}
                   zoom={mapPosition ? 14 : DEFAULT_ZOOM}
@@ -464,15 +464,15 @@ export default function EditReport() {
                   <LocationMarker position={mapPosition} onSelect={handleMapSelect} />
                 </MapContainer>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                 Click the map to set coordinates. You can also type them manually above.
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-1">
+              <Label className="font-mono text-xs uppercase tracking-wider flex items-center gap-1">
                 <ImageIcon className="h-4 w-4" />
-                Photos (optional)
+                PHOTOS (OPTIONAL)
               </Label>
               <input
                 ref={fileInputRef}
@@ -486,7 +486,7 @@ export default function EditReport() {
                 {existingImages.map((url, index) => (
                   <div
                     key={`${url}-${index}`}
-                    className="relative rounded-lg overflow-hidden bg-muted aspect-video"
+                    className="relative border-3 border-foreground overflow-hidden bg-muted aspect-video"
                   >
                     <img
                       src={url}
@@ -508,7 +508,7 @@ export default function EditReport() {
                 {newImages.map((image, index) => (
                   <div
                     key={image.preview}
-                    className="relative rounded-lg overflow-hidden bg-muted aspect-video"
+                    className="relative border-3 border-foreground overflow-hidden bg-muted aspect-video"
                   >
                     <img
                       src={image.preview}
@@ -530,19 +530,19 @@ export default function EditReport() {
                 {existingImages.length + newImages.length < MAX_IMAGES && (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors flex flex-col items-center justify-center"
+                    className="border-3 border-dashed border-foreground p-6 text-center cursor-pointer hover:bg-foreground hover:text-background transition-none flex flex-col items-center justify-center"
                   >
-                    <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">
-                      Add photo
+                    <Upload className="h-6 w-6 mx-auto mb-2" />
+                    <p className="font-mono text-xs uppercase tracking-wider">
+                      ADD PHOTO
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {existingImages.length + newImages.length}/{MAX_IMAGES} used
+                    <p className="font-mono text-xs uppercase tracking-wider mt-1">
+                      {existingImages.length + newImages.length}/{MAX_IMAGES} USED
                     </p>
                   </div>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                 Max {MAX_IMAGES} images, each up to 5MB.
               </p>
             </div>
@@ -551,12 +551,12 @@ export default function EditReport() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {uploading ? 'Uploading image...' : 'Saving changes...'}
+                  {uploading ? 'UPLOADING IMAGE...' : 'SAVING CHANGES...'}
                 </>
               ) : (
                 <>
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Save Changes
+                  SAVE CHANGES &gt;&gt;&gt;
                 </>
               )}
             </Button>

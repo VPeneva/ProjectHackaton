@@ -144,23 +144,23 @@ export function VoteButtons({ reportId, status, compact = false, initialSummary 
   return (
     <div className={`space-y-2 ${compact ? 'text-xs' : ''}`}>
       {!compact && (
-        <p className="text-sm text-muted-foreground">{prompt}</p>
+        <p className="font-mono text-xs text-muted-foreground uppercase tracking-wider">{prompt}</p>
       )}
       <div className={`flex items-center gap-2 ${compact ? 'scale-95 origin-left' : ''}`}>
         {isAuthenticated ? upButton : <span className="inline-flex" title="Log in to vote">{upButton}</span>}
         {isAuthenticated ? downButton : <span className="inline-flex" title="Log in to vote">{downButton}</span>}
       </div>
       {!compact && votingClosed && (
-        <p className="text-xs text-amber-600">{t('vote.votingClosed')}</p>
+        <p className="font-mono text-xs text-primary uppercase">{t('vote.votingClosed')}</p>
       )}
       {!compact && (
-        <div className="text-xs text-muted-foreground">
+        <div className="font-mono text-xs text-muted-foreground uppercase">
           {t('vote.weightedScore')}: {weightedUpvotes} / {weightedDownvotes}
         </div>
       )}
       {!compact && isAuthenticated && !votingClosed && (
         <div className="space-y-2">
-          <p className="text-xs font-medium">{t('vote.reasonTitle')}</p>
+          <p className="font-mono text-xs font-bold uppercase">{t('vote.reasonTitle')}</p>
           <Select value={reason} onValueChange={setReason}>
             <SelectTrigger className="h-8">
               <SelectValue placeholder={t('vote.reasonPlaceholder')} />
@@ -185,12 +185,12 @@ export function VoteButtons({ reportId, status, compact = false, initialSummary 
       )}
       {!compact && summary?.reasons?.length ? (
         <div className="space-y-1">
-          <p className="text-xs font-medium">{t('vote.reasonsHeading')}</p>
+          <p className="font-mono text-xs font-bold uppercase">{t('vote.reasonsHeading')}</p>
           <div className="flex flex-wrap gap-2">
             {summary.reasons.map((item) => (
               <span
                 key={item.reason}
-                className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground"
+                className="text-xs px-2 py-1 border-2 border-foreground bg-muted text-muted-foreground font-mono uppercase"
               >
                 {item.reason} · {item.count}
               </span>

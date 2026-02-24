@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicReport - Design Preview: Civic Green</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400;1,9..144,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --forest: #1a3c2a;
+  --forest-dark: #132a1e;
+  --cream: #faf6f0;
+  --cream-warm: #f5efe5;
+  --terracotta: #c4653a;
+  --terracotta-hover: #a8522d;
+  --sage: #7d9b76;
+  --sage-light: #a8c4a0;
+  --sage-bg: #f2f6f0;
+  --dark: #2d2d2d;
+  --golden: #d4a940;
+  --golden-light: #e8c76a;
+  --amber: #d4a940;
+  --white-warm: #fffdf9;
+  --shadow-soft: 0 4px 24px rgba(26, 60, 42, 0.08);
+  --shadow-medium: 0 8px 40px rgba(26, 60, 42, 0.12);
+  --shadow-card: 0 2px 16px rgba(26, 60, 42, 0.06);
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 100px;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif;
+  color: var(--dark);
+  background: var(--cream);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Fraunces', serif;
+  font-optical-sizing: auto;
+  line-height: 1.2;
+  color: var(--forest);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ===== FADE-IN ANIMATIONS ===== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fade-in-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.fade-in-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fade-in-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* stagger delays */
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }
+.delay-5 { transition-delay: 0.5s; }
+.delay-6 { transition-delay: 0.6s; }
+
+/* ===== NAVBAR ===== */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(250, 246, 240, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(26, 60, 42, 0.06);
+  transition: box-shadow 0.3s ease;
+}
+
+.navbar.scrolled {
+  box-shadow: 0 2px 20px rgba(26, 60, 42, 0.08);
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--forest);
+}
+
+.logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--forest) 0%, var(--sage) 100%);
+  border-radius: 12px;
+  color: var(--cream);
+  font-size: 1.2rem;
+  position: relative;
+}
+
+.logo-mark::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: var(--golden);
+  border-radius: 50%;
+  border: 2px solid var(--cream);
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+
+.navbar-links a {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--dark);
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--sage);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.navbar-links a:hover {
+  color: var(--forest);
+}
+
+.navbar-links a:hover::after {
+  width: 100%;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--forest);
+  padding: 10px 20px;
+}
+
+.btn-ghost:hover {
+  background: rgba(26, 60, 42, 0.06);
+}
+
+.btn-primary {
+  background: var(--forest);
+  color: var(--cream);
+  box-shadow: 0 4px 16px rgba(26, 60, 42, 0.2);
+}
+
+.btn-primary:hover {
+  background: var(--forest-dark);
+  box-shadow: 0 6px 24px rgba(26, 60, 42, 0.3);
+}
+
+.btn-secondary {
+  background: var(--terracotta);
+  color: var(--cream);
+  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.2);
+}
+
+.btn-secondary:hover {
+  background: var(--terracotta-hover);
+  box-shadow: 0 6px 24px rgba(196, 101, 58, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--cream);
+  border: 2px solid rgba(250, 246, 240, 0.4);
+}
+
+.btn-outline:hover {
+  background: rgba(250, 246, 240, 0.12);
+  border-color: rgba(250, 246, 240, 0.7);
+}
+
+.btn-lg {
+  padding: 14px 36px;
+  font-size: 1.05rem;
+}
+
+/* Mobile menu toggle */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--forest);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* ===== HERO ===== */
+.hero {
+  position: relative;
+  padding: 100px 0 120px;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+.hero-bg-shape {
+  position: absolute;
+  top: -120px;
+  right: -200px;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(ellipse at center, rgba(125, 155, 118, 0.12) 0%, rgba(125, 155, 118, 0.03) 50%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.hero-bg-shape-2 {
+  position: absolute;
+  bottom: -100px;
+  left: -150px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(ellipse at center, rgba(212, 169, 64, 0.08) 0%, transparent 60%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+/* Decorative leaf elements */
+.leaf-decor {
+  position: absolute;
+  opacity: 0.06;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.leaf-decor-1 {
+  top: 60px;
+  right: 80px;
+  font-size: 120px;
+  transform: rotate(25deg);
+  color: var(--forest);
+}
+
+.leaf-decor-2 {
+  bottom: 80px;
+  left: 40px;
+  font-size: 80px;
+  transform: rotate(-15deg);
+  color: var(--sage);
+}
+
+.leaf-decor-3 {
+  top: 200px;
+  left: 120px;
+  font-size: 50px;
+  transform: rotate(45deg);
+  color: var(--golden);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 60px;
+}
+
+.hero-text {
+  max-width: 560px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(125, 155, 118, 0.12);
+  border: 1px solid rgba(125, 155, 118, 0.2);
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--forest);
+  margin-bottom: 24px;
+}
+
+.hero-badge span {
+  font-size: 1rem;
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  color: var(--forest);
+  font-variation-settings: 'opsz' 144;
+}
+
+.hero-title .highlight {
+  position: relative;
+  display: inline;
+}
+
+.hero-title .highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background: rgba(212, 169, 64, 0.3);
+  border-radius: 4px;
+  z-index: -1;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #5a5a5a;
+  margin-bottom: 36px;
+  max-width: 480px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(26, 60, 42, 0.08);
+}
+
+.hero-trust-avatars {
+  display: flex;
+}
+
+.hero-trust-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--cream);
+  margin-left: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.hero-trust-avatar:first-child {
+  margin-left: 0;
+}
+
+.hero-trust-avatar:nth-child(1) { background: var(--forest); }
+.hero-trust-avatar:nth-child(2) { background: var(--sage); }
+.hero-trust-avatar:nth-child(3) { background: var(--terracotta); }
+.hero-trust-avatar:nth-child(4) { background: var(--golden); }
+.hero-trust-avatar:nth-child(5) { background: var(--forest-dark); font-size: 0.65rem; }
+
+.hero-trust-text {
+  font-size: 0.9rem;
+  color: #6a6a6a;
+}
+
+.hero-trust-text strong {
+  color: var(--forest);
+}
+
+/* Hero visual right side */
+.hero-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-card-mockup {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+}
+
+.hero-card-main {
+  background: var(--white-warm);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-medium);
+  padding: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.hero-card-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(125, 155, 118, 0.12);
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--forest);
+}
+
+.hero-card-time {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.hero-card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--forest);
+  margin-bottom: 8px;
+}
+
+.hero-card-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 20px;
+}
+
+.hero-card-image-placeholder {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, var(--sage-bg) 0%, rgba(125, 155, 118, 0.15) 100%);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.hero-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hero-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-pending {
+  background: rgba(212, 169, 64, 0.12);
+  color: #b08a20;
+}
+
+.status-sent {
+  background: rgba(125, 155, 118, 0.12);
+  color: var(--sage);
+}
+
+.status-resolved {
+  background: rgba(26, 60, 42, 0.1);
+  color: var(--forest);
+}
+
+.hero-card-upvotes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* Floating notification card */
+.hero-float-card {
+  position: absolute;
+  background: var(--white-warm);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-medium);
+  padding: 16px 20px;
+  z-index: 3;
+  animation: float 6s ease-in-out infinite;
+}
+
+.hero-float-1 {
+  top: -20px;
+  right: -30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-float-1 .float-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(26, 60, 42, 0.08);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.hero-float-1 .float-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--forest);
+}
+
+.hero-float-1 .float-sub {
+  font-size: 0.7rem;
+  color: #999;
+  font-weight: 400;
+}
+
+.hero-float-2 {
+  bottom: 30px;
+  left: -40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation-delay: -3s;
+}
+
+.hero-float-2 .float-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--sage);
+  border-radius: 50%;
+}
+
+.hero-float-2 .float-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--forest);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ===== WAVY SVG DIVIDERS ===== */
+.wave-divider {
+  display: block;
+  width: 100%;
+  line-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.wave-divider svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.wave-cream-to-green {
+  background: var(--cream);
+}
+
+.wave-green-to-cream {
+  background: var(--sage-bg);
+}
+
+.wave-cream-to-forest {
+  background: var(--cream);
+}
+
+.wave-forest-to-cream {
+  background: var(--forest);
+}
+
+/* ===== FEATURES SECTION ===== */
+.features {
+  padding: 80px 0 100px;
+  background: var(--sage-bg);
+  position: relative;
+}
+
+.section-header {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 60px;
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(26, 60, 42, 0.06);
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--forest);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: clamp(2rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  margin-bottom: 16px;
+  font-variation-settings: 'opsz' 72;
+}
+
+.section-desc {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.8;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.feature-card {
+  background: var(--white-warm);
+  border-radius: var(--radius-md);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-card);
+  border-left: 4px solid var(--sage);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(125, 155, 118, 0.03) 0%, transparent 60%);
+  z-index: 0;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-medium);
+  border-left-color: var(--forest);
+}
+
+.feature-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.feature-icon {
+  width: 52px;
+  height: 52px;
+  background: rgba(125, 155, 118, 0.1);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.feature-card:nth-child(2) .feature-icon { background: rgba(196, 101, 58, 0.1); }
+.feature-card:nth-child(3) .feature-icon { background: rgba(212, 169, 64, 0.1); }
+.feature-card:nth-child(4) .feature-icon { background: rgba(26, 60, 42, 0.08); }
+.feature-card:nth-child(5) .feature-icon { background: rgba(196, 101, 58, 0.1); }
+.feature-card:nth-child(6) .feature-icon { background: rgba(125, 155, 118, 0.1); }
+
+.feature-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--forest);
+  margin-bottom: 10px;
+  font-variation-settings: 'opsz' 36;
+}
+
+.feature-desc {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.7;
+}
+
+/* ===== HOW IT WORKS ===== */
+.how-it-works {
+  padding: 80px 0 100px;
+  background: var(--cream);
+  position: relative;
+}
+
+.steps-container {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Curved connector line */
+.steps-connector {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: calc(100% - 100px);
+  z-index: 0;
+}
+
+.steps-connector::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, var(--sage-light) 0%, var(--forest) 50%, var(--sage-light) 100%);
+  border-radius: 4px;
+  opacity: 0.3;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 40px;
+  padding: 20px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.step:nth-child(even) .step-content {
+  order: 3;
+  text-align: left;
+}
+
+.step:nth-child(even) .step-visual {
+  order: 1;
+  justify-self: end;
+}
+
+.step-number {
+  width: 56px;
+  height: 56px;
+  background: var(--forest);
+  color: var(--cream);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  order: 2;
+  box-shadow: 0 4px 20px rgba(26, 60, 42, 0.2);
+  border: 4px solid var(--cream);
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.step-content {
+  order: 1;
+  text-align: right;
+}
+
+.step-content h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-variation-settings: 'opsz' 48;
+}
+
+.step-content p {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.7;
+}
+
+.step-visual {
+  order: 3;
+}
+
+.step-visual-card {
+  background: var(--white-warm);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 260px;
+}
+
+.step-visual-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.step-visual-icon.green { background: rgba(125, 155, 118, 0.12); }
+.step-visual-icon.terracotta { background: rgba(196, 101, 58, 0.1); }
+.step-visual-icon.golden { background: rgba(212, 169, 64, 0.1); }
+.step-visual-icon.forest { background: rgba(26, 60, 42, 0.08); }
+
+.step-visual-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.step-visual-sub {
+  font-size: 0.75rem;
+  color: #999;
+  font-weight: 400;
+}
+
+/* ===== STATS SECTION ===== */
+.stats {
+  padding: 80px 0;
+  background: var(--forest);
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-organic-shape {
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(ellipse at center, rgba(125, 155, 118, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.stats-organic-shape-2 {
+  position: absolute;
+  bottom: -80px;
+  left: -80px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(ellipse at center, rgba(212, 169, 64, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.stats .section-header {
+  position: relative;
+  z-index: 1;
+}
+
+.stats .section-label {
+  background: rgba(250, 246, 240, 0.1);
+  color: var(--cream);
+}
+
+.stats .section-title {
+  color: var(--cream);
+}
+
+.stats .section-desc {
+  color: rgba(250, 246, 240, 0.7);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 36px 24px;
+  background: rgba(250, 246, 240, 0.06);
+  border: 1px solid rgba(250, 246, 240, 0.08);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  background: rgba(250, 246, 240, 0.1);
+  transform: translateY(-4px);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.stat-number {
+  font-family: 'Fraunces', serif;
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--cream);
+  line-height: 1;
+  margin-bottom: 8px;
+  font-variation-settings: 'opsz' 144;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(250, 246, 240, 0.6);
+  font-weight: 500;
+}
+
+.stat-sub {
+  font-size: 0.75rem;
+  color: var(--golden-light);
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* ===== REPORT CARDS SECTION ===== */
+.reports {
+  padding: 80px 0 100px;
+  background: var(--cream);
+  position: relative;
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.report-card {
+  background: var(--white-warm);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(26, 60, 42, 0.04);
+}
+
+.report-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-medium);
+}
+
+.report-card-image {
+  width: 100%;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  position: relative;
+}
+
+.report-card:nth-child(1) .report-card-image {
+  background: linear-gradient(135deg, rgba(196, 101, 58, 0.1) 0%, rgba(212, 169, 64, 0.08) 100%);
+}
+.report-card:nth-child(2) .report-card-image {
+  background: linear-gradient(135deg, rgba(125, 155, 118, 0.12) 0%, rgba(26, 60, 42, 0.08) 100%);
+}
+.report-card:nth-child(3) .report-card-image {
+  background: linear-gradient(135deg, rgba(212, 169, 64, 0.1) 0%, rgba(196, 101, 58, 0.08) 100%);
+}
+
+.report-card-image-label {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  color: var(--dark);
+}
+
+.report-card-body {
+  padding: 24px;
+}
+
+.report-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.report-card-category {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sage);
+}
+
+.report-card-date {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.report-card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--forest);
+  margin-bottom: 8px;
+  font-variation-settings: 'opsz' 36;
+}
+
+.report-card-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 16px;
+}
+
+.report-card-desc {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.report-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid rgba(26, 60, 42, 0.06);
+}
+
+.report-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.report-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.status-pending .report-status-dot { background: var(--amber); }
+.status-sent .report-status-dot { background: var(--sage); }
+.status-resolved .report-status-dot { background: var(--forest); }
+
+.report-upvotes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.report-upvotes:hover {
+  color: var(--terracotta);
+}
+
+/* ===== CTA SECTION ===== */
+.cta-section {
+  padding: 60px 0 100px;
+  background: var(--cream);
+}
+
+.cta-card {
+  background: linear-gradient(135deg, var(--forest) 0%, #1e4a32 40%, var(--forest-dark) 100%);
+  border-radius: var(--radius-xl);
+  padding: 80px 60px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(26, 60, 42, 0.3);
+}
+
+.cta-organic-1 {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(ellipse at center, rgba(125, 155, 118, 0.2) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.cta-organic-2 {
+  position: absolute;
+  bottom: -40px;
+  left: -40px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(ellipse at center, rgba(212, 169, 64, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.cta-leaf {
+  position: absolute;
+  opacity: 0.06;
+  font-size: 100px;
+  color: var(--cream);
+  pointer-events: none;
+}
+
+.cta-leaf-1 { top: 20px; left: 40px; transform: rotate(-20deg); }
+.cta-leaf-2 { bottom: 20px; right: 60px; transform: rotate(30deg); }
+
+.cta-content {
+  position: relative;
+  z-index: 1;
+}
+
+.cta-title {
+  font-size: clamp(2rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  color: var(--cream);
+  margin-bottom: 16px;
+  font-variation-settings: 'opsz' 72;
+}
+
+.cta-desc {
+  font-size: 1.1rem;
+  color: rgba(250, 246, 240, 0.75);
+  max-width: 520px;
+  margin: 0 auto 36px;
+  line-height: 1.8;
+}
+
+.cta-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cta-trust {
+  margin-top: 32px;
+  font-size: 0.85rem;
+  color: rgba(250, 246, 240, 0.5);
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  background: var(--forest-dark);
+  color: rgba(250, 246, 240, 0.7);
+  padding: 60px 0 0;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgba(250, 246, 240, 0.08);
+}
+
+.footer-brand h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--cream);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-brand p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  max-width: 300px;
+  color: rgba(250, 246, 240, 0.5);
+}
+
+.footer-social {
+  display: flex;
+  gap: 12px;
+}
+
+.footer-social a {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(250, 246, 240, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: rgba(250, 246, 240, 0.6);
+  transition: all 0.3s ease;
+}
+
+.footer-social a:hover {
+  background: rgba(250, 246, 240, 0.12);
+  color: var(--cream);
+  transform: translateY(-2px);
+}
+
+.footer-col h4 {
+  font-family: 'Fraunces', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: 20px;
+  font-variation-settings: 'opsz' 24;
+}
+
+.footer-col ul {
+  list-style: none;
+}
+
+.footer-col li {
+  margin-bottom: 12px;
+}
+
+.footer-col a {
+  font-size: 0.9rem;
+  color: rgba(250, 246, 240, 0.5);
+  transition: color 0.3s ease;
+}
+
+.footer-col a:hover {
+  color: var(--cream);
+}
+
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0;
+  font-size: 0.85rem;
+  color: rgba(250, 246, 240, 0.3);
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-bottom-links a {
+  color: rgba(250, 246, 240, 0.3);
+  transition: color 0.3s ease;
+}
+
+.footer-bottom-links a:hover {
+  color: rgba(250, 246, 240, 0.6);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .hero-text {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .hero-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  .hero-trust {
+    justify-content: center;
+  }
+
+  .hero-visual {
+    order: -1;
+  }
+
+  .hero-card-mockup {
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  .hero-float-2 {
+    left: 0;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reports-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reports-grid .report-card:nth-child(3) {
+    grid-column: span 2;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-links {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+
+  .navbar-actions .btn-ghost {
+    display: none;
+  }
+
+  .hero {
+    padding: 60px 0 80px;
+  }
+
+  .hero-float-1,
+  .hero-float-2 {
+    display: none;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .step {
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+  }
+
+  .step-number {
+    order: 1;
+  }
+
+  .step-content {
+    order: 2;
+    text-align: left;
+  }
+
+  .step:nth-child(even) .step-content {
+    order: 2;
+  }
+
+  .step-visual {
+    display: none;
+  }
+
+  .steps-connector {
+    left: 28px;
+    transform: none;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reports-grid .report-card:nth-child(3) {
+    grid-column: span 1;
+    max-width: 100%;
+  }
+
+  .cta-card {
+    padding: 48px 28px;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 24px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .cta-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .cta-actions .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar" id="navbar">
+  <div class="navbar-inner">
+    <a href="#" class="navbar-logo">
+      <div class="logo-mark">&#x1F33F;</div>
+      CivicReport
+    </a>
+
+    <ul class="navbar-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#stats">Impact</a></li>
+      <li><a href="#reports">Reports</a></li>
+    </ul>
+
+    <div class="navbar-actions">
+      <button class="btn btn-ghost">Sign In</button>
+      <button class="btn btn-primary">Get Started</button>
+    </div>
+
+    <button class="menu-toggle" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="hero">
+  <div class="hero-bg-shape"></div>
+  <div class="hero-bg-shape-2"></div>
+  <div class="leaf-decor leaf-decor-1">&#x1F343;</div>
+  <div class="leaf-decor leaf-decor-2">&#x1F33F;</div>
+  <div class="leaf-decor leaf-decor-3">&#x2618;</div>
+
+  <div class="hero-content">
+    <div class="hero-text fade-in">
+      <div class="hero-badge">
+        <span>&#x1F331;</span> Community-powered civic reporting
+      </div>
+      <h1 class="hero-title">
+        Your City.<br>
+        Your Voice.<br>
+        Your <span class="highlight">Impact.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Report public infrastructure issues directly to the institutions that can fix them.
+        Together, we grow stronger communities from the ground up.
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg">
+          &#x1F4CB; Start Reporting
+        </button>
+        <button class="btn btn-secondary btn-lg">
+          &#x1F30D; Explore Map
+        </button>
+      </div>
+      <div class="hero-trust">
+        <div class="hero-trust-avatars">
+          <div class="hero-trust-avatar">M</div>
+          <div class="hero-trust-avatar">K</div>
+          <div class="hero-trust-avatar">A</div>
+          <div class="hero-trust-avatar">R</div>
+          <div class="hero-trust-avatar">2k+</div>
+        </div>
+        <div class="hero-trust-text">
+          <strong>2,400+ citizens</strong> actively improving their neighborhoods
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual fade-in delay-2">
+      <div class="hero-card-mockup">
+        <div class="hero-float-1 hero-float-card">
+          <div class="float-icon">&#x2705;</div>
+          <div>
+            <div class="float-text">Issue Resolved!</div>
+            <div class="float-sub">Oak Street pothole fixed</div>
+          </div>
+        </div>
+
+        <div class="hero-card-main">
+          <div class="hero-card-header">
+            <div class="hero-card-type">&#x26A0;&#xFE0F; Infrastructure</div>
+            <div class="hero-card-time">2 hours ago</div>
+          </div>
+          <div class="hero-card-title">Broken Streetlight on Maple Ave</div>
+          <div class="hero-card-location">
+            &#x1F4CD; 142 Maple Avenue, District 3
+          </div>
+          <div class="hero-card-image-placeholder">
+            &#x1F4A1;
+          </div>
+          <div class="hero-card-footer">
+            <div class="hero-card-status status-sent">
+              <span class="report-status-dot"></span>
+              Sent to Municipality
+            </div>
+            <div class="hero-card-upvotes">&#x1F44D; 24</div>
+          </div>
+        </div>
+
+        <div class="hero-float-2 hero-float-card">
+          <div class="float-dot"></div>
+          <div>
+            <div class="float-text">+3 new reports today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Wave: Cream to Green -->
+<div class="wave-divider wave-cream-to-green">
+  <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0 40C240 80 480 10 720 50C960 90 1200 20 1440 60V100H0V40Z" fill="#f2f6f0"/>
+  </svg>
+</div>
+
+<!-- ===== FEATURES ===== -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-header fade-in">
+      <div class="section-label">&#x1F33F; Features</div>
+      <h2 class="section-title">Everything You Need to Make a Difference</h2>
+      <p class="section-desc">
+        Powerful tools designed to make civic reporting simple, transparent, and impactful for every citizen.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card fade-in delay-1">
+        <div class="feature-icon">&#x1F4F8;</div>
+        <h3 class="feature-title">Photo Documentation</h3>
+        <p class="feature-desc">
+          Snap a photo, pin the location, and submit. Our app makes evidence gathering effortless and accurate.
+        </p>
+      </div>
+
+      <div class="feature-card fade-in delay-2">
+        <div class="feature-icon">&#x1F3E2;</div>
+        <h3 class="feature-title">Smart Routing</h3>
+        <p class="feature-desc">
+          Reports are automatically directed to the right government institution based on issue type and location.
+        </p>
+      </div>
+
+      <div class="feature-card fade-in delay-3">
+        <div class="feature-icon">&#x1F514;</div>
+        <h3 class="feature-title">Real-time Updates</h3>
+        <p class="feature-desc">
+          Track your report through every stage. Get notified when it is received, reviewed, and resolved.
+        </p>
+      </div>
+
+      <div class="feature-card fade-in delay-4">
+        <div class="feature-icon">&#x1F5FA;</div>
+        <h3 class="feature-title">Community Map</h3>
+        <p class="feature-desc">
+          See all reported issues on an interactive map. Discover what matters to your neighbors and upvote shared concerns.
+        </p>
+      </div>
+
+      <div class="feature-card fade-in delay-5">
+        <div class="feature-icon">&#x1F4CA;</div>
+        <h3 class="feature-title">Transparency Dashboard</h3>
+        <p class="feature-desc">
+          Public analytics on resolution times, response rates, and institutional performance. Accountability made visible.
+        </p>
+      </div>
+
+      <div class="feature-card fade-in delay-6">
+        <div class="feature-icon">&#x1F91D;</div>
+        <h3 class="feature-title">Community Voices</h3>
+        <p class="feature-desc">
+          Comment on reports, share experiences, and support fellow citizens. Together, every voice is amplified.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Wave: Green to Cream -->
+<div class="wave-divider wave-green-to-cream">
+  <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0 60C360 20 720 90 1080 40C1260 15 1380 35 1440 30V100H0V60Z" fill="#faf6f0"/>
+  </svg>
+</div>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="how-it-works" id="how-it-works">
+  <div class="container">
+    <div class="section-header fade-in">
+      <div class="section-label">&#x1F331; Process</div>
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-desc">
+        From spotting an issue to seeing it resolved -- four simple steps to a better community.
+      </p>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-connector"></div>
+
+      <div class="step fade-in delay-1">
+        <div class="step-content">
+          <h3>Spot &amp; Report</h3>
+          <p>See a pothole, broken bench, or graffiti? Open the app, snap a photo, and describe the issue. Our smart form auto-detects the category.</p>
+        </div>
+        <div class="step-number">1</div>
+        <div class="step-visual">
+          <div class="step-visual-card">
+            <div class="step-visual-icon green">&#x1F4F1;</div>
+            <div>
+              <div class="step-visual-text">Quick Capture</div>
+              <div class="step-visual-sub">Photo + GPS in seconds</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step fade-in delay-2">
+        <div class="step-content">
+          <h3>Auto-Route</h3>
+          <p>Our system identifies the responsible institution and sends your report directly to the right department. No guesswork, no bureaucracy.</p>
+        </div>
+        <div class="step-number">2</div>
+        <div class="step-visual">
+          <div class="step-visual-card">
+            <div class="step-visual-icon terracotta">&#x1F3E2;</div>
+            <div>
+              <div class="step-visual-text">Smart Delivery</div>
+              <div class="step-visual-sub">Right dept, every time</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step fade-in delay-3">
+        <div class="step-content">
+          <h3>Track Progress</h3>
+          <p>Follow your report in real time. See when it is opened, assigned, and scheduled for resolution. Full transparency at every step.</p>
+        </div>
+        <div class="step-number">3</div>
+        <div class="step-visual">
+          <div class="step-visual-card">
+            <div class="step-visual-icon golden">&#x1F4E8;</div>
+            <div>
+              <div class="step-visual-text">Live Status</div>
+              <div class="step-visual-sub">Updates as they happen</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step fade-in delay-4">
+        <div class="step-content">
+          <h3>See Results</h3>
+          <p>Issues get fixed. You get notified. The community map updates. And your neighborhood grows a little stronger with each resolved report.</p>
+        </div>
+        <div class="step-number">4</div>
+        <div class="step-visual">
+          <div class="step-visual-card">
+            <div class="step-visual-icon forest">&#x2705;</div>
+            <div>
+              <div class="step-visual-text">Issue Resolved</div>
+              <div class="step-visual-sub">Community improved</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Wave: Cream to Forest -->
+<div class="wave-divider wave-cream-to-forest">
+  <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0 30C180 70 360 10 540 50C720 90 900 20 1080 55C1260 90 1380 40 1440 50V100H0V30Z" fill="#1a3c2a"/>
+  </svg>
+</div>
+
+<!-- ===== STATS ===== -->
+<section class="stats" id="stats">
+  <div class="stats-organic-shape"></div>
+  <div class="stats-organic-shape-2"></div>
+  <div class="container">
+    <div class="section-header fade-in">
+      <div class="section-label">&#x1F4CA; Community Impact</div>
+      <h2 class="section-title">Growing Stronger Together</h2>
+      <p class="section-desc">
+        Real numbers from real communities. Every report plants the seed for a better neighborhood.
+      </p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card fade-in delay-1">
+        <span class="stat-icon">&#x1F4CB;</span>
+        <div class="stat-number">12,847</div>
+        <div class="stat-label">Reports Submitted</div>
+        <div class="stat-sub">&#x2191; 34% this quarter</div>
+      </div>
+
+      <div class="stat-card fade-in delay-2">
+        <span class="stat-icon">&#x2705;</span>
+        <div class="stat-number">9,231</div>
+        <div class="stat-label">Issues Resolved</div>
+        <div class="stat-sub">71.8% resolution rate</div>
+      </div>
+
+      <div class="stat-card fade-in delay-3">
+        <span class="stat-icon">&#x1F3D8;</span>
+        <div class="stat-number">48</div>
+        <div class="stat-label">Municipalities Connected</div>
+        <div class="stat-sub">Across 6 regions</div>
+      </div>
+
+      <div class="stat-card fade-in delay-4">
+        <span class="stat-icon">&#x1F465;</span>
+        <div class="stat-number">5,600+</div>
+        <div class="stat-label">Active Citizens</div>
+        <div class="stat-sub">Growing every day</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Wave: Forest to Cream -->
+<div class="wave-divider wave-forest-to-cream">
+  <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0 50C240 10 480 80 720 40C960 0 1200 70 1440 30V100H0V50Z" fill="#faf6f0"/>
+  </svg>
+</div>
+
+<!-- ===== REPORTS ===== -->
+<section class="reports" id="reports">
+  <div class="container">
+    <div class="section-header fade-in">
+      <div class="section-label">&#x1F4CC; Recent Activity</div>
+      <h2 class="section-title">Latest Community Reports</h2>
+      <p class="section-desc">
+        See what your neighbors are reporting and track the progress of issues in your area.
+      </p>
+    </div>
+
+    <div class="reports-grid">
+      <!-- Report 1: Pending -->
+      <div class="report-card fade-in delay-1">
+        <div class="report-card-image">
+          &#x1F6A7;
+          <span class="report-card-image-label">&#x1F4F7; 2 photos</span>
+        </div>
+        <div class="report-card-body">
+          <div class="report-card-meta">
+            <span class="report-card-category">&#x26A0;&#xFE0F; Road Damage</span>
+            <span class="report-card-date">Jan 28, 2026</span>
+          </div>
+          <h3 class="report-card-title">Large Pothole on Elm Street</h3>
+          <div class="report-card-location">&#x1F4CD; 58 Elm Street, District 2</div>
+          <p class="report-card-desc">
+            Deep pothole approximately 40cm wide near the intersection. Multiple vehicles have been damaged. Needs urgent attention before winter worsens it.
+          </p>
+          <div class="report-card-footer">
+            <div class="report-status status-pending">
+              <span class="report-status-dot"></span>
+              Pending Review
+            </div>
+            <div class="report-upvotes">&#x1F44D; 42</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report 2: Sent -->
+      <div class="report-card fade-in delay-2">
+        <div class="report-card-image">
+          &#x1F4A1;
+          <span class="report-card-image-label">&#x1F4F7; 1 photo</span>
+        </div>
+        <div class="report-card-body">
+          <div class="report-card-meta">
+            <span class="report-card-category">&#x1F4A1; Lighting</span>
+            <span class="report-card-date">Jan 25, 2026</span>
+          </div>
+          <h3 class="report-card-title">Broken Streetlight -- Park Row</h3>
+          <div class="report-card-location">&#x1F4CD; 12 Park Row, District 5</div>
+          <p class="report-card-desc">
+            The streetlight at this location has been out for two weeks. The area is very dark at night and feels unsafe for pedestrians.
+          </p>
+          <div class="report-card-footer">
+            <div class="report-status status-sent">
+              <span class="report-status-dot"></span>
+              Sent to Electricity Dept
+            </div>
+            <div class="report-upvotes">&#x1F44D; 18</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report 3: Resolved -->
+      <div class="report-card fade-in delay-3">
+        <div class="report-card-image">
+          &#x1F3DE;
+          <span class="report-card-image-label">&#x1F4F7; 3 photos</span>
+        </div>
+        <div class="report-card-body">
+          <div class="report-card-meta">
+            <span class="report-card-category">&#x1F333; Parks</span>
+            <span class="report-card-date">Jan 20, 2026</span>
+          </div>
+          <h3 class="report-card-title">Fallen Tree in Cedar Park</h3>
+          <div class="report-card-location">&#x1F4CD; Cedar Park, North Entrance</div>
+          <p class="report-card-desc">
+            A large oak tree fell across the walking path after last week's storm. The path is completely blocked and the area is now accessible again.
+          </p>
+          <div class="report-card-footer">
+            <div class="report-status status-resolved">
+              <span class="report-status-dot"></span>
+              Resolved
+            </div>
+            <div class="report-upvotes">&#x1F44D; 67</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta-section" id="cta">
+  <div class="container">
+    <div class="cta-card fade-in">
+      <div class="cta-organic-1"></div>
+      <div class="cta-organic-2"></div>
+      <div class="cta-leaf cta-leaf-1">&#x1F343;</div>
+      <div class="cta-leaf cta-leaf-2">&#x1F33F;</div>
+
+      <div class="cta-content">
+        <h2 class="cta-title">Ready to Grow Your Community?</h2>
+        <p class="cta-desc">
+          Join thousands of engaged citizens who are making their neighborhoods better, one report at a time. Your voice matters.
+        </p>
+        <div class="cta-actions">
+          <button class="btn btn-lg" style="background: var(--cream); color: var(--forest); box-shadow: 0 4px 24px rgba(0,0,0,0.15);">
+            &#x1F331; Create Free Account
+          </button>
+          <button class="btn btn-outline btn-lg">
+            Learn More &#x2192;
+          </button>
+        </div>
+        <p class="cta-trust">Free forever for citizens &middot; No credit card required</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>
+          <span style="font-size: 1.2rem;">&#x1F33F;</span> CivicReport
+        </h3>
+        <p>
+          Empowering citizens to shape the communities they love. Report. Track. Transform. Together we grow.
+        </p>
+        <div class="footer-social">
+          <a href="#" aria-label="Twitter">&#x1D54F;</a>
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">&#x1F4F7;</a>
+          <a href="#" aria-label="GitHub">&#x2328;</a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#">Features</a></li>
+          <li><a href="#">Community Map</a></li>
+          <li><a href="#">Dashboard</a></li>
+          <li><a href="#">Mobile App</a></li>
+          <li><a href="#">API Access</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Community Guide</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Status Page</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">For Municipalities</a></li>
+          <li><a href="#">Press Kit</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 CivicReport. All rights reserved.</p>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookie Settings</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== SCRIPTS ===== -->
+<script>
+// Intersection Observer for fade-in animations
+document.addEventListener('DOMContentLoaded', () => {
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px 0px -60px 0px',
+    threshold: 0.1
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.fade-in, .fade-in-left, .fade-in-right').forEach(el => {
+    observer.observe(el);
+  });
+
+  // Navbar scroll shadow
+  const navbar = document.getElementById('navbar');
+  let lastScroll = 0;
+
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+    lastScroll = currentScroll;
+  }, { passive: true });
+
+  // Smooth scroll for nav links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        const offset = 80;
+        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>

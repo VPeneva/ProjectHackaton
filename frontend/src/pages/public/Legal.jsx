@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { FileText, Shield, ChevronDown, ChevronUp } from 'lucide-react'
+import { FileText, Shield } from 'lucide-react'
 
 export default function Legal() {
     const [expandedSection, setExpandedSection] = useState('terms')
@@ -92,16 +91,13 @@ export default function Legal() {
         <div className="min-h-screen py-12">
             {/* Hero Section */}
             <section className="relative py-12 md:py-16 overflow-hidden">
-                <div className="absolute inset-0 -z-10">
-                    <div className="absolute top-0 right-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-                </div>
-
                 <div className="container mx-auto px-4">
                     <div className="max-w-2xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                            Legal Information
+                        <h1 className="font-display text-6xl md:text-8xl uppercase tracking-tight mb-4">
+                            LEGAL
                         </h1>
-                        <p className="text-lg text-muted-foreground">
+                        <div className="border-b-3 border-foreground w-24 mx-auto mb-4" />
+                        <p className="font-mono text-sm uppercase tracking-wider text-muted-foreground">
                             Important information about your rights and our policies.
                         </p>
                     </div>
@@ -118,10 +114,14 @@ export default function Legal() {
                                 key={section.id}
                                 variant={expandedSection === section.id ? 'default' : 'outline'}
                                 onClick={() => setExpandedSection(section.id)}
-                                className="flex-1"
+                                className={`flex-1 transition-none ${
+                                    expandedSection === section.id
+                                        ? 'bg-foreground text-background'
+                                        : 'hover:bg-foreground hover:text-background'
+                                }`}
                             >
                                 <section.icon className="mr-2 h-4 w-4" />
-                                {section.title}
+                                <span className="uppercase">{section.title}</span>
                             </Button>
                         ))}
                     </div>
@@ -130,25 +130,24 @@ export default function Legal() {
                     {sections.map((section) => (
                         <Card
                             key={section.id}
-                            className={`border-0 shadow-xl transition-all duration-300 ${expandedSection === section.id ? 'block' : 'hidden'
-                                }`}
+                            className={expandedSection === section.id ? 'block' : 'hidden'}
                         >
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <section.icon className="h-5 w-5 text-primary" />
+                            <CardHeader className="border-b-3 border-foreground">
+                                <CardTitle className="flex items-center gap-2 font-display text-xl uppercase">
+                                    <section.icon className="h-5 w-5 text-foreground" />
                                     {section.title}
                                 </CardTitle>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                                     Last updated: January 2026
                                 </p>
                             </CardHeader>
-                            <CardContent className="space-y-6">
+                            <CardContent className="space-y-6 pt-6">
                                 {section.content.map((item, index) => (
                                     <div key={index}>
-                                        <h3 className="text-lg font-semibold mb-2">{item.heading}</h3>
+                                        <h3 className="text-lg font-bold uppercase mb-2">{item.heading}</h3>
                                         <p className="text-muted-foreground leading-relaxed">{item.text}</p>
                                         {index < section.content.length - 1 && (
-                                            <Separator className="mt-6" />
+                                            <div className="border-b-3 border-foreground mt-6" />
                                         )}
                                     </div>
                                 ))}
@@ -157,10 +156,10 @@ export default function Legal() {
                     ))}
 
                     {/* Additional Info */}
-                    <div className="mt-8 p-6 rounded-lg bg-muted/50 text-center">
+                    <div className="mt-8 border-3 border-foreground p-6 text-center">
                         <p className="text-muted-foreground">
                             If you have any questions about these policies, please{' '}
-                            <a href="/contact" className="text-primary hover:underline">
+                            <a href="/contact" className="font-bold uppercase hover:bg-foreground hover:text-background transition-none">
                                 contact us
                             </a>
                             .

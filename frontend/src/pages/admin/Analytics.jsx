@@ -27,9 +27,9 @@ import {
 import { MapContainer, TileLayer, CircleMarker, Tooltip as MapTooltip } from 'react-leaflet'
 
 const statusColors = {
-  Pending: '#f59e0b',
-  Sent: '#3b82f6',
-  Finished: '#22c55e',
+  Pending: '#ff0000',
+  Sent: '#ffdd00',
+  Finished: '#000000',
 }
 
 export default function Analytics() {
@@ -39,12 +39,16 @@ export default function Analytics() {
   const trendData = data?.trends || []
   const resolution = data?.resolution || { averageDays: 0, medianDays: 0, sampleSize: 0 }
   const statusTotals = data?.statusTotals || {}
-  const heatmap = data?.heatmap || []
+  const heatmap = useMemo(() =>
+    (data?.heatmap || []).filter(p => p.lat != null && p.lng != null && !Number.isNaN(p.lat) && !Number.isNaN(p.lng)),
+    [data?.heatmap]
+  )
 
   const mapCenter = useMemo(() => {
     if (!heatmap.length) return [42.7339, 25.4858]
     const avgLat = heatmap.reduce((sum, r) => sum + r.lat, 0) / heatmap.length
     const avgLng = heatmap.reduce((sum, r) => sum + r.lng, 0) / heatmap.length
+    if (Number.isNaN(avgLat) || Number.isNaN(avgLng)) return [42.7339, 25.4858]
     return [avgLat, avgLng]
   }, [heatmap])
 
@@ -53,15 +57,15 @@ export default function Analytics() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-8 border-b-3 border-foreground pb-4">
         <Button variant="ghost" size="icon" asChild>
           <Link to="/admin">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-1">Report Analytics</h1>
-          <p className="text-muted-foreground">
+          <h1 className="font-display text-5xl uppercase">REPORT ANALYTICS</h1>
+          <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">
             Trends, resolution time, and geographic distribution.
           </p>
         </div>
@@ -70,9 +74,9 @@ export default function Analytics() {
             <SelectValue placeholder="Days" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">7 days</SelectItem>
-            <SelectItem value="30">30 days</SelectItem>
-            <SelectItem value="90">90 days</SelectItem>
+            <SelectItem value="7">7 DAYS</SelectItem>
+            <SelectItem value="30">30 DAYS</SelectItem>
+            <SelectItem value="90">90 DAYS</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -84,7 +88,7 @@ export default function Analytics() {
           ))}
         </div>
       ) : isError ? (
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground">{errorMessage}</p>
           </CardContent>
@@ -92,28 +96,28 @@ export default function Analytics() {
       ) : (
         <div className="space-y-6">
           <div className="grid lg:grid-cols-3 gap-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
+            <Card>
+              <CardHeader className="border-b-3 border-foreground">
+                <CardTitle className="flex items-center gap-2 font-display text-lg uppercase">
                   <TrendingUp className="h-4 w-4" />
-                  Average Resolution
+                  AVERAGE RESOLUTION
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{resolution.averageDays.toFixed(1)} days</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Median: {resolution.medianDays.toFixed(1)} days · {resolution.sampleSize} resolved reports
+              <CardContent className="pt-4">
+                <p className="font-display text-4xl">{resolution.averageDays.toFixed(1)} DAYS</p>
+                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-1">
+                  Median: {resolution.medianDays.toFixed(1)} days / {resolution.sampleSize} resolved reports
                 </p>
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-lg lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
+            <Card className="lg:col-span-2">
+              <CardHeader className="border-b-3 border-foreground">
+                <CardTitle className="flex items-center gap-2 font-display text-lg uppercase">
                   <Activity className="h-4 w-4" />
-                  Reports Over Time
+                  REPORTS OVER TIME
                 </CardTitle>
               </CardHeader>
-              <CardContent className="h-60">
+              <CardContent className="h-60 pt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={trendData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -121,7 +125,7 @@ export default function Analytics() {
                     <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="total" stroke="#0ea5e9" strokeWidth={2} />
+                    <Line type="monotone" dataKey="total" stroke="#000000" strokeWidth={2} />
                     <Line type="monotone" dataKey="pending" stroke={statusColors.Pending} strokeWidth={2} />
                     <Line type="monotone" dataKey="sent" stroke={statusColors.Sent} strokeWidth={2} />
                     <Line type="monotone" dataKey="finished" stroke={statusColors.Finished} strokeWidth={2} />
@@ -132,11 +136,11 @@ export default function Analytics() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-base">Status Breakdown</CardTitle>
+            <Card>
+              <CardHeader className="border-b-3 border-foreground">
+                <CardTitle className="font-display text-lg uppercase">STATUS BREAKDOWN</CardTitle>
               </CardHeader>
-              <CardContent className="h-64">
+              <CardContent className="h-64 pt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={[
                     { name: 'Pending', value: statusTotals.Pending || 0 },
@@ -147,37 +151,39 @@ export default function Analytics() {
                     <XAxis dataKey="name" />
                     <YAxis allowDecimals={false} />
                     <Tooltip />
-                    <Bar dataKey="value" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill="#ff0000" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-base">Report Heatmap</CardTitle>
+            <Card>
+              <CardHeader className="border-b-3 border-foreground">
+                <CardTitle className="font-display text-lg uppercase">REPORT HEATMAP</CardTitle>
               </CardHeader>
-              <CardContent className="h-64">
-                <MapContainer center={mapCenter} zoom={7} className="h-full w-full">
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  {heatmap.map((point, index) => (
-                    <CircleMarker
-                      key={`${point.lat}-${point.lng}-${index}`}
-                      center={[point.lat, point.lng]}
-                      radius={6}
-                      pathOptions={{
-                        color: statusColors[point.status] || '#64748b',
-                        fillColor: statusColors[point.status] || '#64748b',
-                        fillOpacity: 0.6,
-                      }}
-                    >
-                      <MapTooltip>{point.status}</MapTooltip>
-                    </CircleMarker>
-                  ))}
-                </MapContainer>
+              <CardContent className="h-64 pt-4">
+                <div className="border-3 border-foreground h-full w-full">
+                  <MapContainer center={mapCenter} zoom={7} className="h-full w-full">
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {heatmap.map((point, index) => (
+                      <CircleMarker
+                        key={`${point.lat}-${point.lng}-${index}`}
+                        center={[point.lat, point.lng]}
+                        radius={6}
+                        pathOptions={{
+                          color: statusColors[point.status] || '#64748b',
+                          fillColor: statusColors[point.status] || '#64748b',
+                          fillOpacity: 0.6,
+                        }}
+                      >
+                        <MapTooltip>{point.status}</MapTooltip>
+                      </CircleMarker>
+                    ))}
+                  </MapContainer>
+                </div>
               </CardContent>
             </Card>
           </div>

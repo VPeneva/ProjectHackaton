@@ -58,20 +58,20 @@ export default function ResetPassword() {
   return (
     <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="border-0 shadow-2xl bg-card/80 backdrop-blur-sm">
-          <CardHeader className="space-y-2 text-center">
+        <Card className="shadow-brutal">
+          <CardHeader className="space-y-2 text-center border-b-3 border-foreground">
             <div className="flex justify-center mb-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold text-xl shadow-lg">
+              <div className="flex h-14 w-14 items-center justify-center border-3 border-foreground bg-primary text-primary-foreground font-display text-2xl">
                 CR
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">Create a new password</CardTitle>
-            <CardDescription>
-              Choose a strong password to secure your account.
+            <CardTitle className="text-3xl">NEW PASSWORD</CardTitle>
+            <CardDescription className="font-mono text-xs uppercase tracking-wider">
+              [ SET A STRONG PASSWORD ]
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               {error && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
@@ -80,14 +80,14 @@ export default function ResetPassword() {
               )}
 
               {success && (
-                <Alert>
+                <Alert variant="success">
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>Password reset successful. You can now sign in.</AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="token">Reset token</Label>
+                <Label htmlFor="token">RESET TOKEN</Label>
                 <div className="relative">
                   <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -104,7 +104,7 @@ export default function ResetPassword() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">New password</Label>
+                <Label htmlFor="password">NEW PASSWORD</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -121,7 +121,7 @@ export default function ResetPassword() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Label htmlFor="confirmPassword">CONFIRM PASSWORD</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -142,14 +142,14 @@ export default function ResetPassword() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Resetting password...
+                    RESETTING...
                   </>
                 ) : (
-                  'Reset password'
+                  'RESET PASSWORD >>>'
                 )}
               </Button>
               <Button variant="ghost" asChild className="text-sm">
-                <Link to="/login">Back to login</Link>
+                <Link to="/login">BACK TO LOGIN</Link>
               </Button>
             </CardFooter>
           </form>

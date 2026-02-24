@@ -31,9 +31,9 @@ import {
 } from 'lucide-react'
 
 const statusConfig = {
-    Pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    Sent: { label: 'In Progress', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-    Finished: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+    Pending: { label: 'PENDING', variant: 'pending' },
+    Sent: { label: 'IN PROGRESS', variant: 'sent' },
+    Finished: { label: 'RESOLVED', variant: 'finished' },
 }
 
 function ReportRow({ report, onDelete }) {
@@ -55,12 +55,12 @@ function ReportRow({ report, onDelete }) {
     }
 
     return (
-        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300">
+        <Card className="transition-none hover:bg-foreground hover:text-background">
             <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                     {/* Image thumbnail */}
                     {imageUrl && (
-                        <div className="w-full md:w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0">
+                        <div className="w-full md:w-24 h-24 border-3 border-foreground overflow-hidden bg-muted shrink-0">
                             <img
                                 src={imageUrl}
                                 alt={report.title}
@@ -72,15 +72,15 @@ function ReportRow({ report, onDelete }) {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-2">
-                            <h3 className="font-semibold line-clamp-1">{report.title}</h3>
-                            <Badge variant="outline" className={status.color}>
+                            <h3 className="font-display text-xl uppercase line-clamp-1">{report.title}</h3>
+                            <Badge variant={status.variant}>
                                 {status.label}
                             </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                             {report.description}
                         </p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-4 font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             {report.address && (
                                 <div className="flex items-center gap-1">
                                     <MapPin className="h-3 w-3" />
@@ -108,14 +108,14 @@ function ReportRow({ report, onDelete }) {
                             <Button variant="outline" size="sm" asChild>
                                 <Link to={`/reports/${report.id}/edit`}>
                                     <Pencil className="h-4 w-4 mr-1" />
-                                    Edit
+                                    EDIT
                                 </Link>
                             </Button>
                         )}
                         <Button variant="outline" size="sm" asChild>
                             <Link to={`/reports/${report.id}`}>
                                 <Eye className="h-4 w-4 mr-1" />
-                                View
+                                VIEW
                             </Link>
                         </Button>
                         <AlertDialog>
@@ -132,13 +132,13 @@ function ReportRow({ report, onDelete }) {
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>CANCEL</AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={handleDelete}
                                         disabled={deleting}
                                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                     >
-                                        {deleting ? 'Deleting...' : 'Delete'}
+                                        {deleting ? 'DELETING...' : 'DELETE'}
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
@@ -152,10 +152,10 @@ function ReportRow({ report, onDelete }) {
 
 function ReportSkeleton() {
     return (
-        <Card className="border-0 shadow-md">
+        <Card>
             <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                    <Skeleton className="w-24 h-24 rounded-lg shrink-0" />
+                    <Skeleton className="w-24 h-24 shrink-0" />
                     <div className="flex-1">
                         <Skeleton className="h-5 w-3/4 mb-2" />
                         <Skeleton className="h-4 w-full mb-1" />
@@ -201,17 +201,17 @@ export default function MyReports() {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 border-b-3 border-foreground pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold mb-2">My Reports</h1>
-                    <p className="text-muted-foreground">
+                    <h1 className="font-display text-5xl uppercase mb-2">MY REPORTS</h1>
+                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                         Manage and track all your submitted reports.
                     </p>
                 </div>
                 <Button asChild>
                     <Link to="/create-report">
                         <Plus className="mr-2 h-4 w-4" />
-                        New Report
+                        NEW REPORT
                     </Link>
                 </Button>
             </div>
@@ -224,25 +224,25 @@ export default function MyReports() {
                     ))}
                 </div>
             ) : isError ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
                         <p className="text-muted-foreground">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : reports.length === 0 ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
-                        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                        <div className="w-16 h-16 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-4">
                             <FileText className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">No Reports Yet</h3>
-                        <p className="text-muted-foreground mb-4">
+                        <h3 className="font-display text-2xl uppercase mb-2">NO REPORTS YET</h3>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-4">
                             You haven't submitted any reports yet. Start by creating your first report.
                         </p>
                         <Button asChild>
                             <Link to="/create-report">
                                 <Plus className="mr-2 h-4 w-4" />
-                                Create Your First Report
+                                CREATE YOUR FIRST REPORT
                             </Link>
                         </Button>
                     </CardContent>
@@ -264,17 +264,17 @@ export default function MyReports() {
                                 disabled={page <= 1}
                             >
                                 <ChevronLeft className="h-4 w-4 mr-1" />
-                                Previous
+                                PREVIOUS
                             </Button>
-                            <span className="text-sm text-muted-foreground">
-                                Page {pagination.page} of {pagination.totalPages}
+                            <span className="font-mono text-sm uppercase tracking-wider">
+                                [{pagination.page} / {pagination.totalPages}]
                             </span>
                             <Button
                                 variant="outline"
                                 onClick={() => setPage(page + 1)}
                                 disabled={page >= pagination.totalPages}
                             >
-                                Next
+                                NEXT
                                 <ChevronRight className="h-4 w-4 ml-1" />
                             </Button>
                         </div>

@@ -23,12 +23,12 @@ function ReportRow({ report }) {
     const imageUrl = report.images?.[0]?.url || report.imageUrl
 
     return (
-        <Card className="border-0 shadow-md">
+        <Card>
             <CardContent className="p-4">
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                     {/* Image */}
                     {imageUrl && (
-                        <div className="w-full lg:w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
+                        <div className="w-full lg:w-20 h-20 border-3 border-foreground overflow-hidden bg-muted shrink-0">
                             <img
                                 src={imageUrl}
                                 alt={report.title}
@@ -40,16 +40,16 @@ function ReportRow({ report }) {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                            <h3 className="font-semibold line-clamp-1">{report.title}</h3>
-                            <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                            <h3 className="font-semibold uppercase line-clamp-1">{report.title}</h3>
+                            <Badge variant="finished">
                                 <CheckCircle className="h-3 w-3 mr-1" />
-                                Resolved
+                                RESOLVED
                             </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                             {report.description}
                         </p>
-                        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-4 font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             {report.institution && (
                                 <span className="flex items-center gap-1">
                                     <Building2 className="h-3 w-3" />
@@ -67,7 +67,7 @@ function ReportRow({ report }) {
                                 Resolved {new Date(report.updatedAt).toLocaleDateString()}
                             </span>
                         </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                        <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-xs text-muted-foreground">
                             <span className="flex items-center gap-1 text-emerald-600">
                                 <ThumbsUp className="h-3 w-3" />
                                 {upvotes}
@@ -77,8 +77,8 @@ function ReportRow({ report }) {
                                 {downvotes}
                             </span>
                             {needsReview && (
-                                <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20">
-                                    Needs review
+                                <Badge variant="pending">
+                                    NEEDS REVIEW
                                 </Badge>
                             )}
                         </div>
@@ -89,7 +89,7 @@ function ReportRow({ report }) {
                         <Button variant="outline" size="sm" asChild>
                             <Link to={`/reports/${report.id}`}>
                                 <Eye className="h-4 w-4 mr-1" />
-                                View Details
+                                VIEW DETAILS
                             </Link>
                         </Button>
                     </div>
@@ -101,10 +101,10 @@ function ReportRow({ report }) {
 
 function ReportSkeleton() {
     return (
-        <Card className="border-0 shadow-md">
+        <Card>
             <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                    <Skeleton className="w-20 h-20 rounded-lg shrink-0" />
+                    <Skeleton className="w-20 h-20 shrink-0" />
                     <div className="flex-1">
                         <Skeleton className="h-5 w-3/4 mb-2" />
                         <Skeleton className="h-4 w-full mb-1" />
@@ -127,29 +127,29 @@ export default function ResolvedReports() {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Header */}
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex items-center gap-4 mb-8 border-b-3 border-foreground pb-4">
                 <Button variant="ghost" size="icon" asChild>
                     <Link to="/admin">
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
                 </Button>
                 <div>
-                    <h1 className="text-3xl font-bold mb-1">Resolved Reports</h1>
-                    <p className="text-muted-foreground">
+                    <h1 className="font-display text-5xl uppercase">RESOLVED REPORTS</h1>
+                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">
                         View all completed and resolved reports.
                     </p>
                 </div>
             </div>
 
             {/* Stats */}
-            <Card className="border-0 shadow-lg mb-8 bg-green-500/5">
+            <Card className="mb-8">
                 <CardContent className="p-6 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center">
-                        <CheckCircle className="h-6 w-6 text-green-600" />
+                    <div className="w-12 h-12 border-3 border-foreground bg-muted flex items-center justify-center">
+                        <CheckCircle className="h-6 w-6 text-foreground" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold">{reports?.length || 0}</p>
-                        <p className="text-sm text-muted-foreground">Total Resolved Reports</p>
+                        <p className="font-display text-3xl">{reports?.length || 0}</p>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Total Resolved Reports</p>
                     </div>
                 </CardContent>
             </Card>
@@ -162,19 +162,19 @@ export default function ResolvedReports() {
                     ))}
                 </div>
             ) : isError ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
                         <p className="text-muted-foreground">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : reports?.length === 0 ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
-                        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                            <FileText className="h-8 w-8 text-muted-foreground" />
+                        <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
+                            <FileText className="h-8 w-8 text-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">No Resolved Reports Yet</h3>
-                        <p className="text-muted-foreground">
+                        <h3 className="font-display text-2xl uppercase mb-2">NO RESOLVED REPORTS YET</h3>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                             Resolved reports will appear here once issues are addressed.
                         </p>
                     </CardContent>

@@ -26,9 +26,9 @@ import {
 } from 'lucide-react'
 
 const statusConfig = {
-    Pending: { key: 'statuses.pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    Sent: { key: 'statuses.sent', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-    Finished: { key: 'statuses.finished', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+    Pending: { key: 'statuses.pending', variant: 'pending', stamp: 'PENDING' },
+    Sent: { key: 'statuses.sent', variant: 'sent', stamp: 'SENT' },
+    Finished: { key: 'statuses.finished', variant: 'finished', stamp: 'RESOLVED' },
 }
 
 function ReportCard({ report }) {
@@ -44,14 +44,21 @@ function ReportCard({ report }) {
         : undefined
 
     return (
-        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+        <Card className="overflow-hidden group hover:bg-foreground hover:text-background transition-none relative">
+            {/* Rotated status stamp */}
+            <div className="absolute top-3 right-3 z-10 -rotate-3">
+                <Badge variant={status.variant}>
+                    {status.stamp}
+                </Badge>
+            </div>
+
             {imageUrl && (
                 <Link to={`/reports/${report.id}`} className="block">
-                    <div className="aspect-video overflow-hidden bg-muted">
+                    <div className="aspect-video overflow-hidden bg-muted border-b-3 border-foreground">
                         <img
                             src={imageUrl}
                             alt={report.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover"
                         />
                     </div>
                 </Link>
@@ -59,29 +66,27 @@ function ReportCard({ report }) {
             <CardContent className="p-4">
                 <div className="space-y-3">
                     <Link to={`/reports/${report.id}`} className="block">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                            <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
-                                {report.title}
-                            </h3>
-                            <Badge variant="outline" className={status.color}>
-                                {t(status.key)}
-                            </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                        <span className="font-mono text-xs text-primary uppercase tracking-wider">
+                            RPT-{String(report.id).padStart(4, '0')}
+                        </span>
+                        <h3 className="font-bold uppercase text-lg mt-1 line-clamp-1">
+                            {report.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mt-1 group-hover:text-background/70">
                             {report.description}
                         </p>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-3 group-hover:text-background/60">
+                            <div className="flex items-center gap-1 font-mono uppercase">
                                 <MapPin className="h-3 w-3" />
-                            <span className="line-clamp-1">{report.address || 'Location set'}</span>
+                                <span className="line-clamp-1">{report.address || 'LOCATION SET'}</span>
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 font-mono">
                                 <Clock className="h-3 w-3" />
                                 <span>{new Date(report.createdAt).toLocaleDateString()}</span>
                             </div>
                         </div>
                     </Link>
-                    <div className="pt-2 border-t border-border/60">
+                    <div className="pt-2 border-t-3 border-foreground">
                         <VoteButtons
                             reportId={report.id}
                             status={report.status}
@@ -97,9 +102,10 @@ function ReportCard({ report }) {
 
 function ReportSkeleton() {
     return (
-        <Card className="border-0 shadow-md overflow-hidden">
+        <Card className="overflow-hidden">
             <Skeleton className="aspect-video" />
             <CardContent className="p-4">
+                <Skeleton className="h-3 w-20 mb-2" />
                 <Skeleton className="h-5 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-full mb-1" />
                 <Skeleton className="h-4 w-2/3 mb-3" />
@@ -171,10 +177,10 @@ export default function Reports() {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('reports.title')}</h1>
-                <p className="text-muted-foreground text-lg">
-                    {t('reports.subtitle')}
+            <div className="mb-8 border-b-3 border-foreground pb-6">
+                <h1 className="font-display text-5xl md:text-7xl">{t('reports.title')}</h1>
+                <p className="text-muted-foreground font-mono text-sm uppercase tracking-wider mt-2">
+                    [ {t('reports.subtitle')} ]
                 </p>
             </div>
 
@@ -219,9 +225,9 @@ export default function Reports() {
                             <SelectValue placeholder={t('reports.sort')} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="newest">Newest</SelectItem>
-                            <SelectItem value="oldest">Oldest</SelectItem>
-                            <SelectItem value="most-voted">Most Voted</SelectItem>
+                            <SelectItem value="newest">NEWEST</SelectItem>
+                            <SelectItem value="oldest">OLDEST</SelectItem>
+                            <SelectItem value="most-voted">MOST VOTED</SelectItem>
                         </SelectContent>
                     </Select>
                     <Button variant="outline" asChild>
@@ -290,19 +296,19 @@ export default function Reports() {
                     ))}
                 </div>
             ) : isError ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
-                        <p className="text-muted-foreground">{errorMessage}</p>
+                        <p className="text-muted-foreground font-mono uppercase">{errorMessage}</p>
                     </CardContent>
                 </Card>
             ) : reports.length === 0 ? (
-                <Card className="border-0 shadow-lg">
+                <Card>
                     <CardContent className="p-12 text-center">
-                        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                        <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
                             <Search className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">{t('reports.noReportsTitle')}</h3>
-                        <p className="text-muted-foreground">
+                        <h3 className="font-display text-2xl mb-2">{t('reports.noReportsTitle')}</h3>
+                        <p className="text-muted-foreground font-mono text-sm uppercase">
                             {search || status !== 'all' || categoryId !== 'all'
                                 ? t('reports.noReportsFiltered')
                                 : t('reports.noReportsDefault')}
@@ -328,8 +334,8 @@ export default function Reports() {
                                 <ChevronLeft className="h-4 w-4 mr-1" />
                                 {t('reports.previous')}
                             </Button>
-                            <span className="text-sm text-muted-foreground">
-                                Page {pagination.page} of {pagination.totalPages}
+                            <span className="font-mono text-sm uppercase tracking-wider">
+                                [{pagination.page} / {pagination.totalPages}]
                             </span>
                             <Button
                                 variant="outline"

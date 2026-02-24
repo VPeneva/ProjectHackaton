@@ -16,19 +16,19 @@ export default function Leaderboard() {
 
   return (
     <div className="container mx-auto px-4 py-10">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('leaderboard.title')}</h1>
-        <p className="text-muted-foreground">{t('leaderboard.subtitle')}</p>
+      <div className="mb-8 text-center border-b-3 border-foreground pb-6">
+        <h1 className="font-display text-5xl md:text-7xl uppercase mb-2">{t('leaderboard.title')}</h1>
+        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('leaderboard.subtitle')}</p>
       </div>
 
-      <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-primary" />
+      <Card>
+        <CardHeader className="border-b-3 border-foreground">
+          <CardTitle className="flex items-center gap-2 font-display text-xl uppercase">
+            <Trophy className="h-5 w-5 text-foreground" />
             {t('leaderboard.title')}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-4">
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
@@ -43,15 +43,15 @@ export default function Leaderboard() {
             leaderboard.map((entry, index) => (
               <div
                 key={entry.user.id}
-                className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-3 rounded-lg border border-border/60"
+                className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-3 border-3 border-foreground"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold">
+                  <div className="w-9 h-9 border-3 border-foreground bg-muted text-foreground flex items-center justify-center font-bold">
                     {index + 1}
                   </div>
                   <div>
-                    <p className="font-semibold">{entry.user.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-bold uppercase">{entry.user.name}</p>
+                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                       {t('leaderboard.points')}: {entry.points}
                     </p>
                   </div>

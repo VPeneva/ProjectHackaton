@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useI18n } from '@/context/I18nContext'
 import { useResolvedReports } from '@/hooks/useAdmin'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react'
 
 function ReportRow({ report }) {
+    const { t } = useI18n()
     const upvotes = report.upvotes ?? 0
     const downvotes = report.downvotes ?? 0
     const needsReview = downvotes >= 3 && downvotes > upvotes
@@ -43,7 +45,7 @@ function ReportRow({ report }) {
                             <h3 className="font-semibold uppercase line-clamp-1">{report.title}</h3>
                             <Badge variant="finished">
                                 <CheckCircle className="h-3 w-3 mr-1" />
-                                RESOLVED
+                                {t('admin.resolvedBadge')}
                             </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
@@ -64,7 +66,7 @@ function ReportRow({ report }) {
                             )}
                             <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                Resolved {new Date(report.updatedAt).toLocaleDateString()}
+                                {t('admin.resolvedDate', { date: new Date(report.updatedAt).toLocaleDateString() })}
                             </span>
                         </div>
                         <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-xs text-muted-foreground">
@@ -78,7 +80,7 @@ function ReportRow({ report }) {
                             </span>
                             {needsReview && (
                                 <Badge variant="pending">
-                                    NEEDS REVIEW
+                                    {t('admin.needsReview')}
                                 </Badge>
                             )}
                         </div>
@@ -89,7 +91,7 @@ function ReportRow({ report }) {
                         <Button variant="outline" size="sm" asChild>
                             <Link to={`/reports/${report.id}`}>
                                 <Eye className="h-4 w-4 mr-1" />
-                                VIEW DETAILS
+                                {t('admin.viewDetails')}
                             </Link>
                         </Button>
                     </div>
@@ -118,11 +120,12 @@ function ReportSkeleton() {
 }
 
 export default function ResolvedReports() {
+    const { t } = useI18n()
     const { data: reports, isLoading, isError, error } = useResolvedReports()
     const errorMessage =
         error?.response?.data?.error ||
         error?.message ||
-        'Failed to load reports. Please try again.'
+        t('admin.resolvedReportsDesc')
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -134,9 +137,9 @@ export default function ResolvedReports() {
                     </Link>
                 </Button>
                 <div>
-                    <h1 className="font-display text-5xl uppercase">RESOLVED REPORTS</h1>
+                    <h1 className="font-display text-5xl uppercase">{t('admin.resolvedReportsTitle')}</h1>
                     <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">
-                        View all completed and resolved reports.
+                        {t('admin.resolvedReportsSubtitle')}
                     </p>
                 </div>
             </div>
@@ -149,7 +152,7 @@ export default function ResolvedReports() {
                     </div>
                     <div>
                         <p className="font-display text-3xl">{reports?.length || 0}</p>
-                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Total Resolved Reports</p>
+                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('admin.totalResolvedReports')}</p>
                     </div>
                 </CardContent>
             </Card>
@@ -173,9 +176,9 @@ export default function ResolvedReports() {
                         <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
                             <FileText className="h-8 w-8 text-foreground" />
                         </div>
-                        <h3 className="font-display text-2xl uppercase mb-2">NO RESOLVED REPORTS YET</h3>
+                        <h3 className="font-display text-2xl uppercase mb-2">{t('admin.noResolvedYet')}</h3>
                         <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                            Resolved reports will appear here once issues are addressed.
+                            {t('admin.resolvedWillAppear')}
                         </p>
                     </CardContent>
                 </Card>

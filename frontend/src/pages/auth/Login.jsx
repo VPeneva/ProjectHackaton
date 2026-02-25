@@ -9,8 +9,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Mail, Lock, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { useI18n } from '@/context/I18nContext'
 
 export default function Login() {
+    const { t } = useI18n()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
@@ -30,10 +32,10 @@ export default function Login() {
         try {
             const { token, user } = await authService.login(email, password)
             login(user, token)
-            toast.success(`Welcome back, ${user.name}!`)
+            toast.success(t('auth.welcomeBack', { name: user.name }))
             navigate(from, { replace: true })
         } catch (err) {
-            const message = err.response?.data?.error || 'Failed to sign in. Please try again.'
+            const message = err.response?.data?.error || t('auth.failedSignIn')
             setError(message)
         } finally {
             setLoading(false)
@@ -50,9 +52,9 @@ export default function Login() {
                                 CR
                             </div>
                         </div>
-                        <CardTitle className="text-3xl">SIGN IN</CardTitle>
+                        <CardTitle className="text-3xl">{t('auth.signIn')}</CardTitle>
                         <CardDescription className="font-mono text-xs uppercase tracking-wider">
-                            [ ACCESS YOUR ACCOUNT ]
+                            {t('auth.accessYourAccount')}
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleSubmit}>
@@ -65,13 +67,13 @@ export default function Login() {
                             )}
 
                             <div className="space-y-2">
-                                <Label htmlFor="email">EMAIL</Label>
+                                <Label htmlFor="email">{t('auth.email')}</Label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="email"
                                         type="email"
-                                        placeholder="you@example.com"
+                                        placeholder={t('auth.emailPlaceholder')}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="pl-10"
@@ -83,12 +85,12 @@ export default function Login() {
 
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password">PASSWORD</Label>
+                                    <Label htmlFor="password">{t('auth.password')}</Label>
                                     <Link
                                         to="/forgot-password"
                                         className="text-xs text-primary hover:underline font-bold uppercase tracking-wider"
                                     >
-                                        FORGOT?
+                                        {t('auth.forgot')}
                                     </Link>
                                 </div>
                                 <div className="relative">
@@ -96,7 +98,7 @@ export default function Login() {
                                     <Input
                                         id="password"
                                         type="password"
-                                        placeholder="Enter your password"
+                                        placeholder={t('auth.passwordPlaceholder')}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="pl-10"
@@ -111,16 +113,16 @@ export default function Login() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        SIGNING IN...
+                                        {t('auth.signingIn')}
                                     </>
                                 ) : (
-                                    'SIGN IN >>>'
+                                    t('auth.signInAction')
                                 )}
                             </Button>
                             <p className="text-sm text-center text-muted-foreground">
-                                No account?{' '}
+                                {t('auth.noAccount')}{' '}
                                 <Link to="/register" className="text-primary hover:underline font-bold uppercase">
-                                    CREATE ONE
+                                    {t('auth.createOne')}
                                 </Link>
                             </p>
                         </CardFooter>

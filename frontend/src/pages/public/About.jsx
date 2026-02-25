@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useI18n } from '@/context/I18nContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -13,31 +14,29 @@ import {
 } from 'lucide-react'
 
 export default function About() {
+    const { t } = useI18n()
+
     const values = [
         {
             icon: Target,
-            title: 'Transparency',
-            description: 'We believe in open communication between citizens and government.',
+            title: t('about.transparency'),
+            description: t('about.transparencyDesc'),
         },
         {
             icon: Heart,
-            title: 'Community First',
-            description: 'Every feature we build is designed with citizens in mind.',
+            title: t('about.communityFirst'),
+            description: t('about.communityFirstDesc'),
         },
         {
             icon: Users,
-            title: 'Collaboration',
-            description: 'Working together to create meaningful change in our cities.',
+            title: t('about.collaboration'),
+            description: t('about.collaborationDesc'),
         },
         {
             icon: Lightbulb,
-            title: 'Innovation',
-            description: 'Using technology to solve real-world civic challenges.',
+            title: t('about.innovation'),
+            description: t('about.innovationDesc'),
         },
-    ]
-
-    const team = [
-        { name: 'CityClarity Team', role: 'Building better communities' },
     ]
 
     return (
@@ -47,18 +46,17 @@ export default function About() {
                 <div className="container mx-auto px-4">
                     <div className="max-w-3xl mx-auto text-center">
                         <p className="font-mono text-sm uppercase tracking-wider text-muted-foreground mb-4">
-                            About CityClarity
+                            {t('about.aboutCityClarity')}
                         </p>
                         <h1 className="font-display text-6xl md:text-8xl uppercase tracking-tight mb-6">
-                            ABOUT{' '}
+                            {t('about.headerPrefix')}{' '}
                             <span className="text-foreground">
                                 CITYCLARITY
                             </span>
                         </h1>
                         <div className="border-b-3 border-foreground w-24 mx-auto mb-6" />
                         <p className="font-mono text-sm uppercase tracking-wider text-muted-foreground">
-                            We're on a mission to bridge the gap between citizens and local governments,
-                            making it easier than ever to report and resolve community issues.
+                            {t('about.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -69,17 +67,12 @@ export default function About() {
                 <div className="container mx-auto px-4">
                     <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
                         <div>
-                            <h2 className="font-display text-3xl uppercase mb-4">Our Mission</h2>
+                            <h2 className="font-display text-3xl uppercase mb-4">{t('about.ourMission')}</h2>
                             <p className="text-muted-foreground mb-4">
-                                CityClarity was born from a simple idea: everyone should have an easy way to
-                                report infrastructure issues in their community. Whether it's a pothole on
-                                your street, a broken streetlight, or damaged public property, we believe
-                                that citizens deserve a voice.
+                                {t('about.missionParagraph1')}
                             </p>
                             <p className="text-muted-foreground">
-                                We connect everyday people with the government institutions responsible for
-                                maintaining our shared spaces, creating a more responsive and accountable
-                                system for all.
+                                {t('about.missionParagraph2')}
                             </p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -88,8 +81,8 @@ export default function About() {
                                     <div className="w-10 h-10 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-3">
                                         <Building2 className="h-5 w-5 text-foreground" />
                                     </div>
-                                    <div className="font-display text-2xl uppercase">Direct</div>
-                                    <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Institution Connection</div>
+                                    <div className="font-display text-2xl uppercase">{t('about.direct')}</div>
+                                    <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('about.institutionConnection')}</div>
                                 </CardContent>
                             </Card>
                             <Card>
@@ -97,8 +90,8 @@ export default function About() {
                                     <div className="w-10 h-10 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-3">
                                         <Globe className="h-5 w-5 text-foreground" />
                                     </div>
-                                    <div className="font-display text-2xl uppercase">Open</div>
-                                    <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">For Everyone</div>
+                                    <div className="font-display text-2xl uppercase">{t('about.open')}</div>
+                                    <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('about.forEveryone')}</div>
                                 </CardContent>
                             </Card>
                             <Card>
@@ -106,8 +99,8 @@ export default function About() {
                                     <div className="w-10 h-10 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-3">
                                         <Shield className="h-5 w-5 text-foreground" />
                                     </div>
-                                    <div className="font-display text-2xl uppercase">Secure</div>
-                                    <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Data Protection</div>
+                                    <div className="font-display text-2xl uppercase">{t('about.secure')}</div>
+                                    <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('about.dataProtection')}</div>
                                 </CardContent>
                             </Card>
                             <Card>
@@ -115,8 +108,8 @@ export default function About() {
                                     <div className="w-10 h-10 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-3">
                                         <Users className="h-5 w-5 text-foreground" />
                                     </div>
-                                    <div className="font-display text-2xl uppercase">Community</div>
-                                    <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Driven Solution</div>
+                                    <div className="font-display text-2xl uppercase">{t('about.community')}</div>
+                                    <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('about.drivenSolution')}</div>
                                 </CardContent>
                             </Card>
                         </div>
@@ -128,9 +121,9 @@ export default function About() {
             <section className="py-16">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-12">
-                        <h2 className="font-display text-3xl uppercase mb-4">Our Values</h2>
+                        <h2 className="font-display text-3xl uppercase mb-4">{t('about.ourValues')}</h2>
                         <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground max-w-2xl mx-auto">
-                            These principles guide everything we do at CityClarity.
+                            {t('about.valuesSubtitle')}
                         </p>
                     </div>
 
@@ -154,20 +147,19 @@ export default function About() {
             <section className="py-16 border-t-3 border-foreground">
                 <div className="container mx-auto px-4">
                     <div className="max-w-2xl mx-auto text-center">
-                        <h2 className="font-display text-3xl uppercase mb-4">Join Our Community</h2>
+                        <h2 className="font-display text-3xl uppercase mb-4">{t('about.joinCommunity')}</h2>
                         <p className="text-muted-foreground mb-8">
-                            Be part of the movement to create better communities. Start reporting
-                            issues today and make a real difference.
+                            {t('about.joinCommunityDesc')}
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Button size="lg" asChild>
                                 <Link to="/register">
-                                    <span className="uppercase">Get Started</span>
+                                    <span className="uppercase">{t('about.getStarted')}</span>
                                     <ArrowRight className="ml-2 h-5 w-5" />
                                 </Link>
                             </Button>
                             <Button size="lg" variant="outline" asChild className="hover:bg-foreground hover:text-background transition-none">
-                                <Link to="/contact"><span className="uppercase">Contact Us</span></Link>
+                                <Link to="/contact"><span className="uppercase">{t('about.contactUs')}</span></Link>
                             </Button>
                         </div>
                     </div>

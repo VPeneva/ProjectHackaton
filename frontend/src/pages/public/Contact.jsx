@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { useI18n } from '@/context/I18nContext'
 import { useCreateConversation } from '@/hooks/useConversations'
 import { contactService } from '@/services/contact'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ import {
 
 export default function Contact() {
     const { user, isAuthenticated } = useAuth()
+    const { t } = useI18n()
     const navigate = useNavigate()
     const createConversation = useCreateConversation()
 
@@ -49,7 +51,6 @@ export default function Contact() {
 
         try {
             if (isAuthenticated) {
-                // Create a conversation for logged-in users
                 await createConversation.mutateAsync({
                     subject: formData.subject,
                     message: formData.message,
@@ -57,7 +58,6 @@ export default function Contact() {
                 setSuccess(true)
                 setFormData({ subject: '', name: '', email: '', message: '' })
             } else {
-                // Fall back to contact message for guests
                 await contactService.submit({
                     name: formData.name,
                     email: formData.email,
@@ -65,10 +65,10 @@ export default function Contact() {
                 })
                 setSuccess(true)
                 setFormData({ subject: '', name: '', email: '', message: '' })
-                toast.success('Message sent successfully!')
+                toast.success(t('contact.messageSentSuccess'))
             }
         } catch (err) {
-            const message = err.response?.data?.error || 'Failed to send message. Please try again.'
+            const message = err.response?.data?.error || t('contact.failedSendMessage')
             setError(message)
         } finally {
             setLoading(false)
@@ -78,19 +78,19 @@ export default function Contact() {
     const contactInfo = [
         {
             icon: Mail,
-            title: 'Email',
+            title: t('contact.email'),
             value: 'contact@civicreport.com',
             href: 'mailto:contact@civicreport.com',
         },
         {
             icon: Phone,
-            title: 'Phone',
+            title: t('contact.phone'),
             value: '+1 (555) 123-4567',
             href: 'tel:+15551234567',
         },
         {
             icon: MapPin,
-            title: 'Address',
+            title: t('contact.address'),
             value: 'City Hall, Main Street',
             href: null,
         },
@@ -103,12 +103,11 @@ export default function Contact() {
                 <div className="container mx-auto px-4">
                     <div className="max-w-2xl mx-auto text-center mb-12">
                         <h1 className="font-display text-6xl md:text-8xl uppercase tracking-tight mb-4">
-                            GET IN TOUCH
+                            {t('contact.getInTouch')}
                         </h1>
                         <div className="border-b-3 border-foreground w-24 mx-auto mb-4" />
                         <p className="font-mono text-sm uppercase tracking-wider text-muted-foreground">
-                            Have questions or feedback? We'd love to hear from you. Send us a message
-                            and we'll respond as soon as possible.
+                            {t('contact.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -119,9 +118,9 @@ export default function Contact() {
                 <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                     {/* Contact Info */}
                     <div className="space-y-6">
-                        <h2 className="font-display text-2xl uppercase">Contact Information</h2>
+                        <h2 className="font-display text-2xl uppercase">{t('contact.contactInfo')}</h2>
                         <p className="text-muted-foreground">
-                            Reach out through any of these channels and we'll get back to you promptly.
+                            {t('contact.contactInfoDesc')}
                         </p>
 
                         <div className="space-y-4">
@@ -158,14 +157,14 @@ export default function Contact() {
                                             <MessageSquare className="h-5 w-5 text-foreground" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold uppercase mb-1">Want live chat support?</h3>
+                                            <h3 className="font-bold uppercase mb-1">{t('contact.wantLiveChat')}</h3>
                                             <p className="text-sm text-muted-foreground mb-3">
-                                                Sign in to chat directly with our support team and track your conversations.
+                                                {t('contact.liveChatDesc')}
                                             </p>
                                             <Button size="sm" asChild>
                                                 <Link to="/login">
                                                     <LogIn className="h-4 w-4 mr-2" />
-                                                    <span className="uppercase">Sign In</span>
+                                                    <span className="uppercase">{t('contact.signIn')}</span>
                                                 </Link>
                                             </Button>
                                         </div>
@@ -180,12 +179,12 @@ export default function Contact() {
                         <Card>
                             <CardHeader className="border-b-3 border-foreground">
                                 <CardTitle className="font-display text-xl uppercase">
-                                    {isAuthenticated ? 'Start a Conversation' : 'Send a Message'}
+                                    {isAuthenticated ? t('contact.startConversation') : t('contact.sendMessage')}
                                 </CardTitle>
                                 <CardDescription>
                                     {isAuthenticated
-                                        ? 'Start a conversation with our support team. You can track and continue the conversation from your messages.'
-                                        : 'Fill out the form below and we\'ll get back to you within 24 hours.'
+                                        ? t('contact.conversationDesc')
+                                        : t('contact.guestFormDesc')
                                     }
                                 </CardDescription>
                             </CardHeader>
@@ -195,26 +194,26 @@ export default function Contact() {
                                         <div className="w-16 h-16 border-3 border-foreground bg-muted flex items-center justify-center mx-auto mb-4">
                                             <CheckCircle className="h-8 w-8 text-foreground" />
                                         </div>
-                                        <h3 className="font-display text-xl uppercase mb-2">MESSAGE SENT!</h3>
+                                        <h3 className="font-display text-xl uppercase mb-2">{t('contact.messageSent')}</h3>
                                         <p className="text-muted-foreground mb-6">
                                             {isAuthenticated
-                                                ? 'Your conversation has been started. You can continue the conversation from your messages.'
-                                                : 'Thank you for reaching out. We\'ll respond to your message as soon as possible.'
+                                                ? t('contact.conversationStarted')
+                                                : t('contact.thankYou')
                                             }
                                         </p>
                                         {isAuthenticated ? (
                                             <div className="flex gap-3 justify-center">
                                                 <Button variant="outline" onClick={() => setSuccess(false)} className="hover:bg-foreground hover:text-background transition-none">
-                                                    <span className="uppercase">Send Another</span>
+                                                    <span className="uppercase">{t('contact.sendAnother')}</span>
                                                 </Button>
                                                 <Button onClick={() => navigate('/messages')}>
                                                     <MessageSquare className="h-4 w-4 mr-2" />
-                                                    <span className="uppercase">View Messages</span>
+                                                    <span className="uppercase">{t('contact.viewMessages')}</span>
                                                 </Button>
                                             </div>
                                         ) : (
                                             <Button variant="outline" onClick={() => setSuccess(false)} className="hover:bg-foreground hover:text-background transition-none">
-                                                <span className="uppercase">Send Another Message</span>
+                                                <span className="uppercase">{t('contact.sendAnotherMessage')}</span>
                                             </Button>
                                         )}
                                     </div>
@@ -228,14 +227,13 @@ export default function Contact() {
                                         )}
 
                                         {isAuthenticated ? (
-                                            // Logged-in user form
                                             <>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="subject" className="font-mono text-xs uppercase tracking-wider">Subject</Label>
+                                                    <Label htmlFor="subject" className="font-mono text-xs uppercase tracking-wider">{t('contact.subject')}</Label>
                                                     <Input
                                                         id="subject"
                                                         name="subject"
-                                                        placeholder="What is this about?"
+                                                        placeholder={t('contact.subjectPlaceholder')}
                                                         value={formData.subject}
                                                         onChange={handleChange}
                                                         required
@@ -244,11 +242,11 @@ export default function Contact() {
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="message" className="font-mono text-xs uppercase tracking-wider">Message</Label>
+                                                    <Label htmlFor="message" className="font-mono text-xs uppercase tracking-wider">{t('contact.message')}</Label>
                                                     <Textarea
                                                         id="message"
                                                         name="message"
-                                                        placeholder="Describe your question or issue..."
+                                                        placeholder={t('contact.messagePlaceholder')}
                                                         rows={6}
                                                         value={formData.message}
                                                         onChange={handleChange}
@@ -258,15 +256,14 @@ export default function Contact() {
                                                 </div>
                                             </>
                                         ) : (
-                                            // Guest form
                                             <>
                                                 <div className="grid sm:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="name" className="font-mono text-xs uppercase tracking-wider">Name</Label>
+                                                        <Label htmlFor="name" className="font-mono text-xs uppercase tracking-wider">{t('contact.name')}</Label>
                                                         <Input
                                                             id="name"
                                                             name="name"
-                                                            placeholder="Your name"
+                                                            placeholder={t('contact.namePlaceholder')}
                                                             value={formData.name}
                                                             onChange={handleChange}
                                                             required
@@ -274,7 +271,7 @@ export default function Contact() {
                                                         />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="email" className="font-mono text-xs uppercase tracking-wider">Email</Label>
+                                                        <Label htmlFor="email" className="font-mono text-xs uppercase tracking-wider">{t('contact.email')}</Label>
                                                         <Input
                                                             id="email"
                                                             name="email"
@@ -289,11 +286,11 @@ export default function Contact() {
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="message" className="font-mono text-xs uppercase tracking-wider">Message</Label>
+                                                    <Label htmlFor="message" className="font-mono text-xs uppercase tracking-wider">{t('contact.message')}</Label>
                                                     <Textarea
                                                         id="message"
                                                         name="message"
-                                                        placeholder="How can we help you?"
+                                                        placeholder={t('contact.messagePlaceholderGuest')}
                                                         rows={6}
                                                         value={formData.message}
                                                         onChange={handleChange}
@@ -308,12 +305,12 @@ export default function Contact() {
                                             {loading ? (
                                                 <>
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                    <span className="uppercase">Sending...</span>
+                                                    <span className="uppercase">{t('contact.sending')}</span>
                                                 </>
                                             ) : (
                                                 <>
                                                     <Send className="mr-2 h-4 w-4" />
-                                                    <span className="uppercase">{isAuthenticated ? 'Start Conversation' : 'Send Message'}</span>
+                                                    <span className="uppercase">{isAuthenticated ? t('contact.startConversationBtn') : t('contact.sendMessageBtn')}</span>
                                                 </>
                                             )}
                                         </Button>

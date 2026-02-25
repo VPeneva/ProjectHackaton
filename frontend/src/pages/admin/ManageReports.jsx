@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useI18n } from '@/context/I18nContext'
 import { useAdmin, useSendReport, useResolveReport, useBulkSendReports, useBulkResolveReports, useMergeReports } from '@/hooks/useAdmin'
 import { useInstitutions } from '@/hooks/useInstitutions'
 import { useSimilarReports } from '@/hooks/useReports'
@@ -38,17 +39,17 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-const statusConfig = {
-    Pending: { label: 'PENDING', variant: 'pending' },
-    Sent: { label: 'IN PROGRESS', variant: 'sent' },
-}
-
 function ReportRow({ report, onSend, onResolve, institutions, selected, onToggleSelect, onMerge }) {
+    const { t } = useI18n()
     const [sendDialogOpen, setSendDialogOpen] = useState(false)
     const [selectedInstitution, setSelectedInstitution] = useState('')
     const [sending, setSending] = useState(false)
     const [resolving, setResolving] = useState(false)
 
+    const statusConfig = {
+        Pending: { label: t('admin.pendingFilter'), variant: 'pending' },
+        Sent: { label: t('admin.inProgressFilter'), variant: 'sent' },
+    }
     const status = statusConfig[report.status] || statusConfig.Pending
     const imageUrl = report.images?.[0]?.url || report.imageUrl
     const upvotes = report.upvotes ?? 0
@@ -57,12 +58,12 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
     const ratio = totalVotes ? upvotes / totalVotes : 0
     const communityBadge =
         totalVotes === 0
-            ? { label: 'NO VOTES YET', variant: 'outline' }
+            ? { label: t('admin.noVotesLabel'), variant: 'outline' }
             : ratio >= 0.7
-                ? { label: 'COMMUNITY VALIDATED', variant: 'finished' }
+                ? { label: t('admin.communityValidated'), variant: 'finished' }
                 : ratio <= 0.3
-                    ? { label: 'NEEDS REVIEW', variant: 'pending' }
-                    : { label: 'MIXED FEEDBACK', variant: 'sent' }
+                    ? { label: t('admin.needsReview'), variant: 'pending' }
+                    : { label: t('admin.mixedFeedback'), variant: 'sent' }
 
     const handleSend = async () => {
         if (!selectedInstitution) {
@@ -154,19 +155,19 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                             <Button variant="outline" size="sm" asChild>
                                 <Link to={`/reports/${report.id}`}>
                                     <Eye className="h-4 w-4 mr-1" />
-                                    VIEW
+                                    {t('admin.view')}
                                 </Link>
                             </Button>
 
                             <Button variant="outline" size="sm" onClick={() => onMerge(report)}>
                                 <GitMerge className="h-4 w-4 mr-1" />
-                                MERGE
+                                {t('admin.merge')}
                             </Button>
 
                             {report.status === 'Pending' && (
                                 <Button size="sm" onClick={() => setSendDialogOpen(true)}>
                                     <Send className="h-4 w-4 mr-1" />
-                                    SEND
+                                    {t('admin.send')}
                                 </Button>
                             )}
 
@@ -181,7 +182,7 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                                     ) : (
                                         <>
                                             <CheckCircle className="h-4 w-4 mr-1" />
-                                            RESOLVE
+                                            {t('admin.resolve')}
                                         </>
                                     )}
                                 </Button>
@@ -195,9 +196,9 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
             <Dialog open={sendDialogOpen} onOpenChange={setSendDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle className="font-display text-2xl uppercase">SEND REPORT TO INSTITUTION</DialogTitle>
+                        <DialogTitle className="font-display text-2xl uppercase">{t('admin.sendToInstitution')}</DialogTitle>
                         <DialogDescription className="font-mono text-xs uppercase tracking-wider">
-                            Select the institution responsible for handling this report.
+                            {t('admin.sendToInstitutionDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
@@ -216,7 +217,7 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setSendDialogOpen(false)}>
-                            CANCEL
+                            {t('admin.cancel')}
                         </Button>
                         <Button onClick={handleSend} disabled={sending || !selectedInstitution}>
                             {sending ? (
@@ -224,7 +225,7 @@ function ReportRow({ report, onSend, onResolve, institutions, selected, onToggle
                             ) : (
                                 <Send className="h-4 w-4 mr-2" />
                             )}
-                            SEND REPORT
+                            {t('admin.sendReport')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -262,11 +263,12 @@ export default function ManageReports() {
     const [mergeDialogOpen, setMergeDialogOpen] = useState(false)
     const [mergeSource, setMergeSource] = useState(null)
     const [mergeTargetId, setMergeTargetId] = useState('')
+    const { t } = useI18n()
     const { data: reports, isLoading, isError, error } = useAdmin()
     const errorMessage =
         error?.response?.data?.error ||
         error?.message ||
-        'Failed to load reports. Please try again.'
+        t('admin.manageReportsDesc')
     const { data: institutions } = useInstitutions()
     const sendReport = useSendReport()
     const resolveReport = useResolveReport()
@@ -370,9 +372,9 @@ export default function ManageReports() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 border-b-3 border-foreground pb-4">
                 <div>
-                    <h1 className="font-display text-5xl uppercase">MANAGE REPORTS</h1>
+                    <h1 className="font-display text-5xl uppercase">{t('admin.manageReportsTitle')}</h1>
                     <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">
-                        Review, forward, and resolve submitted reports.
+                        {t('admin.manageReportsSubtitle')}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -383,28 +385,28 @@ export default function ManageReports() {
                             onChange={toggleSelectAll}
                             className="h-4 w-4 accent-primary"
                         />
-                        SELECT ALL
+                        {t('admin.selectAll')}
                     </label>
                     <Button
                         variant={filter === 'all' ? 'default' : 'outline'}
                         onClick={() => setFilter('all')}
                         size="sm"
                     >
-                        ALL ({(pendingCount + sentCount)})
+                        {t('admin.all')} ({pendingCount + sentCount})
                     </Button>
                     <Button
                         variant={filter === 'Pending' ? 'default' : 'outline'}
                         onClick={() => setFilter('Pending')}
                         size="sm"
                     >
-                        PENDING ({pendingCount})
+                        {t('admin.pendingFilter')} ({pendingCount})
                     </Button>
                     <Button
                         variant={filter === 'Sent' ? 'default' : 'outline'}
                         onClick={() => setFilter('Sent')}
                         size="sm"
                     >
-                        IN PROGRESS ({sentCount})
+                        {t('admin.inProgressFilter')} ({sentCount})
                     </Button>
                 </div>
             </div>
@@ -413,7 +415,7 @@ export default function ManageReports() {
                 <Card className="border-3 border-foreground mb-6">
                     <CardContent className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                            {selectedIds.length} report{selectedIds.length !== 1 ? 's' : ''} selected
+                            {t('admin.reportsSelected', { count: selectedIds.length })}
                         </div>
                         <div className="flex flex-wrap gap-2">
                             <Button
@@ -422,7 +424,7 @@ export default function ManageReports() {
                                 disabled={bulkSend.isPending}
                             >
                                 <Send className="h-4 w-4 mr-1" />
-                                BULK SEND
+                                {t('admin.bulkSend')}
                             </Button>
                             <Button
                                 size="sm"
@@ -430,7 +432,7 @@ export default function ManageReports() {
                                 disabled={bulkResolve.isPending}
                             >
                                 <CheckCircle className="h-4 w-4 mr-1" />
-                                BULK RESOLVE
+                                {t('admin.bulkResolve')}
                             </Button>
                         </div>
                     </CardContent>
@@ -456,11 +458,9 @@ export default function ManageReports() {
                         <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
                             <CheckCircle className="h-8 w-8 text-foreground" />
                         </div>
-                        <h3 className="font-display text-2xl uppercase mb-2">ALL CAUGHT UP!</h3>
+                        <h3 className="font-display text-2xl uppercase mb-2">{t('admin.allCaughtUpTitle')}</h3>
                         <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                            {filter === 'all'
-                                ? 'No pending or in-progress reports at the moment.'
-                                : `No ${filter === 'Pending' ? 'pending' : 'in-progress'} reports.`}
+                            {t('admin.noPendingReports')}
                         </p>
                     </CardContent>
                 </Card>
@@ -485,9 +485,9 @@ export default function ManageReports() {
             <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle className="font-display text-2xl uppercase">SEND REPORTS TO INSTITUTION</DialogTitle>
+                        <DialogTitle className="font-display text-2xl uppercase">{t('admin.bulkSendTitle')}</DialogTitle>
                         <DialogDescription className="font-mono text-xs uppercase tracking-wider">
-                            Select the institution responsible for the selected reports.
+                            {t('admin.bulkSendDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
@@ -506,7 +506,7 @@ export default function ManageReports() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>
-                            CANCEL
+                            {t('admin.cancel')}
                         </Button>
                         <Button onClick={handleBulkSend} disabled={bulkSend.isPending || !bulkInstitution}>
                             {bulkSend.isPending ? (
@@ -514,7 +514,7 @@ export default function ManageReports() {
                             ) : (
                                 <Send className="h-4 w-4 mr-2" />
                             )}
-                            SEND REPORTS
+                            {t('admin.sendReports')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -533,7 +533,7 @@ export default function ManageReports() {
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle className="font-display text-2xl uppercase">MERGE DUPLICATE REPORTS</DialogTitle>
+                        <DialogTitle className="font-display text-2xl uppercase">{t('admin.mergeDuplicatesTitle')}</DialogTitle>
                         <DialogDescription className="font-mono text-xs uppercase tracking-wider">
                             Merge "{mergeSource?.title}" into another report. The source report will be removed,
                             while votes, comments, and subscriptions will be moved to the target.
@@ -541,10 +541,10 @@ export default function ManageReports() {
                     </DialogHeader>
                     <div className="space-y-4 py-2">
                         <div className="space-y-2">
-                            <p className="font-mono text-xs uppercase tracking-wider font-medium">Select a target report</p>
+                            <p className="font-mono text-xs uppercase tracking-wider font-medium">{t('admin.selectTargetReport')}</p>
                             {similarReports.length === 0 ? (
                                 <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                                    No similar reports found. Enter a target report ID below.
+                                    {t('admin.noSimilarReports')}
                                 </p>
                             ) : (
                                 <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -576,9 +576,9 @@ export default function ManageReports() {
                             )}
                         </div>
                         <div className="space-y-2">
-                            <p className="font-mono text-xs uppercase tracking-wider font-medium">Target report ID (optional)</p>
+                            <p className="font-mono text-xs uppercase tracking-wider font-medium">{t('admin.targetReportId')}</p>
                             <Input
-                                placeholder="Enter report ID"
+                                placeholder={t('admin.enterReportId')}
                                 value={mergeTargetId}
                                 onChange={(e) => setMergeTargetId(e.target.value)}
                             />
@@ -586,7 +586,7 @@ export default function ManageReports() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setMergeDialogOpen(false)}>
-                            CANCEL
+                            {t('admin.cancel')}
                         </Button>
                         <Button onClick={handleMerge} disabled={mergeReports.isPending}>
                             {mergeReports.isPending ? (
@@ -594,7 +594,7 @@ export default function ManageReports() {
                             ) : (
                                 <GitMerge className="h-4 w-4 mr-2" />
                             )}
-                            MERGE REPORTS
+                            {t('admin.mergeReportsAction')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

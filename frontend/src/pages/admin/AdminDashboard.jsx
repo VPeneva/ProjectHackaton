@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useI18n } from '@/context/I18nContext'
 import { useReportStats } from '@/hooks/useReports'
 import { useAdmin, useVoteAnalytics } from '@/hooks/useAdmin'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -73,18 +74,8 @@ function QuickActionCard({ title, description, icon: Icon, href, count }) {
     )
 }
 
-const statusLabels = {
-    PENDING: 'Pending',
-    SENT: 'In Progress',
-    FINISHED: 'Resolved',
-}
-
-const formatStatusLabel = (status) => {
-    const normalized = (status || '').toString().toUpperCase()
-    return statusLabels[normalized] || status || 'Unknown'
-}
-
 export default function AdminDashboard() {
+    const { t } = useI18n()
     const { data: stats, isLoading: statsLoading } = useReportStats()
     const { data: pendingReports, isLoading: reportsLoading } = useAdmin()
     const { data: voteAnalytics, isLoading: analyticsLoading } = useVoteAnalytics()
@@ -92,80 +83,35 @@ export default function AdminDashboard() {
     const pendingCount = pendingReports?.filter(r => r.status === 'PENDING').length || 0
     const sentCount = pendingReports?.filter(r => r.status === 'SENT').length || 0
 
+    const formatStatusLabel = (status) => {
+        const normalized = (status || '').toString().toUpperCase()
+        const map = { PENDING: t('common.pending'), SENT: t('common.inProgress'), FINISHED: t('common.resolved') }
+        return map[normalized] || status || 'Unknown'
+    }
+
     const statCards = [
-        {
-            title: 'Total Reports',
-            value: stats?.total || 0,
-            icon: FileText,
-            href: '/admin/reports',
-        },
-        {
-            title: 'Pending Review',
-            value: stats?.byStatus?.PENDING || 0,
-            icon: Clock,
-            href: '/admin/reports',
-        },
-        {
-            title: 'In Progress',
-            value: stats?.byStatus?.SENT || 0,
-            icon: Send,
-            href: '/admin/reports',
-        },
-        {
-            title: 'Resolved',
-            value: stats?.byStatus?.FINISHED || 0,
-            icon: CheckCircle,
-            href: '/admin/resolved',
-        },
+        { title: t('admin.totalReports'), value: stats?.total || 0, icon: FileText, href: '/admin/reports' },
+        { title: t('admin.pendingReview'), value: stats?.byStatus?.PENDING || 0, icon: Clock, href: '/admin/reports' },
+        { title: t('admin.inProgress'), value: stats?.byStatus?.SENT || 0, icon: Send, href: '/admin/reports' },
+        { title: t('admin.resolved'), value: stats?.byStatus?.FINISHED || 0, icon: CheckCircle, href: '/admin/resolved' },
     ]
 
     const quickActions = [
-        {
-            title: 'Manage Reports',
-            description: 'Review and process pending reports',
-            icon: FileText,
-            href: '/admin/reports',
-            count: pendingCount + sentCount,
-        },
-        {
-            title: 'Resolved Reports',
-            description: 'View completed and resolved reports',
-            icon: CheckCircle,
-            href: '/admin/resolved',
-        },
-        {
-            title: 'Institutions',
-            description: 'Manage government institutions',
-            icon: Building2,
-            href: '/admin/institutions',
-        },
-        {
-            title: 'Categories',
-            description: 'Manage report categories',
-            icon: Tag,
-            href: '/admin/categories',
-        },
-        {
-            title: 'Contact Messages',
-            description: 'View messages from users',
-            icon: MessageSquare,
-            href: '/admin/messages',
-        },
-        {
-            title: 'Analytics',
-            description: 'Trends and resolution insights',
-            icon: ThumbsUp,
-            href: '/admin/analytics',
-        },
+        { title: t('admin.manageReports'), description: t('admin.manageReportsDesc'), icon: FileText, href: '/admin/reports', count: pendingCount + sentCount },
+        { title: t('admin.resolvedReports'), description: t('admin.resolvedReportsDesc'), icon: CheckCircle, href: '/admin/resolved' },
+        { title: t('admin.institutions'), description: t('admin.institutionsDesc'), icon: Building2, href: '/admin/institutions' },
+        { title: t('admin.categories'), description: t('admin.categoriesDesc'), icon: Tag, href: '/admin/categories' },
+        { title: t('admin.contactMessages'), description: t('admin.contactMessagesDesc'), icon: MessageSquare, href: '/admin/messages' },
+        { title: t('admin.analytics'), description: t('admin.analyticsDesc'), icon: ThumbsUp, href: '/admin/analytics' },
     ]
 
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Header */}
             <div className="mb-8 border-b-3 border-foreground pb-4">
-                <h1 className="font-display text-5xl md:text-7xl uppercase">ADMIN DASHBOARD</h1>
+                <h1 className="font-display text-5xl md:text-7xl uppercase">{t('admin.dashboard')}</h1>
                 <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">
-                    Manage reports, institutions, and system settings.
+                    {t('admin.dashboardDesc')}
                 </p>
             </div>
 
@@ -176,11 +122,11 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-3">
                             <AlertCircle className="h-5 w-5 text-primary" />
                             <span className="font-mono text-sm uppercase tracking-wider">
-                                You have {pendingCount} report{pendingCount !== 1 ? 's' : ''} awaiting review
+                                {t('admin.awaitingReview', { count: pendingCount })}
                             </span>
                         </div>
                         <Button size="sm" asChild>
-                            <Link to="/admin/reports" className="uppercase">REVIEW NOW</Link>
+                            <Link to="/admin/reports" className="uppercase">{t('admin.reviewNow')}</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -195,7 +141,7 @@ export default function AdminDashboard() {
 
             {/* Quick Actions */}
             <div className="mb-8">
-                <h2 className="font-display text-2xl uppercase mb-4">QUICK ACTIONS</h2>
+                <h2 className="font-display text-2xl uppercase mb-4">{t('admin.quickActions')}</h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {quickActions.map((action, index) => (
                         <QuickActionCard key={index} {...action} />
@@ -205,12 +151,12 @@ export default function AdminDashboard() {
 
             {/* Community Feedback */}
             <div className="mb-8">
-                <h2 className="font-display text-2xl uppercase mb-4">COMMUNITY FEEDBACK</h2>
+                <h2 className="font-display text-2xl uppercase mb-4">{t('admin.communityFeedback')}</h2>
                 <div className="grid lg:grid-cols-3 gap-4">
                     <Card>
                         <CardHeader className="border-b-3 border-foreground">
-                            <CardTitle className="font-display text-xl uppercase">Validated Issues</CardTitle>
-                            <CardDescription className="font-mono text-xs uppercase tracking-wider">Most upvoted open reports</CardDescription>
+                            <CardTitle className="font-display text-xl uppercase">{t('admin.validatedIssues')}</CardTitle>
+                            <CardDescription className="font-mono text-xs uppercase tracking-wider">{t('admin.validatedIssuesDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-4">
                             {analyticsLoading ? (
@@ -249,15 +195,15 @@ export default function AdminDashboard() {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">No votes yet.</p>
+                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('admin.noVotesYet')}</p>
                             )}
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="border-b-3 border-foreground">
-                            <CardTitle className="font-display text-xl uppercase">Unresolved Signals</CardTitle>
-                            <CardDescription className="font-mono text-xs uppercase tracking-wider">Most downvoted resolved reports</CardDescription>
+                            <CardTitle className="font-display text-xl uppercase">{t('admin.unresolvedSignals')}</CardTitle>
+                            <CardDescription className="font-mono text-xs uppercase tracking-wider">{t('admin.unresolvedSignalsDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-4">
                             {analyticsLoading ? (
@@ -296,15 +242,15 @@ export default function AdminDashboard() {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">No feedback yet.</p>
+                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('admin.noFeedbackYet')}</p>
                             )}
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="border-b-3 border-foreground">
-                            <CardTitle className="font-display text-xl uppercase">Vote Ratio</CardTitle>
-                            <CardDescription className="font-mono text-xs uppercase tracking-wider">Upvote share by status</CardDescription>
+                            <CardTitle className="font-display text-xl uppercase">{t('admin.voteRatio')}</CardTitle>
+                            <CardDescription className="font-mono text-xs uppercase tracking-wider">{t('admin.voteRatioDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-4">
                             {analyticsLoading ? (
@@ -323,14 +269,14 @@ export default function AdminDashboard() {
                                             <span className="uppercase">{formatStatusLabel(row.status)}</span>
                                             <span className="font-medium">
                                                 {row.total
-                                                    ? `${Math.round(row.ratio * 100)}% up`
-                                                    : 'No votes'}
+                                                    ? `${Math.round(row.ratio * 100)}% ${t('common.up')}`
+                                                    : t('common.noVotes')}
                                             </span>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">No votes yet.</p>
+                                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('admin.noVotesYet')}</p>
                             )}
                         </CardContent>
                     </Card>
@@ -340,8 +286,8 @@ export default function AdminDashboard() {
             {/* Recent Pending Reports */}
             <Card>
                 <CardHeader className="border-b-3 border-foreground">
-                    <CardTitle className="font-display text-xl uppercase">Recent Pending Reports</CardTitle>
-                    <CardDescription className="font-mono text-xs uppercase tracking-wider">Latest reports awaiting your review</CardDescription>
+                    <CardTitle className="font-display text-xl uppercase">{t('admin.recentPending')}</CardTitle>
+                    <CardDescription className="font-mono text-xs uppercase tracking-wider">{t('admin.recentPendingDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-4">
                     {reportsLoading ? (
@@ -361,7 +307,7 @@ export default function AdminDashboard() {
                             <div className="w-12 h-12 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
                                 <CheckCircle className="h-6 w-6 text-foreground" />
                             </div>
-                            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">All caught up! No pending reports.</p>
+                            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('admin.allCaughtUp')}</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -390,7 +336,7 @@ export default function AdminDashboard() {
                             {pendingReports?.length > 5 && (
                                 <Button variant="outline" asChild className="w-full uppercase">
                                     <Link to="/admin/reports">
-                                        VIEW ALL ({pendingReports.length} REPORTS)
+                                        {t('admin.viewAll', { count: pendingReports.length })}
                                     </Link>
                                 </Button>
                             )}

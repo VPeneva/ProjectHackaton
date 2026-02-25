@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useI18n } from '@/context/I18nContext'
 import { useCategories, useCreateCategory, useDeleteCategory } from '@/hooks/useCategories'
 import { useInstitutions } from '@/hooks/useInstitutions'
 import { Button } from '@/components/ui/button'
@@ -45,6 +46,7 @@ import {
 import { toast } from 'sonner'
 
 function CategoryRow({ category, onDelete }) {
+    const { t } = useI18n()
     const [deleting, setDeleting] = useState(false)
 
     const handleDelete = async () => {
@@ -78,19 +80,19 @@ function CategoryRow({ category, onDelete }) {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle className="font-display text-2xl uppercase">DELETE CATEGORY</AlertDialogTitle>
+                            <AlertDialogTitle className="font-display text-2xl uppercase">{t('admin.deleteCategory')}</AlertDialogTitle>
                             <AlertDialogDescription className="font-mono text-xs uppercase tracking-wider">
-                                Are you sure you want to delete "{category.name}"? Reports using this category will be affected.
+                                {t('admin.deleteCategoryConfirm', { name: category.name })}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>CANCEL</AlertDialogCancel>
+                            <AlertDialogCancel>{t('admin.cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={handleDelete}
                                 disabled={deleting}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
-                                {deleting ? 'DELETING...' : 'DELETE'}
+                                {deleting ? t('admin.deleting') : t('admin.delete')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
@@ -151,10 +153,11 @@ export default function Categories() {
         }
     }
 
+    const { t } = useI18n()
     const errorMessage =
         error?.response?.data?.error ||
         error?.message ||
-        'Failed to load categories. Please try again.'
+        t('admin.categoriesDesc')
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -167,9 +170,9 @@ export default function Categories() {
                         </Link>
                     </Button>
                     <div>
-                        <h1 className="font-display text-5xl uppercase">CATEGORIES</h1>
+                        <h1 className="font-display text-5xl uppercase">{t('admin.categories')}</h1>
                         <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">
-                            Manage report categories for each institution.
+                            {t('admin.categoriesSubtitle')}
                         </p>
                     </div>
                 </div>
@@ -177,22 +180,22 @@ export default function Categories() {
                     <DialogTrigger asChild>
                         <Button>
                             <Plus className="h-4 w-4 mr-2" />
-                            ADD CATEGORY
+                            {t('admin.addCategory')}
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle className="font-display text-2xl uppercase">ADD NEW CATEGORY</DialogTitle>
+                            <DialogTitle className="font-display text-2xl uppercase">{t('admin.addNewCategory')}</DialogTitle>
                             <DialogDescription className="font-mono text-xs uppercase tracking-wider">
-                                Create a category linked to an institution.
+                                {t('admin.createCategoryLinked')}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="py-4 space-y-4">
                             <div>
-                                <label className="font-mono text-xs uppercase tracking-wider font-medium mb-2 block">Institution</label>
+                                <label className="font-mono text-xs uppercase tracking-wider font-medium mb-2 block">{t('admin.institutionLabel')}</label>
                                 <Select value={selectedInstitution} onValueChange={setSelectedInstitution}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select institution" />
+                                        <SelectValue placeholder={t('admin.selectInstitution')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {institutions?.map((inst) => (
@@ -204,9 +207,9 @@ export default function Categories() {
                                 </Select>
                             </div>
                             <div>
-                                <label className="font-mono text-xs uppercase tracking-wider font-medium mb-2 block">Category Name</label>
+                                <label className="font-mono text-xs uppercase tracking-wider font-medium mb-2 block">{t('admin.categoryNameLabel')}</label>
                                 <Input
-                                    placeholder="Category name"
+                                    placeholder={t('admin.categoryNamePlaceholder')}
                                     value={newName}
                                     onChange={(e) => setNewName(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -215,7 +218,7 @@ export default function Categories() {
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                                CANCEL
+                                {t('admin.cancel')}
                             </Button>
                             <Button onClick={handleCreate} disabled={createCategory.isPending}>
                                 {createCategory.isPending ? (
@@ -223,7 +226,7 @@ export default function Categories() {
                                 ) : (
                                     <Plus className="h-4 w-4 mr-2" />
                                 )}
-                                ADD CATEGORY
+                                {t('admin.addCategory')}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -234,10 +237,10 @@ export default function Categories() {
             <div className="mb-6">
                 <Select value={filterInstitution || "all"} onValueChange={(val) => setFilterInstitution(val === "all" ? "" : val)}>
                     <SelectTrigger className="w-full sm:w-64">
-                        <SelectValue placeholder="Filter by institution" />
+                        <SelectValue placeholder={t('admin.filterByInstitution')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">All Institutions</SelectItem>
+                        <SelectItem value="all">{t('admin.allInstitutions')}</SelectItem>
                         {institutions?.map((inst) => (
                             <SelectItem key={inst.id} value={inst.id.toString()}>
                                 {inst.name}
@@ -274,15 +277,15 @@ export default function Categories() {
                         <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
                             <Tag className="h-8 w-8 text-foreground" />
                         </div>
-                        <h3 className="font-display text-2xl uppercase mb-2">NO CATEGORIES YET</h3>
+                        <h3 className="font-display text-2xl uppercase mb-2">{t('admin.noCategories')}</h3>
                         <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-4">
                             {filterInstitution
-                                ? 'No categories for this institution.'
-                                : 'Add your first category to start organizing reports.'}
+                                ? t('admin.noCategoriesForInstitution')
+                                : t('admin.noCategoriesDesc')}
                         </p>
                         <Button onClick={() => setDialogOpen(true)}>
                             <Plus className="h-4 w-4 mr-2" />
-                            ADD FIRST CATEGORY
+                            {t('admin.addFirstCategory')}
                         </Button>
                     </CardContent>
                 </Card>

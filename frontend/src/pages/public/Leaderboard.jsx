@@ -38,7 +38,7 @@ export default function Leaderboard() {
           ) : isError ? (
             <p className="text-muted-foreground">{errorMessage}</p>
           ) : leaderboard.length === 0 ? (
-            <p className="text-muted-foreground">No contributors yet.</p>
+            <p className="text-muted-foreground">{t('dashboard.noContributors')}</p>
           ) : (
             leaderboard.map((entry, index) => (
               <div

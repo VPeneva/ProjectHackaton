@@ -1,14 +1,12 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { useReportStats } from '@/hooks/useReports'
+import { useI18n } from '@/context/I18nContext'
 import {
     MapPin,
     FileText,
     CheckCircle,
-    ArrowRight,
-    Zap,
     Shield,
     Users,
     Building2,
@@ -20,32 +18,34 @@ import {
 
 // Hero Section
 function Hero() {
+    const { t } = useI18n()
     return (
         <section className="relative border-b-4 border-foreground">
             <div className="container mx-auto px-4 py-16 md:py-24 lg:py-32">
                 <div className="max-w-6xl">
-                    {/* Massive stacked typography */}
+                    {/* Massive stacked typography — whitespace-nowrap keeps each word on one line,
+                        overflow is clipped by the parent overflow-hidden for both languages */}
                     <h1 className="font-display leading-[0.85]">
-                        <span className="block text-7xl md:text-[140px] lg:text-[180px] text-foreground">
-                            REPORT.
+                        <span className="block text-7xl md:text-[140px] lg:text-[180px] text-foreground whitespace-nowrap">
+                            {t('landing.report')}
                         </span>
-                        <span className="block text-7xl md:text-[140px] lg:text-[180px] text-primary">
-                            TRANSFORM.
+                        <span className="block text-7xl md:text-[140px] lg:text-[180px] text-primary whitespace-nowrap">
+                            {t('landing.transform')}
                         </span>
                         <span
-                            className="block text-7xl md:text-[140px] lg:text-[180px] text-transparent"
+                            className="block text-7xl md:text-[140px] lg:text-[180px] text-transparent whitespace-nowrap"
                             style={{
                                 WebkitTextStroke: '2px hsl(var(--foreground))',
                             }}
                         >
-                            IMPROVE.
+                            {t('landing.improve')}
                         </span>
                     </h1>
 
                     {/* System status line */}
                     <div className="mt-8 mb-4">
                         <span className="font-mono text-sm md:text-base text-primary tracking-widest">
-                            [SYSTEM ACTIVE &mdash; ACCEPTING REPORTS]
+                            {t('landing.systemActive')}
                         </span>
                     </div>
 
@@ -58,13 +58,13 @@ function Hero() {
                     <div className="flex flex-col sm:flex-row items-start gap-4">
                         <Button size="lg" asChild className="text-base font-mono uppercase tracking-wider">
                             <Link to="/register">
-                                REPORT NOW &gt;&gt;&gt;
+                                {t('landing.reportNow')}
                             </Link>
                         </Button>
                         <Button size="lg" variant="outline" asChild className="text-base font-mono uppercase tracking-wider border-2">
                             <Link to="/reports">
                                 <MapPin className="mr-2 h-5 w-5" />
-                                EXPLORE REPORTS
+                                {t('landing.exploreReports')}
                             </Link>
                         </Button>
                     </div>
@@ -77,7 +77,7 @@ function Hero() {
                     {Array.from({ length: 12 }).map((_, i) => (
                         <span key={i} className="flex items-center shrink-0">
                             <span className="font-display text-accent text-xl md:text-2xl tracking-widest whitespace-nowrap px-6">
-                                YOUR CITY NEEDS YOU
+                                {t('landing.cityNeedsYou')}
                             </span>
                             <span className="w-4 h-4 bg-primary shrink-0" />
                         </span>
@@ -90,36 +90,37 @@ function Hero() {
 
 // Features Section
 function Features() {
+    const { t } = useI18n()
     const features = [
         {
             icon: FileText,
-            title: 'Easy Reporting',
-            description: 'Submit reports in minutes with our intuitive form. Add photos and pinpoint locations on the map.',
+            title: t('landing.featureEasyReporting'),
+            description: t('landing.featureEasyReportingDesc'),
         },
         {
             icon: MapPin,
-            title: 'Interactive Map',
-            description: "View all active reports on an interactive map. See what's happening in your neighborhood.",
+            title: t('landing.featureInteractiveMap'),
+            description: t('landing.featureInteractiveMapDesc'),
         },
         {
             icon: Clock,
-            title: 'Real-time Tracking',
-            description: 'Track your report status from submission to resolution. Stay informed every step of the way.',
+            title: t('landing.featureRealTimeTracking'),
+            description: t('landing.featureRealTimeTrackingDesc'),
         },
         {
             icon: Building2,
-            title: 'Government Connection',
-            description: 'Reports are forwarded directly to responsible institutions for quick action.',
+            title: t('landing.featureGovConnection'),
+            description: t('landing.featureGovConnectionDesc'),
         },
         {
             icon: Shield,
-            title: 'Transparent Process',
-            description: 'Full visibility into the reporting process. Know exactly where your report stands.',
+            title: t('landing.featureTransparentProcess'),
+            description: t('landing.featureTransparentProcessDesc'),
         },
         {
             icon: Users,
-            title: 'Community Driven',
-            description: 'Join a community of engaged citizens working together to improve public spaces.',
+            title: t('landing.featureCommunityDriven'),
+            description: t('landing.featureCommunityDrivenDesc'),
         },
     ]
 
@@ -128,7 +129,7 @@ function Features() {
             <div className="container mx-auto px-4">
                 {/* Section title */}
                 <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-16 border-b-4 border-foreground pb-6">
-                    CAPABILITIES
+                    {t('landing.capabilities')}
                 </h2>
 
                 {/* Grid with thick shared borders */}
@@ -149,7 +150,7 @@ function Features() {
                             </div>
 
                             {/* Title */}
-                            <h3 className="font-display text-2xl md:text-3xl uppercase mb-3">
+                            <h3 className="font-display text-xl md:text-2xl uppercase mb-3 leading-tight">
                                 {feature.title}
                             </h3>
 
@@ -167,30 +168,31 @@ function Features() {
 
 // How It Works Section
 function HowItWorks() {
+    const { t } = useI18n()
     const steps = [
         {
             step: 1,
             icon: AlertTriangle,
-            title: 'Spot an Issue',
-            description: 'Notice a pothole, broken streetlight, or other infrastructure problem in your area.',
+            title: t('landing.stepSpotIssue'),
+            description: t('landing.stepSpotIssueDesc'),
         },
         {
             step: 2,
             icon: FileText,
-            title: 'Submit a Report',
-            description: 'Create a detailed report with photos and exact location. It takes less than 2 minutes.',
+            title: t('landing.stepSubmitReport'),
+            description: t('landing.stepSubmitReportDesc'),
         },
         {
             step: 3,
             icon: Send,
-            title: 'We Forward It',
-            description: 'Your report is sent to the responsible government institution for action.',
+            title: t('landing.stepWeForward'),
+            description: t('landing.stepWeForwardDesc'),
         },
         {
             step: 4,
             icon: Target,
-            title: 'Track Progress',
-            description: 'Monitor your report status as it moves from pending to resolved.',
+            title: t('landing.stepTrackProgress'),
+            description: t('landing.stepTrackProgressDesc'),
         },
     ]
 
@@ -199,7 +201,7 @@ function HowItWorks() {
             <div className="container mx-auto px-4">
                 {/* Section title */}
                 <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-16">
-                    HOW IT WORKS
+                    {t('landing.howItWorks')}
                 </h2>
 
                 <div className="relative">
@@ -218,11 +220,11 @@ function HowItWorks() {
 
                                 {/* Monospace step label */}
                                 <span className="font-mono text-xs md:text-sm text-primary font-bold tracking-widest">
-                                    [STEP {String(item.step).padStart(2, '0')}]
+                                    [{t('landing.step')} {String(item.step).padStart(2, '0')}]
                                 </span>
 
                                 {/* Title */}
-                                <h3 className="font-display text-2xl md:text-3xl uppercase mt-3 mb-2">
+                                <h3 className="font-display text-xl md:text-2xl uppercase mt-3 mb-2 leading-tight">
                                     {item.title}
                                 </h3>
 
@@ -241,25 +243,23 @@ function HowItWorks() {
 
 // Stats Section
 function Stats() {
+    const { t } = useI18n()
     const { data: stats, isLoading } = useReportStats()
 
     const statItems = [
         {
-            label: 'Reports Submitted',
+            label: t('landing.reportsSubmitted'),
             value: stats?.total || '500+',
-            icon: FileText,
             mono: 'TOTAL_REPORTS',
         },
         {
-            label: 'Issues Resolved',
+            label: t('landing.issuesResolved'),
             value: stats?.byStatus?.FINISHED || '200+',
-            icon: CheckCircle,
             mono: 'STATUS_RESOLVED',
         },
         {
-            label: 'Active Reports',
+            label: t('landing.activeReports'),
             value: (stats?.byStatus?.PENDING || 0) + (stats?.byStatus?.SENT || 0) || '50+',
-            icon: Clock,
             mono: 'STATUS_ACTIVE',
         },
     ]
@@ -268,7 +268,7 @@ function Stats() {
         <section className="bg-foreground text-background py-20 md:py-28">
             <div className="container mx-auto px-4">
                 <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-16 text-background">
-                    IMPACT IN NUMBERS
+                    {t('landing.impactInNumbers')}
                 </h2>
 
                 <div className="flex flex-col md:flex-row items-center justify-center max-w-5xl mx-auto">
@@ -310,6 +310,7 @@ function Stats() {
 
 // CTA Section
 function CTA() {
+    const { t } = useI18n()
     return (
         <section className="py-20 md:py-28">
             <div className="container mx-auto px-4">
@@ -317,32 +318,30 @@ function CTA() {
                     <CardContent className="p-8 md:p-12 lg:p-16 text-center relative">
                         {/* URGENT stamp */}
                         <div className="absolute top-6 right-6 md:top-8 md:right-8">
-                            <span className="inline-block font-display text-3xl md:text-4xl text-primary border-[3px] border-primary px-4 py-1 rotate-12 select-none">
-                                URGENT
+                            <span className="inline-block font-display text-2xl md:text-4xl text-primary border-[3px] border-primary px-3 py-1 rotate-12 select-none">
+                                {t('landing.urgent')}
                             </span>
                         </div>
 
-                        {/* Headline */}
-                        <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-6 leading-[0.9] pt-8">
-                            DO SOMETHING
-                            <br />
-                            ABOUT IT
+                        {/* Headline — whitespace-pre-wrap preserves the \n in translations */}
+                        <h2 className="font-display text-4xl md:text-6xl lg:text-7xl uppercase mb-6 leading-[0.9] pt-8 whitespace-pre-wrap">
+                            {t('landing.doSomethingAboutIt')}
                         </h2>
 
                         <p className="font-mono text-sm md:text-base text-muted-foreground mb-10 max-w-xl mx-auto">
-                            Your voice matters. Join CityClarity today and become part of the solution. Together we build better communities.
+                            {t('landing.ctaDescription')}
                         </p>
 
                         {/* CTA buttons */}
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Button size="lg" asChild className="text-base font-mono uppercase tracking-wider">
                                 <Link to="/register">
-                                    REPORT NOW &gt;&gt;&gt;
+                                    {t('landing.reportNow')}
                                 </Link>
                             </Button>
                             <Button size="lg" variant="outline" asChild className="text-base font-mono uppercase tracking-wider border-2">
                                 <Link to="/about">
-                                    LEARN MORE
+                                    {t('landing.learnMore')}
                                 </Link>
                             </Button>
                         </div>

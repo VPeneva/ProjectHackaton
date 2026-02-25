@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { useI18n } from '@/context/I18nContext'
 import { useAdminAnalytics } from '@/hooks/useAdmin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,7 @@ const statusColors = {
 }
 
 export default function Analytics() {
+  const { t } = useI18n()
   const [days, setDays] = useState('30')
   const { data, isLoading, isError, error } = useAdminAnalytics(days)
 
@@ -64,9 +66,9 @@ export default function Analytics() {
           </Link>
         </Button>
         <div className="flex-1">
-          <h1 className="font-display text-5xl uppercase">REPORT ANALYTICS</h1>
+          <h1 className="font-display text-5xl uppercase">{t('admin.analyticsTitle')}</h1>
           <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">
-            Trends, resolution time, and geographic distribution.
+            {t('admin.analyticsTrends')}
           </p>
         </div>
         <Select value={days} onValueChange={setDays}>
@@ -74,9 +76,9 @@ export default function Analytics() {
             <SelectValue placeholder="Days" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">7 DAYS</SelectItem>
-            <SelectItem value="30">30 DAYS</SelectItem>
-            <SelectItem value="90">90 DAYS</SelectItem>
+            <SelectItem value="7">{t('admin.days7')}</SelectItem>
+            <SelectItem value="30">{t('admin.days30')}</SelectItem>
+            <SelectItem value="90">{t('admin.days90')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -100,13 +102,13 @@ export default function Analytics() {
               <CardHeader className="border-b-3 border-foreground">
                 <CardTitle className="flex items-center gap-2 font-display text-lg uppercase">
                   <TrendingUp className="h-4 w-4" />
-                  AVERAGE RESOLUTION
+                  {t('admin.avgResolution')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
-                <p className="font-display text-4xl">{resolution.averageDays.toFixed(1)} DAYS</p>
+                <p className="font-display text-4xl">{t('admin.avgDays', { days: resolution.averageDays.toFixed(1) })}</p>
                 <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-1">
-                  Median: {resolution.medianDays.toFixed(1)} days / {resolution.sampleSize} resolved reports
+                  {t('admin.medianInfo', { median: resolution.medianDays.toFixed(1), count: resolution.sampleSize })}
                 </p>
               </CardContent>
             </Card>
@@ -114,7 +116,7 @@ export default function Analytics() {
               <CardHeader className="border-b-3 border-foreground">
                 <CardTitle className="flex items-center gap-2 font-display text-lg uppercase">
                   <Activity className="h-4 w-4" />
-                  REPORTS OVER TIME
+                  {t('admin.reportsOverTime')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="h-60 pt-4">
@@ -138,7 +140,7 @@ export default function Analytics() {
           <div className="grid lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader className="border-b-3 border-foreground">
-                <CardTitle className="font-display text-lg uppercase">STATUS BREAKDOWN</CardTitle>
+                <CardTitle className="font-display text-lg uppercase">{t('admin.statusBreakdown')}</CardTitle>
               </CardHeader>
               <CardContent className="h-64 pt-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -159,7 +161,7 @@ export default function Analytics() {
 
             <Card>
               <CardHeader className="border-b-3 border-foreground">
-                <CardTitle className="font-display text-lg uppercase">REPORT HEATMAP</CardTitle>
+                <CardTitle className="font-display text-lg uppercase">{t('admin.reportHeatmap')}</CardTitle>
               </CardHeader>
               <CardContent className="h-64 pt-4">
                 <div className="border-3 border-foreground h-full w-full">

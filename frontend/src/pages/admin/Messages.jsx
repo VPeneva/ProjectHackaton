@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useConversations, useConversation, useSendMessage, useCloseConversation, useReopenConversation } from '@/hooks/useConversations'
 import { useContactMessages } from '@/hooks/useAdmin'
 import { useAuth } from '@/context/AuthContext'
+import { useI18n } from '@/context/I18nContext'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react'
 
 function ConversationItem({ conversation, isActive, onClick }) {
+    const { t } = useI18n()
     const isOpen = conversation.status === 'Open'
     const lastMessage = conversation.lastMessage
 
@@ -35,7 +37,7 @@ function ConversationItem({ conversation, isActive, onClick }) {
             <div className="flex items-start justify-between gap-2 mb-1">
                 <h3 className="font-medium uppercase line-clamp-1">{conversation.subject}</h3>
                 <Badge variant={isOpen ? 'sent' : 'finished'}>
-                    {isOpen ? 'OPEN' : 'CLOSED'}
+                    {isOpen ? t('admin.openBadge') : t('admin.closedBadge')}
                 </Badge>
             </div>
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider opacity-70 mb-2">
@@ -45,7 +47,7 @@ function ConversationItem({ conversation, isActive, onClick }) {
             </div>
             {lastMessage && (
                 <p className="text-sm opacity-70 line-clamp-1">
-                    {lastMessage.isFromAdmin ? 'You: ' : ''}{lastMessage.content}
+                    {lastMessage.isFromAdmin ? t('admin.youPrefix') : ''}{lastMessage.content}
                 </p>
             )}
             <div className="flex items-center justify-between mt-2">
@@ -62,6 +64,7 @@ function ConversationItem({ conversation, isActive, onClick }) {
 }
 
 function ChatView({ conversationId, onBack }) {
+    const { t } = useI18n()
     const { user } = useAuth()
     const { data: conversation, isLoading } = useConversation(conversationId)
     const sendMessage = useSendMessage()
@@ -108,7 +111,7 @@ function ChatView({ conversationId, onBack }) {
     if (!conversation) {
         return (
             <div className="flex-1 flex items-center justify-center">
-                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Conversation not found</p>
+                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('admin.convNotFound')}</p>
             </div>
         )
     }
@@ -136,7 +139,7 @@ function ChatView({ conversationId, onBack }) {
                 </div>
                 <div className="flex items-center gap-2">
                     <Badge variant={isOpen ? 'sent' : 'finished'}>
-                        {isOpen ? 'OPEN' : 'CLOSED'}
+                        {isOpen ? t('admin.openBadge') : t('admin.closedBadge')}
                     </Badge>
                     {isOpen ? (
                         <Button
@@ -151,7 +154,7 @@ function ChatView({ conversationId, onBack }) {
                             ) : (
                                 <>
                                     <X className="h-4 w-4 mr-1" />
-                                    CLOSE
+                                    {t('admin.closeConversation')}
                                 </>
                             )}
                         </Button>
@@ -167,7 +170,7 @@ function ChatView({ conversationId, onBack }) {
                             ) : (
                                 <>
                                     <RefreshCw className="h-4 w-4 mr-1" />
-                                    REOPEN
+                                    {t('admin.reopenConversation')}
                                 </>
                             )}
                         </Button>
@@ -207,7 +210,7 @@ function ChatView({ conversationId, onBack }) {
                         <Input
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Type your reply..."
+                            placeholder={t('admin.typeReply')}
                             disabled={sendMessage.isPending}
                         />
                         <Button type="submit" disabled={!message.trim() || sendMessage.isPending}>
@@ -222,7 +225,7 @@ function ChatView({ conversationId, onBack }) {
             ) : (
                 <div className="p-4 border-t-3 border-foreground bg-muted text-center">
                     <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                        This conversation is closed. Reopen it to send messages.
+                        {t('admin.adminConvClosed')}
                     </p>
                 </div>
             )}
@@ -280,6 +283,7 @@ function ContactMessageSkeleton() {
 }
 
 export default function Messages() {
+    const { t } = useI18n()
     const { data: conversations, isLoading, isError, error } = useConversations()
     const { data: contactMessages, isLoading: contactLoading, isError: contactError, error: contactLoadError } = useContactMessages()
     const [activeTab, setActiveTab] = useState('conversations')
@@ -291,11 +295,11 @@ export default function Messages() {
     const conversationErrorMessage =
         error?.response?.data?.error ||
         error?.message ||
-        'Failed to load conversations.'
+        t('admin.messagesTitle')
     const contactErrorMessage =
         contactLoadError?.response?.data?.error ||
         contactLoadError?.message ||
-        'Failed to load contact messages.'
+        t('admin.messagesTitle')
 
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col">
@@ -308,9 +312,9 @@ export default function Messages() {
                         </Link>
                     </Button>
                     <div className="flex-1">
-                        <h1 className="font-display text-3xl uppercase">MESSAGES</h1>
+                        <h1 className="font-display text-3xl uppercase">{t('admin.messagesTitle')}</h1>
                         <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                            {openCount} open, {closedCount} closed conversations / {contactCount} contact messages
+                            {t('admin.messagesCountDesc', { open: openCount, closed: closedCount, contact: contactCount })}
                         </p>
                     </div>
                 </div>
@@ -323,7 +327,7 @@ export default function Messages() {
                         variant={activeTab === 'conversations' ? 'default' : 'outline'}
                         onClick={() => setActiveTab('conversations')}
                     >
-                        CONVERSATIONS
+                        {t('admin.conversationsTab')}
                     </Button>
                     <Button
                         size="sm"
@@ -333,7 +337,7 @@ export default function Messages() {
                             setActiveTab('contact')
                         }}
                     >
-                        CONTACT FORM
+                        {t('admin.contactFormTab')}
                     </Button>
                 </div>
             </div>
@@ -360,7 +364,7 @@ export default function Messages() {
                                         <div className="w-12 h-12 border-3 border-foreground flex items-center justify-center mx-auto mb-3">
                                             <MessageSquare className="h-6 w-6 text-foreground" />
                                         </div>
-                                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">No conversations yet</p>
+                                        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('admin.noConversations')}</p>
                                     </div>
                                 ) : (
                                     conversations.map((conv) => (
@@ -387,9 +391,9 @@ export default function Messages() {
                                     <div className="w-16 h-16 border-3 border-foreground flex items-center justify-center mx-auto mb-4">
                                         <MessageSquare className="h-8 w-8 text-foreground" />
                                     </div>
-                                    <h3 className="font-display text-2xl uppercase mb-1">SELECT A CONVERSATION</h3>
+                                    <h3 className="font-display text-2xl uppercase mb-1">{t('admin.selectConversationTitle')}</h3>
                                     <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                                        Choose a conversation from the list to view and reply
+                                        {t('admin.chooseConversation')}
                                     </p>
                                 </div>
                             </div>
@@ -413,7 +417,7 @@ export default function Messages() {
                                     <div className="w-12 h-12 border-3 border-foreground flex items-center justify-center mx-auto mb-3">
                                         <Mail className="h-6 w-6 text-foreground" />
                                     </div>
-                                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">No contact messages yet</p>
+                                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{t('admin.noContactMessages')}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">

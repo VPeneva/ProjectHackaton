@@ -284,13 +284,13 @@ export default function Navbar() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] rounded-none border-l-4 border-foreground">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] rounded-none border-l-4 border-foreground flex flex-col">
               <SheetHeader>
                 <SheetTitle className="font-display text-xl font-black uppercase tracking-tight text-left">
                   {t('nav.menu')}
                 </SheetTitle>
               </SheetHeader>
-              <nav className="flex flex-col gap-0 mt-6">
+              <nav className="flex flex-col gap-0 mt-6 flex-1 overflow-y-auto">
                 {publicLinks.map((link) => (
                   <Link
                     key={link.href}

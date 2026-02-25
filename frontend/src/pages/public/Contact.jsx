@@ -79,8 +79,8 @@ export default function Contact() {
         {
             icon: Mail,
             title: t('contact.email'),
-            value: 'contact@cityclarity.com',
-            href: 'mailto:contact@cityclarity.com',
+            value: 'contact@cityclarity.eu',
+            href: 'mailto:contact@cityclarity.eu',
         },
         {
             icon: Phone,

@@ -81,7 +81,7 @@ export default function Legal() {
                 },
                 {
                     heading: '8. Contact Us',
-                    text: 'For privacy-related questions or concerns, please contact us through our contact page or email us at privacy@cityclarity.com.',
+                    text: 'For privacy-related questions or concerns, please contact us through our contact page or email us at privacy@cityclarity.eu.',
                 },
             ],
         },

@@ -22,7 +22,7 @@ function Hero() {
     const isBg = language === 'bg'
     // Bulgarian words are ~2x longer than English, scale down to fit the container
     const heroSize = isBg
-        ? 'block text-[48px] sm:text-[65px] md:text-[88px] lg:text-[118px] xl:text-[132px]'
+        ? 'block text-[10vw] sm:text-[65px] md:text-[88px] lg:text-[118px] xl:text-[132px]'
         : 'block text-7xl md:text-[140px] lg:text-[180px]'
 
     return (

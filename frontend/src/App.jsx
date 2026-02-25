@@ -1,4 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/context/AuthContext'
@@ -66,6 +73,7 @@ function App() {
         <I18nProvider defaultLanguage="en" storageKey="civic-report-language">
           <AuthProvider>
             <BrowserRouter>
+              <ScrollToTop />
               <div className="min-h-screen flex flex-col bg-background text-foreground">
                 <Navbar />
                 <main className="flex-1">

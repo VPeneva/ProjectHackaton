@@ -2,87 +2,41 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FileText, Shield } from 'lucide-react'
+import { useI18n } from '@/context/I18nContext'
 
 export default function Legal() {
     const [expandedSection, setExpandedSection] = useState('terms')
+    const { t } = useI18n()
 
     const sections = [
         {
             id: 'terms',
-            title: 'Terms of Service',
+            title: t('legal.termsOfService'),
             icon: FileText,
             content: [
-                {
-                    heading: '1. Acceptance of Terms',
-                    text: 'By accessing and using CityClarity, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.',
-                },
-                {
-                    heading: '2. Use of Service',
-                    text: 'CityClarity is a platform for citizens to report infrastructure issues to local authorities. You agree to use this service only for its intended purpose and to provide accurate information in your reports.',
-                },
-                {
-                    heading: '3. User Accounts',
-                    text: 'To submit reports, you must create an account with accurate information. You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account.',
-                },
-                {
-                    heading: '4. Report Submission',
-                    text: 'When submitting reports, you agree to provide accurate location information and descriptions. False or misleading reports may result in account suspension. You grant us permission to share your reports with relevant government institutions.',
-                },
-                {
-                    heading: '5. Prohibited Activities',
-                    text: 'You may not use CityClarity for spam, harassment, or any illegal activities. Submitting false reports, impersonating others, or attempting to disrupt the service is strictly prohibited.',
-                },
-                {
-                    heading: '6. Intellectual Property',
-                    text: 'All content and materials on CityClarity are protected by intellectual property rights. Photos you upload remain your property, but you grant us a license to use them for operating and improving the service.',
-                },
-                {
-                    heading: '7. Limitation of Liability',
-                    text: 'CityClarity is provided "as is" without warranties. We are not responsible for actions taken or not taken by government institutions in response to reports.',
-                },
-                {
-                    heading: '8. Changes to Terms',
-                    text: 'We may update these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.',
-                },
+                { heading: t('legal.terms1Heading'), text: t('legal.terms1Text') },
+                { heading: t('legal.terms2Heading'), text: t('legal.terms2Text') },
+                { heading: t('legal.terms3Heading'), text: t('legal.terms3Text') },
+                { heading: t('legal.terms4Heading'), text: t('legal.terms4Text') },
+                { heading: t('legal.terms5Heading'), text: t('legal.terms5Text') },
+                { heading: t('legal.terms6Heading'), text: t('legal.terms6Text') },
+                { heading: t('legal.terms7Heading'), text: t('legal.terms7Text') },
+                { heading: t('legal.terms8Heading'), text: t('legal.terms8Text') },
             ],
         },
         {
             id: 'privacy',
-            title: 'Privacy Policy',
+            title: t('legal.privacyPolicy'),
             icon: Shield,
             content: [
-                {
-                    heading: '1. Information We Collect',
-                    text: 'We collect information you provide directly: name, email address, and report details including photos and location data. We also collect usage data such as pages visited and features used.',
-                },
-                {
-                    heading: '2. How We Use Your Information',
-                    text: 'Your information is used to: operate and improve the service, process and forward reports to institutions, communicate with you about your reports, and ensure security and prevent fraud.',
-                },
-                {
-                    heading: '3. Information Sharing',
-                    text: 'We share your report information with relevant government institutions to address the reported issues. We may also share information as required by law or to protect rights and safety.',
-                },
-                {
-                    heading: '4. Data Security',
-                    text: 'We implement appropriate security measures to protect your information. However, no method of transmission over the internet is 100% secure.',
-                },
-                {
-                    heading: '5. Your Rights',
-                    text: 'You have the right to access, correct, or delete your personal information. You may also request a copy of your data or opt out of certain communications.',
-                },
-                {
-                    heading: '6. Location Data',
-                    text: 'When you submit a report with location, this data is used to identify the relevant jurisdiction and institution. Location data is shared with authorities handling your report.',
-                },
-                {
-                    heading: '7. Cookies',
-                    text: 'We use cookies and similar technologies to improve user experience, remember preferences, and analyze service usage.',
-                },
-                {
-                    heading: '8. Contact Us',
-                    text: 'For privacy-related questions or concerns, please contact us through our contact page or email us at privacy@cityclarity.eu.',
-                },
+                { heading: t('legal.privacy1Heading'), text: t('legal.privacy1Text') },
+                { heading: t('legal.privacy2Heading'), text: t('legal.privacy2Text') },
+                { heading: t('legal.privacy3Heading'), text: t('legal.privacy3Text') },
+                { heading: t('legal.privacy4Heading'), text: t('legal.privacy4Text') },
+                { heading: t('legal.privacy5Heading'), text: t('legal.privacy5Text') },
+                { heading: t('legal.privacy6Heading'), text: t('legal.privacy6Text') },
+                { heading: t('legal.privacy7Heading'), text: t('legal.privacy7Text') },
+                { heading: t('legal.privacy8Heading'), text: t('legal.privacy8Text') },
             ],
         },
     ]
@@ -94,11 +48,11 @@ export default function Legal() {
                 <div className="container mx-auto px-4">
                     <div className="max-w-2xl mx-auto text-center">
                         <h1 className="font-display text-6xl md:text-8xl uppercase tracking-tight mb-4">
-                            LEGAL
+                            {t('legal.title')}
                         </h1>
                         <div className="border-b-3 border-foreground w-24 mx-auto mb-4" />
                         <p className="font-mono text-sm uppercase tracking-wider text-muted-foreground">
-                            Important information about your rights and our policies.
+                            {t('legal.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -138,7 +92,7 @@ export default function Legal() {
                                     {section.title}
                                 </CardTitle>
                                 <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                                    Last updated: January 2026
+                                    {t('legal.lastUpdated')}
                                 </p>
                             </CardHeader>
                             <CardContent className="space-y-6 pt-6">
@@ -158,9 +112,9 @@ export default function Legal() {
                     {/* Additional Info */}
                     <div className="mt-8 border-3 border-foreground p-6 text-center">
                         <p className="text-muted-foreground">
-                            If you have any questions about these policies, please{' '}
+                            {t('legal.questionsAboutPolicies')}{' '}
                             <a href="/contact" className="font-bold uppercase hover:bg-foreground hover:text-background transition-none">
-                                contact us
+                                {t('legal.contactUsLink')}
                             </a>
                             .
                         </p>

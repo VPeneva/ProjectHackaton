@@ -64,7 +64,7 @@ export default function SharePanel({ report, statusLabel }) {
 
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `civicreport-${report.id}.png`
+    link.download = `cityclarity-${report.id}.png`
     link.click()
   }
 

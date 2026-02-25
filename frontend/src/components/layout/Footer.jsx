@@ -28,11 +28,11 @@ export default function Footer() {
         <div className="mb-12">
           <Link to="/" className="inline-block">
             <span className="font-display text-3xl font-black uppercase tracking-tight text-background">
-              CIVICREPORT<span className="text-primary">.</span>
+              CITYCLARITY<span className="text-primary">.</span>
             </span>
           </Link>
           <p className="mt-3 font-mono text-sm text-background/50 tracking-wider">
-            // CIVIC INFRASTRUCTURE REPORT SYSTEM
+            // CITY CLARITY INFRASTRUCTURE SYSTEM
           </p>
           <p className="mt-2 text-sm text-background/60">
             {t('footer.tagline')}
@@ -116,7 +116,7 @@ export default function Footer() {
         {/* Footer bottom */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 font-mono text-xs text-background/50">
           <p className="uppercase tracking-wider">
-            &copy; {new Date().getFullYear()} CIVICREPORT. {t('footer.rights')}
+            &copy; {new Date().getFullYear()} CITYCLARITY. {t('footer.rights')}
           </p>
           <p className="uppercase tracking-wider">
             Made with care for our communities

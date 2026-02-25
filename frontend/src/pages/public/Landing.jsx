@@ -18,22 +18,26 @@ import {
 
 // Hero Section
 function Hero() {
-    const { t } = useI18n()
+    const { t, language } = useI18n()
+    const isBg = language === 'bg'
+    // Bulgarian words are ~2x longer than English, scale down to fit the container
+    const heroSize = isBg
+        ? 'block text-[48px] sm:text-[65px] md:text-[88px] lg:text-[118px] xl:text-[132px]'
+        : 'block text-7xl md:text-[140px] lg:text-[180px]'
+
     return (
         <section className="relative border-b-4 border-foreground">
             <div className="container mx-auto px-4 py-16 md:py-24 lg:py-32">
                 <div className="max-w-6xl">
-                    {/* Massive stacked typography — whitespace-nowrap keeps each word on one line,
-                        overflow is clipped by the parent overflow-hidden for both languages */}
                     <h1 className="font-display leading-[0.85]">
-                        <span className="block text-7xl md:text-[140px] lg:text-[180px] text-foreground whitespace-nowrap">
+                        <span className={`${heroSize} text-foreground`}>
                             {t('landing.report')}
                         </span>
-                        <span className="block text-7xl md:text-[140px] lg:text-[180px] text-primary whitespace-nowrap">
+                        <span className={`${heroSize} text-primary`}>
                             {t('landing.transform')}
                         </span>
                         <span
-                            className="block text-7xl md:text-[140px] lg:text-[180px] text-transparent whitespace-nowrap"
+                            className={`${heroSize} text-transparent`}
                             style={{
                                 WebkitTextStroke: '2px hsl(var(--foreground))',
                             }}

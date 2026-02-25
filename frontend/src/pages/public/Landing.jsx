@@ -20,10 +20,10 @@ import {
 function Hero() {
     const { t, language } = useI18n()
     const isBg = language === 'bg'
-    // Bulgarian words are ~2x longer than English, scale down to fit the container
+    // Bulgarian words are ~2x longer than English, use vw on mobile so text scales to fit
     const heroSize = isBg
         ? 'block text-[10vw] sm:text-[65px] md:text-[88px] lg:text-[118px] xl:text-[132px]'
-        : 'block text-7xl md:text-[140px] lg:text-[180px]'
+        : 'block text-[13vw] sm:text-7xl md:text-[140px] lg:text-[180px]'
 
     return (
         <section className="relative border-b-4 border-foreground">
@@ -131,8 +131,8 @@ function Features() {
     return (
         <section className="py-20 md:py-28">
             <div className="container mx-auto px-4">
-                {/* Section title */}
-                <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-16 border-b-4 border-foreground pb-6">
+                {/* Section title — vw on mobile so long translations never overflow */}
+                <h2 className="font-display text-[8.5vw] sm:text-5xl md:text-7xl lg:text-8xl uppercase mb-16 border-b-4 border-foreground pb-6">
                     {t('landing.capabilities')}
                 </h2>
 
@@ -204,7 +204,7 @@ function HowItWorks() {
         <section className="py-20 md:py-28 bg-muted/30 border-y-4 border-foreground">
             <div className="container mx-auto px-4">
                 {/* Section title */}
-                <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-16">
+                <h2 className="font-display text-[8.5vw] sm:text-5xl md:text-7xl lg:text-8xl uppercase mb-16">
                     {t('landing.howItWorks')}
                 </h2>
 
@@ -271,13 +271,13 @@ function Stats() {
     return (
         <section className="bg-foreground text-background py-20 md:py-28">
             <div className="container mx-auto px-4">
-                <h2 className="font-display text-5xl md:text-7xl lg:text-8xl uppercase mb-16 text-background">
+                <h2 className="font-display text-[8.5vw] sm:text-5xl md:text-7xl lg:text-8xl uppercase mb-16 text-background">
                     {t('landing.impactInNumbers')}
                 </h2>
 
                 <div className="flex flex-col md:flex-row items-center justify-center max-w-5xl mx-auto">
                     {statItems.map((stat, index) => (
-                        <div key={index} className="flex items-center">
+                        <div key={index} className="flex flex-col md:flex-row items-center">
                             <div className="text-center px-8 md:px-12 py-6">
                                 {/* Monospace sub-label */}
                                 <span className="font-mono text-xs tracking-widest text-background/50 block mb-2">
@@ -295,12 +295,12 @@ function Stats() {
                                 </span>
                             </div>
 
-                            {/* Vertical divider (not after last item) */}
+                            {/* Vertical divider (desktop only) */}
                             {index < statItems.length - 1 && (
                                 <div className="hidden md:block w-[3px] h-32 bg-background shrink-0" />
                             )}
 
-                            {/* Horizontal divider on mobile */}
+                            {/* Horizontal divider (mobile only) */}
                             {index < statItems.length - 1 && (
                                 <div className="block md:hidden w-32 h-[3px] bg-background shrink-0" />
                             )}
@@ -319,20 +319,20 @@ function CTA() {
         <section className="py-20 md:py-28">
             <div className="container mx-auto px-4">
                 <Card className="max-w-4xl mx-auto border-[3px] border-foreground shadow-brutal bg-background overflow-hidden">
-                    <CardContent className="p-8 md:p-12 lg:p-16 text-center relative">
+                    <CardContent className="p-6 sm:p-8 md:p-12 lg:p-16 text-center relative">
                         {/* URGENT stamp */}
-                        <div className="absolute top-6 right-6 md:top-8 md:right-8">
-                            <span className="inline-block font-display text-2xl md:text-4xl text-primary border-[3px] border-primary px-3 py-1 rotate-12 select-none">
+                        <div className="absolute top-4 right-4 md:top-8 md:right-8">
+                            <span className="inline-block font-display text-xl md:text-4xl text-primary border-[3px] border-primary px-2 py-1 rotate-12 select-none">
                                 {t('landing.urgent')}
                             </span>
                         </div>
 
                         {/* Headline — whitespace-pre-wrap preserves the \n in translations */}
-                        <h2 className="font-display text-4xl md:text-6xl lg:text-7xl uppercase mb-6 leading-[0.9] pt-8 whitespace-pre-wrap">
+                        <h2 className="font-display text-[9vw] sm:text-4xl md:text-6xl lg:text-7xl uppercase mb-6 leading-[0.9] pt-8 whitespace-pre-wrap">
                             {t('landing.doSomethingAboutIt')}
                         </h2>
 
-                        <p className="font-mono text-sm md:text-base text-muted-foreground mb-10 max-w-xl mx-auto">
+                        <p className="font-mono text-xs sm:text-sm md:text-base text-muted-foreground mb-10 max-w-xl mx-auto">
                             {t('landing.ctaDescription')}
                         </p>
 

@@ -40,29 +40,6 @@ backend/prisma/dev.db
 # OS
 Thumbs.db
 
-# Windows reserved names
-nul
-NUL
-con
-CON
-prn
-PRN
-aux
-AUX
-
 # Images
 backend/uploads/
 
-# Claude
-CLAUDE.md
-DEVELOPMENT_REPORT.md
-FRONTEND_PLAN.md
-.claude*
-.claude/
-REPORT.md
-DOCUMENTATION_NOIT.md
-TODO_NOIT.md
-CityClarity_Documentation_NOIT.docx
-
-# Bundle
-*.bundle

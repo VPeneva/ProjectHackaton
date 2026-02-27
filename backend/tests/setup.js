@@ -5,9 +5,10 @@ import { vi } from 'vitest';
 import jwt from 'jsonwebtoken';
 
 // ── Environment variables used across the app ──
-process.env.JWT_SECRET = 'test-jwt-secret-key';
+process.env.JWT_SECRET = 'test-jwt-secret-key-that-is-at-least-32-characters-long';
 process.env.ADMIN_REGISTER_KEY = 'admin-secret-123';
 process.env.NODE_ENV = 'test';
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/testdb';
 process.env.VOTE_EXPIRATION_DAYS = '180';
 process.env.RESET_TOKEN_TTL_MINUTES = '60';
 process.env.EXPOSE_RESET_TOKEN = 'true';

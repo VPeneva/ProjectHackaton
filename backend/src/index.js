@@ -49,9 +49,10 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }, // allow serving uploaded files cross-origin
 }));
 
-// CORS - restrict to explicit origin
+// CORS - restrict to explicit origin(s), comma-separated
+const allowedOrigins = config.CORS_ORIGIN.split(",").map((o) => o.trim());
 app.use(cors({
-  origin: config.CORS_ORIGIN,
+  origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
   credentials: true,
 }));
 

@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "staging", "production"]).default("development"),
+  NODE_ENV: z.enum(["development", "staging", "production", "test"]).default("development"),
   PORT: z.coerce.number().default(5000),
 
   // Database
@@ -22,7 +22,7 @@ const envSchema = z.object({
   // Admin
   ADMIN_REGISTER_KEY: z.string().min(1, "ADMIN_REGISTER_KEY is required"),
 
-  // CORS
+  // CORS (comma-separated for multiple origins, e.g. "http://example.com,https://example.com")
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
 
   // Password reset

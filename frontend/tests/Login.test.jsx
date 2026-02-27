@@ -39,6 +39,31 @@ vi.mock('@/services/auth', () => ({
   default: { login: mockAuthServiceLogin },
 }));
 
+vi.mock('@/context/I18nContext', () => ({
+  useI18n: () => ({
+    t: (key) => {
+      const map = {
+        'auth.signIn': 'Sign In',
+        'auth.accessYourAccount': 'Access your account',
+        'auth.email': 'Email',
+        'auth.emailPlaceholder': 'you@example.com',
+        'auth.password': 'Password',
+        'auth.passwordPlaceholder': '••••••••',
+        'auth.forgot': 'Forgot?',
+        'auth.signingIn': 'Signing in...',
+        'auth.signInAction': 'Sign In',
+        'auth.noAccount': "Don't have an account?",
+        'auth.createOne': 'Create one',
+        'auth.failedSignIn': 'Failed to sign in',
+      };
+      return map[key] || key;
+    },
+    language: 'en',
+    setLanguage: vi.fn(),
+  }),
+  I18nProvider: ({ children }) => children,
+}));
+
 import Login from '@/pages/auth/Login';
 
 function renderLogin() {
